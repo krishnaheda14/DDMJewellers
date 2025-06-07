@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import ProductForm from "@/components/admin/product-form";
+import CategoryForm from "@/components/admin/category-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Plus, Edit, Trash2, Search, Package, Users, ShoppingCart, TrendingUp } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Package, Users, ShoppingCart, TrendingUp, Folder } from "lucide-react";
 import type { Product, Category, Order } from "@shared/schema";
 
 export default function Admin() {
@@ -21,7 +22,9 @@ export default function Admin() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
+  const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && (!user || !user.isAdmin)) {
@@ -159,6 +162,53 @@ export default function Admin() {
     setSelectedProduct(null);
     queryClient.invalidateQueries({ queryKey: ["/api/products"] });
   };
+
+  const handleEditCategory = (category: Category) => {
+    setSelectedCategory(category);
+    setIsCategoryFormOpen(true);
+  };
+
+  const handleAddCategory = () => {
+    setSelectedCategory(null);
+    setIsCategoryFormOpen(true);
+  };
+
+  const handleCategoryFormSuccess = () => {
+    setIsCategoryFormOpen(false);
+    setSelectedCategory(null);
+    queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+  };
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/categories/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Category deleted",
+        description: "Category has been deleted successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Session expired",
+          description: "Please sign in again.",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 1000);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete category.",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -316,15 +366,69 @@ export default function Admin() {
 
           {/* Categories Tab */}
           <TabsContent value="categories" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-deep-navy">Categories</h2>
+              <Dialog open={isCategoryFormOpen} onOpenChange={setIsCategoryFormOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={handleAddCategory} className="bg-gold hover:bg-gold/90 text-white">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Category
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {selectedCategory ? "Edit Category" : "Add New Category"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <CategoryForm
+                    category={selectedCategory}
+                    onSuccess={handleCategoryFormSuccess}
+                    onCancel={() => setIsCategoryFormOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {categories.map((category) => (
                 <Card key={category.id}>
                   <CardContent className="p-6">
+                    {category.imageUrl && (
+                      <div className="mb-4">
+                        <img 
+                          src={category.imageUrl} 
+                          alt={category.name}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
                     <h3 className="font-semibold text-deep-navy mb-2">{category.name}</h3>
-                    <p className="text-sm text-warm-gray mb-4">{category.description}</p>
-                    <p className="text-sm font-medium text-gold">
-                      {products.filter(p => p.categoryId === category.id).length} products
-                    </p>
+                    <p className="text-sm text-warm-gray mb-4">{category.description || "No description"}</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-gold">
+                        {products.filter(p => p.categoryId === category.id).length} products
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditCategory(category)}
+                          className="text-deep-navy hover:text-gold"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => deleteCategoryMutation.mutate(category.id)}
+                          disabled={deleteCategoryMutation.isPending}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
