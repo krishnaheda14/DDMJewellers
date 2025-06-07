@@ -112,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/categories', isAuthenticated, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
-      if (!user?.isAdmin) {
+      if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -130,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/categories/:id', isAuthenticated, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
-      if (!user?.isAdmin) {
+      if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -148,7 +148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/categories/:id', isAuthenticated, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
-      if (!user?.isAdmin) {
+      if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -195,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/products', isAuthenticated, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
-      if (!user?.isAdmin) {
+      if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -213,7 +213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/products/:id', isAuthenticated, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
-      if (!user?.isAdmin) {
+      if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -637,6 +637,245 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error in text-to-speech:', error);
       res.status(500).json({ message: 'Failed to generate speech' });
+    }
+  });
+
+  // Wholesaler Design Routes
+  app.get('/api/wholesaler-designs', async (req, res) => {
+    try {
+      const { wholesalerId, status, category, limit, offset } = req.query;
+      const designs = await storage.getWholesalerDesigns({
+        wholesalerId: wholesalerId as string,
+        status: status as string,
+        category: category as string,
+        limit: limit ? parseInt(limit as string) : undefined,
+        offset: offset ? parseInt(offset as string) : undefined,
+      });
+      res.json(designs);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch wholesaler designs" });
+    }
+  });
+
+  app.get('/api/wholesaler-designs/:id', async (req, res) => {
+    try {
+      const design = await storage.getWholesalerDesign(parseInt(req.params.id));
+      if (!design) {
+        return res.status(404).json({ message: "Design not found" });
+      }
+      res.json(design);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch design" });
+    }
+  });
+
+  app.post('/api/wholesaler-designs', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'wholesaler' && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Wholesaler or admin access required" });
+      }
+
+      const designData = insertWholesalerDesignSchema.parse({
+        ...req.body,
+        wholesalerId: req.user.claims.sub,
+      });
+      const design = await storage.createWholesalerDesign(designData);
+      res.status(201).json(design);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create design" });
+    }
+  });
+
+  app.put('/api/wholesaler-designs/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      const design = await storage.getWholesalerDesign(parseInt(req.params.id));
+      
+      if (!design) {
+        return res.status(404).json({ message: "Design not found" });
+      }
+
+      // Only the design owner or admin can update
+      if (design.wholesalerId !== req.user.claims.sub && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const designData = insertWholesalerDesignSchema.partial().parse(req.body);
+      const updatedDesign = await storage.updateWholesalerDesign(parseInt(req.params.id), designData);
+      res.json(updatedDesign);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update design" });
+    }
+  });
+
+  app.post('/api/wholesaler-designs/:id/approve', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const design = await storage.approveWholesalerDesign(parseInt(req.params.id), req.user.claims.sub);
+      res.json(design);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to approve design" });
+    }
+  });
+
+  app.post('/api/wholesaler-designs/:id/reject', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const design = await storage.rejectWholesalerDesign(parseInt(req.params.id), req.user.claims.sub);
+      res.json(design);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to reject design" });
+    }
+  });
+
+  app.delete('/api/wholesaler-designs/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      const design = await storage.getWholesalerDesign(parseInt(req.params.id));
+      
+      if (!design) {
+        return res.status(404).json({ message: "Design not found" });
+      }
+
+      // Only the design owner or admin can delete
+      if (design.wholesalerId !== req.user.claims.sub && user?.role !== 'admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const success = await storage.deleteWholesalerDesign(parseInt(req.params.id));
+      if (!success) {
+        return res.status(404).json({ message: "Design not found" });
+      }
+      res.json({ message: "Design deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete design" });
+    }
+  });
+
+  // Wishlist Routes
+  app.get('/api/wishlist', isAuthenticated, async (req: any, res) => {
+    try {
+      const wishlist = await storage.getWishlist(req.user.claims.sub);
+      res.json(wishlist);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch wishlist" });
+    }
+  });
+
+  app.post('/api/wishlist', isAuthenticated, async (req: any, res) => {
+    try {
+      const wishlistData = insertWishlistSchema.parse({
+        ...req.body,
+        userId: req.user.claims.sub,
+      });
+      const wishlistItem = await storage.addToWishlist(wishlistData);
+      res.status(201).json(wishlistItem);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to add to wishlist" });
+    }
+  });
+
+  app.delete('/api/wishlist/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const success = await storage.removeFromWishlist(parseInt(req.params.id));
+      if (!success) {
+        return res.status(404).json({ message: "Wishlist item not found" });
+      }
+      res.json({ message: "Item removed from wishlist" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to remove from wishlist" });
+    }
+  });
+
+  // User Role Management Routes
+  app.put('/api/users/:id/role', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { role } = req.body;
+      if (!['customer', 'wholesaler', 'admin'].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+
+      const updatedUser = await storage.updateUserRole(req.params.id, role);
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
+
+  app.get('/api/wholesalers', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { approved } = req.query;
+      const wholesalers = await storage.getWholesalers(
+        approved !== undefined ? approved === 'true' : undefined
+      );
+      res.json(wholesalers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch wholesalers" });
+    }
+  });
+
+  // Orders - Admin exclusive execution
+  app.post('/api/orders', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only admin can execute orders" });
+      }
+
+      const { orderData, items } = req.body;
+      const orderDataParsed = insertOrderSchema.parse(orderData);
+      const itemsParsed = items.map((item: any) => insertOrderItemSchema.parse(item));
+      
+      const order = await storage.createOrder(orderDataParsed, itemsParsed);
+      res.status(201).json(order);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create order" });
+    }
+  });
+
+  app.put('/api/orders/:id/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only admin can update order status" });
+      }
+
+      const { status } = req.body;
+      const order = await storage.updateOrderStatus(parseInt(req.params.id), status);
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update order status" });
     }
   });
 

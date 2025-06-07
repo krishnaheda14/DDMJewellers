@@ -386,6 +386,204 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
     return history;
   }
+
+  // Wholesaler design operations
+  async getWholesalerDesigns(filters?: {
+    wholesalerId?: string;
+    status?: string;
+    category?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<(WholesalerDesign & { wholesaler: User })[]> {
+    let query = db
+      .select({
+        id: wholesalerDesigns.id,
+        wholesalerId: wholesalerDesigns.wholesalerId,
+        title: wholesalerDesigns.title,
+        description: wholesalerDesigns.description,
+        imageUrl: wholesalerDesigns.imageUrl,
+        additionalImages: wholesalerDesigns.additionalImages,
+        category: wholesalerDesigns.category,
+        materials: wholesalerDesigns.materials,
+        estimatedPrice: wholesalerDesigns.estimatedPrice,
+        specifications: wholesalerDesigns.specifications,
+        status: wholesalerDesigns.status,
+        approvedBy: wholesalerDesigns.approvedBy,
+        approvedAt: wholesalerDesigns.approvedAt,
+        isActive: wholesalerDesigns.isActive,
+        createdAt: wholesalerDesigns.createdAt,
+        updatedAt: wholesalerDesigns.updatedAt,
+        wholesaler: users,
+      })
+      .from(wholesalerDesigns)
+      .leftJoin(users, eq(wholesalerDesigns.wholesalerId, users.id));
+
+    if (filters?.wholesalerId) {
+      query = query.where(eq(wholesalerDesigns.wholesalerId, filters.wholesalerId));
+    }
+    if (filters?.status) {
+      query = query.where(eq(wholesalerDesigns.status, filters.status));
+    }
+    if (filters?.category) {
+      query = query.where(eq(wholesalerDesigns.category, filters.category));
+    }
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+    if (filters?.offset) {
+      query = query.offset(filters.offset);
+    }
+
+    const designs = await query.orderBy(desc(wholesalerDesigns.createdAt));
+    return designs.map(design => ({
+      ...design,
+      wholesaler: design.wholesaler!,
+    }));
+  }
+
+  async getWholesalerDesign(id: number): Promise<(WholesalerDesign & { wholesaler: User }) | undefined> {
+    const [design] = await db
+      .select({
+        id: wholesalerDesigns.id,
+        wholesalerId: wholesalerDesigns.wholesalerId,
+        title: wholesalerDesigns.title,
+        description: wholesalerDesigns.description,
+        imageUrl: wholesalerDesigns.imageUrl,
+        additionalImages: wholesalerDesigns.additionalImages,
+        category: wholesalerDesigns.category,
+        materials: wholesalerDesigns.materials,
+        estimatedPrice: wholesalerDesigns.estimatedPrice,
+        specifications: wholesalerDesigns.specifications,
+        status: wholesalerDesigns.status,
+        approvedBy: wholesalerDesigns.approvedBy,
+        approvedAt: wholesalerDesigns.approvedAt,
+        isActive: wholesalerDesigns.isActive,
+        createdAt: wholesalerDesigns.createdAt,
+        updatedAt: wholesalerDesigns.updatedAt,
+        wholesaler: users,
+      })
+      .from(wholesalerDesigns)
+      .leftJoin(users, eq(wholesalerDesigns.wholesalerId, users.id))
+      .where(eq(wholesalerDesigns.id, id));
+
+    if (!design) return undefined;
+    return {
+      ...design,
+      wholesaler: design.wholesaler!,
+    };
+  }
+
+  async createWholesalerDesign(design: InsertWholesalerDesign): Promise<WholesalerDesign> {
+    const [newDesign] = await db
+      .insert(wholesalerDesigns)
+      .values(design)
+      .returning();
+    return newDesign;
+  }
+
+  async updateWholesalerDesign(id: number, design: Partial<InsertWholesalerDesign>): Promise<WholesalerDesign> {
+    const [updatedDesign] = await db
+      .update(wholesalerDesigns)
+      .set({ ...design, updatedAt: new Date() })
+      .where(eq(wholesalerDesigns.id, id))
+      .returning();
+    return updatedDesign;
+  }
+
+  async approveWholesalerDesign(id: number, approvedBy: string): Promise<WholesalerDesign> {
+    const [design] = await db
+      .update(wholesalerDesigns)
+      .set({
+        status: "approved",
+        approvedBy,
+        approvedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(wholesalerDesigns.id, id))
+      .returning();
+    return design;
+  }
+
+  async rejectWholesalerDesign(id: number, approvedBy: string): Promise<WholesalerDesign> {
+    const [design] = await db
+      .update(wholesalerDesigns)
+      .set({
+        status: "rejected",
+        approvedBy,
+        approvedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(wholesalerDesigns.id, id))
+      .returning();
+    return design;
+  }
+
+  async deleteWholesalerDesign(id: number): Promise<boolean> {
+    const result = await db.delete(wholesalerDesigns).where(eq(wholesalerDesigns.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Wishlist operations
+  async getWishlist(userId: string): Promise<(Wishlist & { product?: Product; design?: WholesalerDesign })[]> {
+    const wishlistItems = await db
+      .select({
+        id: wishlists.id,
+        userId: wishlists.userId,
+        productId: wishlists.productId,
+        designId: wishlists.designId,
+        createdAt: wishlists.createdAt,
+        product: products,
+        design: wholesalerDesigns,
+      })
+      .from(wishlists)
+      .leftJoin(products, eq(wishlists.productId, products.id))
+      .leftJoin(wholesalerDesigns, eq(wishlists.designId, wholesalerDesigns.id))
+      .where(eq(wishlists.userId, userId))
+      .orderBy(desc(wishlists.createdAt));
+
+    return wishlistItems.map(item => ({
+      ...item,
+      product: item.product || undefined,
+      design: item.design || undefined,
+    }));
+  }
+
+  async addToWishlist(item: InsertWishlist): Promise<Wishlist> {
+    const [wishlistItem] = await db
+      .insert(wishlists)
+      .values(item)
+      .returning();
+    return wishlistItem;
+  }
+
+  async removeFromWishlist(id: number): Promise<boolean> {
+    const result = await db.delete(wishlists).where(eq(wishlists.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // User role operations
+  async updateUserRole(userId: string, role: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ role: role as "customer" | "wholesaler" | "admin", updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async getWholesalers(approved?: boolean): Promise<User[]> {
+    let query = db
+      .select()
+      .from(users)
+      .where(eq(users.role, "wholesaler"));
+
+    if (approved !== undefined) {
+      query = query.where(eq(users.isApproved, approved));
+    }
+
+    return await query.orderBy(users.createdAt);
+  }
 }
 
 export const storage = new DatabaseStorage();
