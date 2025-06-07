@@ -14,12 +14,21 @@ export default function Landing() {
                 <span className="text-gold">DDM</span> Jewellers
               </h1>
             </div>
-            <Button 
-              onClick={() => window.location.href = "/api/login"}
-              className="bg-gold hover:bg-gold/90 text-white"
-            >
-              Sign In
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => window.location.href = "/api/login"}
+                variant="outline"
+                className="border-gold text-gold hover:bg-gold hover:text-white"
+              >
+                Sign In
+              </Button>
+              <Button 
+                onClick={() => window.location.href = "/signup"}
+                className="bg-gold hover:bg-gold/90 text-white"
+              >
+                Sign Up
+              </Button>
+            </div>
           </div>
         </div>
       </header>

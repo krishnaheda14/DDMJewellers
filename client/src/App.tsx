@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import EnhancedChatbot from "@/components/enhanced-chatbot";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
+import Signup from "@/pages/signup";
 import Home from "@/pages/home";
 import Products from "@/pages/products";
 import ProductDetail from "@/pages/product-detail";
@@ -21,7 +22,10 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/signup" component={Signup} />
+        </>
       ) : (
         <>
           <Route path="/" component={Home} />

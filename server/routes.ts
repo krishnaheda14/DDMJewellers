@@ -90,6 +90,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User signup endpoint
+  app.post('/api/auth/signup', async (req, res) => {
+    try {
+      const { email, firstName, lastName, role, businessName, businessAddress, businessDescription } = req.body;
+
+      // Validate required fields
+      if (!email || !firstName || !lastName || !role) {
+        return res.status(400).json({ message: "Email, first name, last name, and role are required" });
+      }
+
+      // Validate role
+      if (!['customer', 'wholesaler'].includes(role)) {
+        return res.status(400).json({ message: "Invalid role. Must be 'customer' or 'wholesaler'" });
+      }
+
+      // For wholesaler accounts, business name is required
+      if (role === 'wholesaler' && !businessName) {
+        return res.status(400).json({ message: "Business name is required for wholesaler accounts" });
+      }
+
+      // Generate a temporary user ID for registration (will be replaced by Replit Auth)
+      const tempUserId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Create user record
+      const userData = {
+        id: tempUserId,
+        email,
+        firstName,
+        lastName,
+        role,
+        businessName: role === 'wholesaler' ? businessName : null,
+        businessAddress: role === 'wholesaler' ? businessAddress : null,
+        businessDescription: role === 'wholesaler' ? businessDescription : null,
+        isActive: role === 'customer', // Customers are active immediately, wholesalers need approval
+      };
+
+      const user = await storage.upsertUser(userData);
+
+      res.status(201).json({
+        message: role === 'wholesaler' 
+          ? "Wholesaler account created successfully. Pending approval."
+          : "Customer account created successfully.",
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+        }
+      });
+
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(500).json({ message: "Failed to create account" });
+    }
+  });
+
   // Category routes
   app.get('/api/categories', async (req, res) => {
     try {
