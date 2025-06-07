@@ -32,7 +32,11 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
-  isAdmin: boolean("is_admin").default(false),
+  role: varchar("role", { enum: ["customer", "wholesaler", "admin"] }).notNull().default("customer"),
+  businessName: varchar("business_name"), // For wholesalers
+  businessAddress: text("business_address"), // For wholesalers
+  phoneNumber: varchar("phone_number"),
+  isApproved: boolean("is_approved").default(true), // For wholesaler approval
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -164,6 +168,41 @@ export const chatConversations = pgTable("chat_conversations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Wholesaler designs table
+export const wholesalerDesigns = pgTable("wholesaler_designs", {
+  id: serial("id").primaryKey(),
+  wholesalerId: varchar("wholesaler_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  imageUrl: varchar("image_url").notNull(),
+  additionalImages: jsonb("additional_images").$type<string[]>().default([]),
+  category: varchar("category"),
+  materials: text("materials"),
+  estimatedPrice: decimal("estimated_price", { precision: 10, scale: 2 }),
+  specifications: jsonb("specifications").$type<{
+    dimensions?: string;
+    weight?: string;
+    metalType?: string;
+    gemstones?: string;
+    craftsmanship?: string;
+  }>(),
+  status: varchar("status", { enum: ["pending", "approved", "rejected"] }).notNull().default("pending"),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Wishlist table for customers
+export const wishlists = pgTable("wishlists", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  productId: integer("product_id").references(() => products.id),
+  designId: integer("design_id").references(() => wholesalerDesigns.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, {
@@ -208,6 +247,40 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   }),
 }));
 
+export const usersRelations = relations(users, ({ many }) => ({
+  wholesalerDesigns: many(wholesalerDesigns),
+  wishlists: many(wishlists),
+  cartItems: many(cartItems),
+  orders: many(orders),
+}));
+
+export const wholesalerDesignsRelations = relations(wholesalerDesigns, ({ one, many }) => ({
+  wholesaler: one(users, {
+    fields: [wholesalerDesigns.wholesalerId],
+    references: [users.id],
+  }),
+  approver: one(users, {
+    fields: [wholesalerDesigns.approvedBy],
+    references: [users.id],
+  }),
+  wishlists: many(wishlists),
+}));
+
+export const wishlistsRelations = relations(wishlists, ({ one }) => ({
+  user: one(users, {
+    fields: [wishlists.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [wishlists.productId],
+    references: [products.id],
+  }),
+  design: one(wholesalerDesigns, {
+    fields: [wishlists.designId],
+    references: [wholesalerDesigns.id],
+  }),
+}));
+
 // Insert schemas
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
@@ -248,6 +321,18 @@ export const insertChatConversationSchema = createInsertSchema(chatConversations
   updatedAt: true,
 });
 
+export const insertWholesalerDesignSchema = createInsertSchema(wholesalerDesigns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  approvedAt: true,
+});
+
+export const insertWishlistSchema = createInsertSchema(wishlists).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -265,3 +350,7 @@ export type UserMemory = typeof userMemories.$inferSelect;
 export type InsertUserMemory = z.infer<typeof insertUserMemorySchema>;
 export type ChatConversation = typeof chatConversations.$inferSelect;
 export type InsertChatConversation = z.infer<typeof insertChatConversationSchema>;
+export type WholesalerDesign = typeof wholesalerDesigns.$inferSelect;
+export type InsertWholesalerDesign = z.infer<typeof insertWholesalerDesignSchema>;
+export type Wishlist = typeof wishlists.$inferSelect;
+export type InsertWishlist = z.infer<typeof insertWishlistSchema>;
