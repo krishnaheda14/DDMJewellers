@@ -182,11 +182,16 @@ export default function ProductDetail() {
                 <div className="flex items-center gap-4 mb-4">
                   <div className="flex items-center gap-2">
                     <span className="text-3xl font-bold text-gold">
-                      ₹{parseFloat(product.price).toLocaleString('en-IN')}
+                      ₹{(parseFloat(product.price) + additionalPrice).toLocaleString('en-IN')}
                     </span>
                     {hasDiscount && (
                       <span className="text-lg text-warm-gray line-through">
                         ₹{parseFloat(product.originalPrice!).toLocaleString('en-IN')}
+                      </span>
+                    )}
+                    {additionalPrice > 0 && (
+                      <span className="text-sm text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                        +₹{additionalPrice} customization
                       </span>
                     )}
                   </div>
@@ -245,6 +250,19 @@ export default function ProductDetail() {
                   </div>
                 </div>
               </div>
+
+              <Separator />
+
+              {/* Customization Options */}
+              {product.customizable && (
+                <JewelryCustomizer
+                  product={product}
+                  onCustomizationChange={(customizations, additionalPrice) => {
+                    setCustomizations(customizations);
+                    setAdditionalPrice(additionalPrice);
+                  }}
+                />
+              )}
 
               <Separator />
 
