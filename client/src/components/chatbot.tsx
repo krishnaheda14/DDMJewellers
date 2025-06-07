@@ -41,7 +41,8 @@ export default function Chatbot() {
   // Chat mutation with AI
   const chatMutation = useMutation({
     mutationFn: async ({ message, userProfile }: { message: string; userProfile?: UserProfile }) => {
-      return await apiRequest('/api/chatbot/chat', 'POST', { message, userProfile });
+      const response = await apiRequest('/api/chatbot/chat', 'POST', { message, userProfile });
+      return response;
     },
   });
 
@@ -164,55 +165,127 @@ export default function Chatbot() {
     return recommendations;
   };
 
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+  // Voice recording functions
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const chunks: BlobPart[] = [];
 
-    addUserMessage(inputValue);
-    const userInput = inputValue.trim();
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        speechToTextMutation.mutate(audioBlob, {
+          onSuccess: (data) => {
+            if (data.text.trim()) {
+              setInputValue(data.text);
+              handleSendMessage(data.text);
+            }
+          },
+        });
+      };
+
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+      recorder.start();
+    } catch (error) {
+      console.error('Error starting recording:', error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+      setMediaRecorder(null);
+    }
+  };
+
+  // Text-to-speech function
+  const speakMessage = async (text: string) => {
+    if (!audioEnabled) return;
+    
+    try {
+      const response = await fetch('/api/chatbot/text-to-speech', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      
+      if (response.ok) {
+        const audioBuffer = await response.arrayBuffer();
+        const audioContext = new AudioContext();
+        const decodedData = await audioContext.decodeAudioData(audioBuffer);
+        const source = audioContext.createBufferSource();
+        source.buffer = decodedData;
+        source.connect(audioContext.destination);
+        source.start();
+      }
+    } catch (error) {
+      console.error('Error playing audio:', error);
+    }
+  };
+
+  const handleSendMessage = async (messageText?: string) => {
+    const userInput = messageText || inputValue.trim();
+    if (!userInput) return;
+
+    addUserMessage(userInput);
     setInputValue("");
 
-    setTimeout(() => {
+    if (!isAuthenticated) {
+      setTimeout(() => {
+        addBotMessage("To provide personalized recommendations and save our conversation, please log in first, ji.");
+      }, 500);
+      return;
+    }
+
+    // Use AI for all conversations after initial setup
+    if (conversationStage === 'ai' || conversationStage === 'recommendations') {
+      chatMutation.mutate({ message: userInput, userProfile }, {
+        onSuccess: (response: any) => {
+          addBotMessage(response.response);
+          if (audioEnabled) {
+            speakMessage(response.response);
+          }
+        },
+      });
+      return;
+    }
+
+    // Handle initial conversation stages
+    setTimeout(async () => {
       switch (conversationStage) {
         case 'age':
-          setUserProfile(prev => ({ ...prev, age: userInput }));
+          const newProfile = { ...userProfile, age: userInput };
+          setUserProfile(newProfile);
           addBotMessage("Thank you! Now, can you describe your day-to-day life? Tell me about your work, social activities, or any special occasions you attend regularly, ji.");
           setConversationStage('lifestyle');
           break;
 
         case 'lifestyle':
-          setUserProfile(prev => ({ ...prev, lifestyle: userInput }));
-          const recommendations = getJewelryRecommendations(userProfile.age || "", userInput);
-          addBotMessage(recommendations);
-          setConversationStage('recommendations');
-          setTimeout(() => {
-            addBotMessage("Would you like more specific advice about any particular type of jewelry, or do you have questions about our collection? I'm here to help, baisaheb!");
-          }, 2000);
-          break;
-
-        case 'recommendations':
-          // Handle follow-up questions
-          const input = userInput.toLowerCase();
-          let response = "";
-
-          if (input.includes('ring')) {
-            response = "Ah, rings! For daily wear, choose comfortable widths. Traditional women love gold bands, while modern tastes prefer silver or rose gold. For special occasions, consider our gemstone rings - they add beautiful color to any outfit, ji!";
-          } else if (input.includes('necklace') || input.includes('chain')) {
-            response = "Necklaces are so versatile, beta! A 16-18 inch chain sits beautifully at the collarbone. For layering, try different lengths. Gold chains are timeless, silver is trendy. Remember - thicker chains make a statement, delicate ones are for everyday elegance.";
-          } else if (input.includes('earring')) {
-            response = "Earrings frame your face so beautifully! For daily wear, studs or small hoops are perfect. For special occasions, try our jhumkas or chandbali designs. If you have multiple piercings, consider mixing sizes - small studs with one statement piece works wonderfully!";
-          } else if (input.includes('bracelet') || input.includes('bangle')) {
-            response = "Bracelets and bangles add such grace to your hands! Traditional gold bangles are always stunning. For modern looks, try tennis bracelets or charm bracelets. Stack them for a trendy look, but keep it comfortable for daily activities, baisaheb!";
-          } else if (input.includes('price') || input.includes('budget') || input.includes('cost')) {
-            response = "I understand budget is important, ji! Start with silver-plated pieces for everyday wear - they're affordable and beautiful. Invest in one good gold piece gradually. Remember, good jewelry lasts generations, so consider it an investment in your elegance!";
-          } else if (input.includes('gift') || input.includes('someone else')) {
-            response = "Gifting jewelry is so thoughtful! For someone special, earrings are always safe - everyone can wear them. For closer relationships, consider a pendant with meaning. Traditional families appreciate gold, modern tastes lean toward silver. When in doubt, a classic design never fails, beta!";
-          } else if (input.includes('care') || input.includes('maintenance') || input.includes('clean')) {
-            response = "Taking care of jewelry is so important! Clean silver with a soft cloth regularly. Store pieces separately to avoid scratches. For gold, warm soapy water works well. Remove jewelry before swimming or exercising. With proper care, your beautiful pieces will last lifetimes, ji!";
-          } else {
-            response = "That's a wonderful question! Based on what you've told me about your lifestyle, I'd say focus on pieces that make you feel confident and comfortable. Remember, the best jewelry is what makes YOU smile when you wear it. Would you like to explore our collection that matches your style, beta?";
-          }
-
-          addBotMessage(response);
+          const updatedProfile = { ...userProfile, lifestyle: userInput };
+          setUserProfile(updatedProfile);
+          
+          // Save user memory
+          await saveMemoryMutation.mutateAsync(updatedProfile);
+          
+          // Switch to AI mode
+          setConversationStage('ai');
+          
+          // Get AI response
+          chatMutation.mutate({ 
+            message: `Based on my age (${updatedProfile.age}) and lifestyle (${updatedProfile.lifestyle}), what jewelry would you recommend?`,
+            userProfile: updatedProfile 
+          }, {
+            onSuccess: (response: any) => {
+              addBotMessage(response.response);
+              if (audioEnabled) {
+                speakMessage(response.response);
+              }
+            },
+          });
           break;
       }
     }, 1000);
@@ -293,23 +366,54 @@ export default function Chatbot() {
 
           {/* Input */}
           <div className="p-4 border-t">
+            <div className="flex gap-2 mb-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAudioEnabled(!audioEnabled)}
+                className={`${audioEnabled ? 'text-gold' : 'text-gray-400'}`}
+                title={audioEnabled ? 'Audio enabled' : 'Audio disabled'}
+              >
+                {audioEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
+              {isAuthenticated && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={isRecording ? stopRecording : startRecording}
+                  disabled={speechToTextMutation.isPending}
+                  className={`${isRecording ? 'text-red-500 animate-pulse' : 'text-gray-600'}`}
+                  title={isRecording ? 'Stop recording' : 'Start voice message'}
+                >
+                  {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+              )}
+            </div>
             <div className="flex gap-2">
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
+                placeholder={isRecording ? "Recording..." : "Type your message or click mic to speak..."}
                 className="flex-1"
+                disabled={isRecording}
               />
               <Button
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim()}
+                onClick={() => handleSendMessage()}
+                disabled={!inputValue.trim() || chatMutation.isPending || isRecording}
                 size="sm"
                 className="bg-gold hover:bg-gold/90"
               >
-                <Send className="h-4 w-4" />
+                {chatMutation.isPending ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </div>
+            {speechToTextMutation.isPending && (
+              <div className="text-xs text-gray-500 mt-1">Processing voice...</div>
+            )}
           </div>
         </CardContent>
       </Card>
