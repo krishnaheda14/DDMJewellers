@@ -150,7 +150,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCategory(id: number): Promise<boolean> {
     const result = await db.delete(categories).where(eq(categories.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Product operations
@@ -216,7 +216,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProduct(id: number): Promise<boolean> {
     const result = await db.delete(products).where(eq(products.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Cart operations
@@ -227,12 +227,13 @@ export class DatabaseStorage implements IStorage {
         userId: cartItems.userId,
         productId: cartItems.productId,
         quantity: cartItems.quantity,
+        customizations: cartItems.customizations,
         createdAt: cartItems.createdAt,
         product: products,
       })
       .from(cartItems)
       .innerJoin(products, eq(cartItems.productId, products.id))
-      .where(eq(cartItems.userId, userId));
+      .where(eq(cartItems.userId, userId)) as any;
   }
 
   async addToCart(item: InsertCartItem): Promise<CartItem> {
@@ -246,7 +247,7 @@ export class DatabaseStorage implements IStorage {
       // Update quantity
       const [updatedItem] = await db
         .update(cartItems)
-        .set({ quantity: existingItem.quantity + item.quantity })
+        .set({ quantity: existingItem.quantity + (item.quantity || 1) })
         .where(eq(cartItems.id, existingItem.id))
         .returning();
       return updatedItem;

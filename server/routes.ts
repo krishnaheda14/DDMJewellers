@@ -11,11 +11,14 @@ import {
   insertCartItemSchema,
   insertOrderSchema,
   insertOrderItemSchema,
+  insertUserMemorySchema,
+  insertChatConversationSchema,
+  insertWholesalerDesignSchema,
+  insertWishlistSchema,
 } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create uploads directory if it doesn't exist
