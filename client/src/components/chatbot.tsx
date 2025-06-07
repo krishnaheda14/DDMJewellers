@@ -93,7 +93,7 @@ export default function Chatbot() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to transcribe audio');
+        throw new Error('Speech recognition failed');
       }
       
       return response.json();
@@ -107,14 +107,12 @@ export default function Chatbot() {
     },
   });
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  // Auto-scroll to bottom
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Initialize conversation
   useEffect(() => {
     if (isOpen && messages.length === 0 && isAuthenticated) {
       // Load user memory and personalize greeting
@@ -154,111 +152,51 @@ export default function Chatbot() {
     setMessages(prev => [...prev, message]);
   };
 
-  const getJewelryRecommendations = (age: string, lifestyle: string): string => {
-    const ageNum = parseInt(age);
-    const lifestyleLower = lifestyle.toLowerCase();
-
-    let recommendations = "";
-
-    // Base recommendations by age
-    if (ageNum <= 25) {
-      recommendations += "For your age, I'd suggest starting with versatile pieces that can transition from day to night. ";
-    } else if (ageNum <= 40) {
-      recommendations += "At your stage in life, investing in quality statement pieces alongside everyday essentials works beautifully. ";
-    } else {
-      recommendations += "With your experience and elegance, you can carry both traditional and contemporary pieces with grace. ";
+  const speakMessage = (text: string) => {
+    if ('speechSynthesis' in window && audioEnabled) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-IN';
+      utterance.rate = 0.9;
+      speechSynthesis.speak(utterance);
     }
-
-    // Lifestyle-specific recommendations
-    if (lifestyleLower.includes('office') || lifestyleLower.includes('work') || lifestyleLower.includes('professional')) {
-      recommendations += "\n\nFor office wear, ji:\n• Lightweight silver or gold studs - they won't distract but add sophistication\n• A delicate chain with a small pendant\n• A simple bracelet or watch\n• Avoid heavy earrings that might be uncomfortable during long work hours";
-    }
-
-    if (lifestyleLower.includes('traditional') || lifestyleLower.includes('festival') || lifestyleLower.includes('wedding')) {
-      recommendations += "\n\nFor traditional occasions, baisaheb:\n• A beautiful gold-plated choker with matching bangles\n• Jhumkas or chandbali earrings for that ethnic touch\n• A statement necklace for special celebrations\n• Don't forget a nose ring if it suits your style!";
-    }
-
-    if (lifestyleLower.includes('travel') || lifestyleLower.includes('frequent')) {
-      recommendations += "\n\nFor your travels, beta:\n• Minimal and durable pieces that won't get damaged\n• Silver jewelry - easier to maintain than gold\n• Avoid precious stones for everyday travel\n• Consider a versatile pendant that works with any outfit";
-    }
-
-    if (lifestyleLower.includes('party') || lifestyleLower.includes('social') || lifestyleLower.includes('events')) {
-      recommendations += "\n\nFor parties and social events:\n• Statement earrings that catch the light beautifully\n• A bold necklace or layered chains\n• Cocktail rings for that glamorous touch\n• Remember - let one piece be the star, don't overdo it!";
-    }
-
-    if (lifestyleLower.includes('casual') || lifestyleLower.includes('everyday')) {
-      recommendations += "\n\nFor everyday casual wear:\n• Simple hoops or studs that you can forget you're wearing\n• A delicate chain you never need to remove\n• A watch that doubles as jewelry\n• Small rings that won't get in the way of daily tasks";
-    }
-
-    if (lifestyleLower.includes('sport') || lifestyleLower.includes('gym') || lifestyleLower.includes('active')) {
-      recommendations += "\n\nFor your active lifestyle:\n• Silicone or fabric-based jewelry that won't break\n• Avoid long chains or dangly earrings\n• Consider a sports watch as your main accessory\n• Save the beautiful pieces for after your workout!";
-    }
-
-    // General closing advice
-    recommendations += "\n\nRemember beta, good jewelry should make YOU shine, not overshadow your natural beauty. Start with basics and build your collection slowly. Quality over quantity, always! 💫";
-
-    return recommendations;
   };
 
-  // Voice recording functions
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const recorder = new MediaRecorder(stream);
       const chunks: BlobPart[] = [];
 
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-        speechToTextMutation.mutate(audioBlob, {
-          onSuccess: (data) => {
-            if (data.text.trim()) {
-              setInputValue(data.text);
-              handleSendMessage(data.text);
-            }
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        speechToTextMutation.mutate(blob, {
+          onSuccess: (response) => {
+            const transcribedText = response.text;
+            setInputValue(transcribedText);
+            addUserMessage(transcribedText);
+            handleSendMessage(transcribedText);
           },
+          onError: () => {
+            addBotMessage("I couldn't understand that, beta. Please try speaking again or type your message.");
+          }
         });
+        stream.getTracks().forEach(track => track.stop());
       };
 
       setMediaRecorder(recorder);
-      setIsRecording(true);
       recorder.start();
+      setIsRecording(true);
     } catch (error) {
-      console.error('Error starting recording:', error);
+      addBotMessage("I cannot access your microphone, beta. Please check permissions and try again.");
     }
   };
 
   const stopRecording = () => {
     if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
-      mediaRecorder.stream.getTracks().forEach(track => track.stop());
       setIsRecording(false);
       setMediaRecorder(null);
-    }
-  };
-
-  // Text-to-speech function
-  const speakMessage = async (text: string) => {
-    if (!audioEnabled) return;
-    
-    try {
-      const response = await fetch('/api/chatbot/text-to-speech', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-      });
-      
-      if (response.ok) {
-        const audioBuffer = await response.arrayBuffer();
-        const audioContext = new AudioContext();
-        const decodedData = await audioContext.decodeAudioData(audioBuffer);
-        const source = audioContext.createBufferSource();
-        source.buffer = decodedData;
-        source.connect(audioContext.destination);
-        source.start();
-      }
-    } catch (error) {
-      console.error('Error playing audio:', error);
     }
   };
 
@@ -266,36 +204,18 @@ export default function Chatbot() {
     const userInput = messageText || inputValue.trim();
     if (!userInput) return;
 
-    addUserMessage(userInput);
-    setInputValue("");
-
-    if (!isAuthenticated) {
-      setTimeout(() => {
-        addBotMessage("To provide personalized recommendations and save our conversation, please log in first, ji.");
-      }, 500);
-      return;
+    if (!messageText) {
+      addUserMessage(userInput);
+      setInputValue("");
     }
 
-    // Use AI for all conversations after initial setup
-    if (conversationStage === 'ai' || conversationStage === 'recommendations') {
-      chatMutation.mutate({ message: userInput, userProfile }, {
-        onSuccess: (response: any) => {
-          addBotMessage(response.response);
-          if (audioEnabled) {
-            speakMessage(response.response);
-          }
-        },
-      });
-      return;
-    }
-
-    // Handle initial conversation stages
+    // Handle conversation flow
     setTimeout(async () => {
       switch (conversationStage) {
         case 'age':
-          const newProfile = { ...userProfile, age: userInput };
-          setUserProfile(newProfile);
-          addBotMessage("Thank you! Now, can you describe your day-to-day life? Tell me about your work, social activities, or any special occasions you attend regularly, ji.");
+          const ageProfile = { ...userProfile, age: userInput };
+          setUserProfile(ageProfile);
+          addBotMessage("Thank you, beta! What's your lifestyle like? Are you more traditional, modern, or a mix of both?");
           setConversationStage('lifestyle');
           break;
 
@@ -320,6 +240,21 @@ export default function Chatbot() {
                 speakMessage(response.response);
               }
             },
+          });
+          break;
+
+        default:
+          // AI conversation mode
+          chatMutation.mutate({ message: userInput, userProfile }, {
+            onSuccess: (response: any) => {
+              addBotMessage(response.response);
+              if (audioEnabled) {
+                speakMessage(response.response);
+              }
+            },
+            onError: () => {
+              addBotMessage("I'm having trouble understanding right now, beta. Please try again in a moment.");
+            }
           });
           break;
       }
@@ -446,7 +381,6 @@ export default function Chatbot() {
         
         if (products && products.length > 0) {
           addBotMessage("I've found some beautiful pieces from our collection that would be perfect for this occasion. Let me show you:");
-          // Display product recommendations
         }
         
         if (audioEnabled) {
@@ -671,7 +605,7 @@ export default function Chatbot() {
                 className="flex-1"
               />
               <Button
-                onClick={handleSendMessage}
+                onClick={() => handleSendMessage()}
                 disabled={!isAuthenticated || !inputValue.trim() || chatMutation.isPending}
                 className="bg-gold hover:bg-gold/90 text-white"
               >
@@ -693,36 +627,6 @@ export default function Chatbot() {
                   {occasionRecommendationMutation.isPending && "Finding perfect jewelry for your occasion..."}
                 </span>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={isRecording ? "Recording..." : "Type your message or click mic to speak..."}
-                className="flex-1"
-                disabled={isRecording}
-              />
-              <Button
-                onClick={() => handleSendMessage()}
-                disabled={!inputValue.trim() || chatMutation.isPending || isRecording}
-                size="sm"
-                className="bg-gold hover:bg-gold/90"
-              >
-                {chatMutation.isPending ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-            {speechToTextMutation.isPending && (
-              <div className="text-xs text-gray-500 mt-1">Processing voice...</div>
             )}
           </div>
         </CardContent>

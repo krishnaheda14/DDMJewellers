@@ -4,6 +4,7 @@ import express from "express";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
+import Anthropic from '@anthropic-ai/sdk';
 import fs from "fs";
 import {
   insertCategorySchema,
@@ -74,6 +75,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Serve uploaded files statically
   app.use('/uploads', express.static(uploadsDir));
+
+  // Initialize AI clients
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
+  // the newest Anthropic model is "claude-sonnet-4-20250514" which was released after your knowledge cutoff. Use this by default unless user has already selected claude-3-7-sonnet-20250219
+  const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  });
 
   // Auth middleware
   await setupAuth(app);
@@ -697,6 +708,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error in text-to-speech:', error);
       res.status(500).json({ message: 'Failed to generate speech' });
+    }
+  });
+
+  // Face Shape Analysis endpoint
+  app.post('/api/chatbot/analyze-face', isAuthenticated, async (req: any, res) => {
+    try {
+      const { image } = req.body;
+      
+      if (!image) {
+        return res.status(400).json({ message: 'Image data is required' });
+      }
+
+      // Extract base64 data from data URL
+      const base64Data = image.replace(/^data:image\/[a-z]+;base64,/, '');
+
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `You are Sunaarji, a warm Indian jewelry consultant. Analyze this person's face shape and provide personalized jewelry recommendations. Identify their face shape (oval, round, square, heart, diamond, oblong) and suggest specific jewelry pieces that would enhance their features. Be warm and use terms like "beta" and "ji" naturally. Focus on earrings, necklaces, and traditional Indian jewelry that would complement their face shape.`
+            },
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: 'image/jpeg',
+                data: base64Data
+              }
+            }
+          ]
+        }]
+      });
+
+      const analysis = response.content[0].text;
+      
+      // Extract face shape from analysis (simple pattern matching)
+      const faceShapeMatch = analysis.match(/(oval|round|square|heart|diamond|oblong)/i);
+      const faceShape = faceShapeMatch ? faceShapeMatch[1].toLowerCase() : 'oval';
+
+      res.json({
+        faceShape,
+        recommendations: analysis
+      });
+    } catch (error) {
+      console.error('Error in face analysis:', error);
+      res.status(500).json({ message: 'Failed to analyze face shape' });
+    }
+  });
+
+  // Fashion Styling Analysis endpoint
+  app.post('/api/chatbot/analyze-outfit', isAuthenticated, async (req: any, res) => {
+    try {
+      const { image, occasion } = req.body;
+      
+      if (!image) {
+        return res.status(400).json({ message: 'Image data is required' });
+      }
+
+      const base64Data = image.replace(/^data:image\/[a-z]+;base64,/, '');
+      const occasionContext = occasion ? ` for a ${occasion}` : '';
+
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `You are Sunaarji, a fashion-forward Indian jewelry consultant. Analyze this outfit${occasionContext} and suggest jewelry that would perfectly complement it. Consider the outfit's style, colors, neckline, and overall aesthetic. Recommend specific pieces like earrings, necklaces, bangles, or rings that would enhance the look. Be warm and friendly, using "beta" and "ji" naturally while providing expert fashion advice.`
+            },
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: 'image/jpeg',
+                data: base64Data
+              }
+            }
+          ]
+        }]
+      });
+
+      const analysis = response.content[0].text;
+      
+      // Extract style analysis
+      const styleMatch = analysis.match(/(traditional|modern|contemporary|ethnic|western|fusion|elegant|casual|formal)/i);
+      const styleAnalysis = styleMatch ? styleMatch[1].toLowerCase() : 'elegant';
+
+      res.json({
+        styleAnalysis,
+        suggestions: analysis
+      });
+    } catch (error) {
+      console.error('Error in outfit analysis:', error);
+      res.status(500).json({ message: 'Failed to analyze outfit' });
+    }
+  });
+
+  // Occasion-based Recommendations endpoint
+  app.post('/api/chatbot/recommend-occasion', isAuthenticated, async (req: any, res) => {
+    try {
+      const { occasion, style, budget } = req.body;
+      
+      if (!occasion) {
+        return res.status(400).json({ message: 'Occasion is required' });
+      }
+
+      const userId = req.user.claims.sub;
+      const userMemory = await storage.getUserMemory(userId);
+      
+      // Build context from user profile
+      let userContext = '';
+      if (userMemory) {
+        userContext = `The customer is ${userMemory.age} years old with a ${userMemory.lifestyle} lifestyle. `;
+        if (userMemory.faceShape) {
+          userContext += `They have a ${userMemory.faceShape} face shape. `;
+        }
+      }
+
+      const styleContext = style ? ` They prefer ${style} style jewelry.` : '';
+      const budgetContext = budget ? ` Their budget consideration is ${budget}.` : '';
+
+      const prompt = `You are Sunaarji, an expert Indian jewelry consultant. ${userContext}${styleContext}${budgetContext}
+
+The customer is asking for jewelry recommendations for: ${occasion}
+
+Provide comprehensive jewelry suggestions including:
+1. Essential pieces for this occasion
+2. Traditional Indian jewelry options
+3. Modern/contemporary alternatives
+4. Specific styling tips
+5. How to layer or combine pieces
+
+Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pieces that would be culturally appropriate and stunning for this occasion.`;
+
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
+
+      const recommendations = response.content[0].text;
+
+      // Get relevant products from our catalog
+      const products = await storage.getProducts({ limit: 6, featured: true });
+
+      res.json({
+        recommendations,
+        products: products.slice(0, 3) // Return top 3 featured products
+      });
+    } catch (error) {
+      console.error('Error in occasion recommendations:', error);
+      res.status(500).json({ message: 'Failed to generate recommendations' });
     }
   });
 
