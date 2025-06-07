@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageCircle, X, Send, Sparkles, Mic, MicOff, Volume2, VolumeX, Camera, Upload, Shirt, Calendar } from "lucide-react";
+import { X, Send, Sparkles, Mic, MicOff, Volume2, VolumeX, Camera, Upload, Shirt, Calendar } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -22,6 +22,40 @@ interface UserProfile {
   style?: string;
   occasions?: string[];
 }
+
+// Custom Rajasthani Man Icon Component
+const RajasthaniManIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
+  <svg viewBox="0 0 64 64" className={className} fill="currentColor">
+    {/* Turban */}
+    <path d="M32 4c-12 0-18 8-18 16 0 4 2 8 6 10l2-2c2-2 4-2 6-2s4 0 6 2l2 2c4-2 6-6 6-10 0-8-6-16-10-16z" fill="#FF6B35"/>
+    <path d="M26 12c0-2 2-4 6-4s6 2 6 4-2 4-6 4-6-2-6-4z" fill="#FFD700"/>
+    
+    {/* Face */}
+    <circle cx="32" cy="28" r="8" fill="#D4A574"/>
+    
+    {/* Eyes */}
+    <circle cx="29" cy="26" r="1.5" fill="#000"/>
+    <circle cx="35" cy="26" r="1.5" fill="#000"/>
+    
+    {/* Mustache */}
+    <path d="M28 30c2 0 4 1 4 2s-2 2-4 2-4-1-4-2 2-2 4-2z M36 30c2 0 4 1 4 2s-2 2-4 2-4-1-4-2 2-2 4-2z" fill="#8B4513"/>
+    
+    {/* Traditional shirt */}
+    <path d="M20 36c0-4 4-8 12-8s12 4 12 8v20c0 4-4 8-12 8s-12-4-12-8V36z" fill="#FF4444"/>
+    
+    {/* Jewelry/Necklace */}
+    <circle cx="32" cy="42" r="3" fill="none" stroke="#FFD700" strokeWidth="2"/>
+    <circle cx="32" cy="42" r="1" fill="#FFD700"/>
+    
+    {/* Arms */}
+    <path d="M20 40c-4 0-8 2-8 6v8c0 2 2 4 4 4s4-2 4-4v-8c0-2 0-4 0-6z" fill="#D4A574"/>
+    <path d="M44 40c4 0 8 2 8 6v8c0 2-2 4-4 4s-4-2-4-4v-8c0-2 0-4 0-6z" fill="#D4A574"/>
+    
+    {/* Traditional decorative elements */}
+    <circle cx="26" cy="45" r="1" fill="#FFD700"/>
+    <circle cx="38" cy="45" r="1" fill="#FFD700"/>
+  </svg>
+);
 
 export default function Chatbot() {
   const { isAuthenticated, user } = useAuth();
@@ -400,7 +434,7 @@ export default function Chatbot() {
           onClick={() => setIsOpen(true)}
           className="h-14 w-14 rounded-full bg-gold hover:bg-gold/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse"
         >
-          <MessageCircle className="h-6 w-6" />
+          <RajasthaniManIcon className="h-8 w-8" />
         </Button>
         <div className="absolute -top-12 right-0 bg-black text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap">
           Chat with Sunaarji! 💍
