@@ -234,7 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/products/:id', isAuthenticated, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
-      if (!user?.isAdmin) {
+      if (!user?.role === "admin") {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -319,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      const orders = await storage.getOrders(user?.isAdmin ? undefined : userId);
+      const orders = await storage.getOrders(user?.role === "admin" ? undefined : userId);
       res.json(orders);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch orders" });
@@ -336,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!user?.isAdmin && order.userId !== userId) {
+      if (!user?.role === "admin" && order.userId !== userId) {
         return res.status(403).json({ message: "Access denied" });
       }
       
@@ -399,7 +399,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/orders/:id/status', isAuthenticated, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
-      if (!user?.isAdmin) {
+      if (!user?.role === "admin") {
         return res.status(403).json({ message: "Admin access required" });
       }
       
