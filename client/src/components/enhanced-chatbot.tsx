@@ -376,10 +376,10 @@ export default function EnhancedChatbot() {
       <div className="fixed bottom-4 right-4 z-50">
         <Button
           onClick={() => setIsOpen(true)}
-          className="rounded-full w-14 h-14 bg-gold hover:bg-gold/90 shadow-lg"
+          className="rounded-full w-16 h-16 bg-gold hover:bg-gold/90 shadow-lg"
           size="lg"
         >
-          <RajasthaniManIcon className="h-8 w-8" />
+          <RajasthaniManIcon className="h-10 w-10" />
         </Button>
       </div>
     );
@@ -391,7 +391,7 @@ export default function EnhancedChatbot() {
         <CardHeader className="pb-2 bg-gradient-to-r from-gold/10 to-navy/10">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-bold text-navy flex items-center gap-2">
-              <RajasthaniManIcon className="h-5 w-5 text-gold" />
+              <RajasthaniManIcon className="h-7 w-7 text-gold" />
               Sunaarji - Jewelry Consultant
             </CardTitle>
             <Button
