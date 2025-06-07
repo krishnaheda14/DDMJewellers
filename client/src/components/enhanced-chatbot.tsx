@@ -147,7 +147,7 @@ export default function EnhancedChatbot() {
   // Initialize chatbot when opened
   useEffect(() => {
     if (isOpen && messages.length === 0 && isAuthenticated) {
-      if (userMemory && userMemory.age) {
+      if (userMemory?.age) {
         const greeting = `Namaste ji! Welcome back. I remember you're ${userMemory.age} years old. How can I help you with jewelry today?`;
         addBotMessage(greeting);
         setConversationStage('ai');
