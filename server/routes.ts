@@ -3,6 +3,8 @@ import { createServer, type Server } from "http";
 import express from "express";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import OpenAI from "openai";
+import fs from "fs";
 import {
   insertCategorySchema,
   insertProductSchema,
@@ -467,6 +469,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Try-on upload error:", error);
       res.status(500).json({ message: "Failed to process photo" });
+    }
+  });
+
+  // Chatbot memory routes
+  app.get('/api/chatbot/memory', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const memory = await storage.getUserMemory(userId);
+      res.json(memory || null);
+    } catch (error) {
+      console.error('Error fetching user memory:', error);
+      res.status(500).json({ message: 'Failed to fetch user memory' });
+    }
+  });
+
+  app.post('/api/chatbot/memory', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const memoryData = req.body;
+      const memory = await storage.upsertUserMemory(userId, memoryData);
+      res.json(memory);
+    } catch (error) {
+      console.error('Error saving user memory:', error);
+      res.status(500).json({ message: 'Failed to save user memory' });
+    }
+  });
+
+  app.post('/api/chatbot/conversation', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { sessionId, messages } = req.body;
+      const conversation = await storage.saveChatConversation(userId, sessionId, messages);
+      res.json(conversation);
+    } catch (error) {
+      console.error('Error saving conversation:', error);
+      res.status(500).json({ message: 'Failed to save conversation' });
+    }
+  });
+
+  // AI-powered chat endpoint
+  app.post('/api/chatbot/chat', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { message, userProfile } = req.body;
+      
+      // Get user memory
+      const memory = await storage.getUserMemory(userId);
+      
+      // Create OpenAI client
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      
+      // Build context from memory
+      let context = "You are Sunaarji, a warm and friendly Indian jewelry consultant at DDM_Jewellers. ";
+      context += "You use occasional Indian phrases like 'ji', 'beta', 'baisaheb' but remain professional. ";
+      context += "Give tasteful, practical jewelry advice - not pushy or salesy. ";
+      
+      if (memory) {
+        if (memory.age) context += `The customer is ${memory.age} years old. `;
+        if (memory.lifestyle) context += `Their lifestyle: ${memory.lifestyle}. `;
+        if (memory.preferences?.favoriteMetals?.length) {
+          context += `They prefer ${memory.preferences.favoriteMetals.join(', ')} metals. `;
+        }
+        if (memory.preferences?.budgetRange) {
+          context += `Their budget range: ${memory.preferences.budgetRange}. `;
+        }
+      }
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          { role: "system", content: context },
+          { role: "user", content: message }
+        ],
+        max_tokens: 300,
+        temperature: 0.7
+      });
+      
+      const aiResponse = response.choices[0].message.content;
+      
+      // Update memory if new information is provided
+      if (userProfile) {
+        const updatedMemory = {
+          ...memory,
+          age: userProfile.age || memory?.age,
+          lifestyle: userProfile.lifestyle || memory?.lifestyle,
+          preferences: {
+            ...memory?.preferences,
+            ...userProfile.preferences
+          }
+        };
+        await storage.upsertUserMemory(userId, updatedMemory);
+      }
+      
+      res.json({ response: aiResponse });
+    } catch (error) {
+      console.error('Error in AI chat:', error);
+      res.status(500).json({ message: 'Failed to process chat request' });
+    }
+  });
+
+  // Speech-to-text endpoint
+  app.post('/api/chatbot/speech-to-text', isAuthenticated, upload.single('audio'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No audio file uploaded' });
+      }
+
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      
+      const transcription = await openai.audio.transcriptions.create({
+        file: fs.createReadStream(req.file.path),
+        model: "whisper-1",
+      });
+
+      // Clean up the uploaded file
+      fs.unlinkSync(req.file.path);
+
+      res.json({ text: transcription.text });
+    } catch (error) {
+      console.error('Error in speech-to-text:', error);
+      res.status(500).json({ message: 'Failed to transcribe audio' });
+    }
+  });
+
+  // Text-to-speech endpoint
+  app.post('/api/chatbot/text-to-speech', isAuthenticated, async (req: any, res) => {
+    try {
+      const { text } = req.body;
+      
+      if (!text) {
+        return res.status(400).json({ message: 'Text is required' });
+      }
+
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      
+      const mp3 = await openai.audio.speech.create({
+        model: "tts-1",
+        voice: "nova", // Female voice that sounds warm and friendly
+        input: text,
+      });
+
+      const buffer = Buffer.from(await mp3.arrayBuffer());
+      
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': buffer.length.toString(),
+      });
+      
+      res.send(buffer);
+    } catch (error) {
+      console.error('Error in text-to-speech:', error);
+      res.status(500).json({ message: 'Failed to generate speech' });
     }
   });
 

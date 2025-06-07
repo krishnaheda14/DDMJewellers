@@ -300,6 +300,62 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return updatedOrder;
   }
+
+  // Chatbot memory operations
+  async getUserMemory(userId: string): Promise<UserMemory | undefined> {
+    const [memory] = await db
+      .select()
+      .from(userMemories)
+      .where(eq(userMemories.userId, userId));
+    return memory;
+  }
+
+  async upsertUserMemory(userId: string, memory: Partial<InsertUserMemory>): Promise<UserMemory> {
+    const [upsertedMemory] = await db
+      .insert(userMemories)
+      .values({
+        userId,
+        ...memory,
+      })
+      .onConflictDoUpdate({
+        target: userMemories.userId,
+        set: {
+          ...memory,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return upsertedMemory;
+  }
+
+  async saveChatConversation(userId: string, sessionId: string, messages: any[]): Promise<ChatConversation> {
+    const [conversation] = await db
+      .insert(chatConversations)
+      .values({
+        userId,
+        sessionId,
+        messages,
+      })
+      .onConflictDoUpdate({
+        target: [chatConversations.userId, chatConversations.sessionId],
+        set: {
+          messages,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return conversation;
+  }
+
+  async getChatHistory(userId: string, limit: number = 5): Promise<ChatConversation[]> {
+    const history = await db
+      .select()
+      .from(chatConversations)
+      .where(eq(chatConversations.userId, userId))
+      .orderBy(desc(chatConversations.updatedAt))
+      .limit(limit);
+    return history;
+  }
 }
 
 export const storage = new DatabaseStorage();

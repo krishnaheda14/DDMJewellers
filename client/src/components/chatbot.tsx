@@ -2,7 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageCircle, X, Send, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Sparkles, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 interface Message {
   id: string;
@@ -17,12 +20,56 @@ interface UserProfile {
 }
 
 export default function Chatbot() {
+  const { isAuthenticated, user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [userProfile, setUserProfile] = useState<UserProfile>({});
-  const [conversationStage, setConversationStage] = useState<'greeting' | 'age' | 'lifestyle' | 'recommendations'>('greeting');
+  const [conversationStage, setConversationStage] = useState<'greeting' | 'age' | 'lifestyle' | 'ai' | 'recommendations'>('greeting');
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [sessionId] = useState(() => Date.now().toString());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load user memory
+  const { data: userMemory } = useQuery({
+    queryKey: ['/api/chatbot/memory'],
+    enabled: isAuthenticated,
+  });
+
+  // Chat mutation with AI
+  const chatMutation = useMutation({
+    mutationFn: async ({ message, userProfile }: { message: string; userProfile?: UserProfile }) => {
+      return await apiRequest('/api/chatbot/chat', 'POST', { message, userProfile });
+    },
+  });
+
+  // Speech-to-text mutation
+  const speechToTextMutation = useMutation({
+    mutationFn: async (audioBlob: Blob) => {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      
+      const response = await fetch('/api/chatbot/speech-to-text', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to transcribe audio');
+      }
+      
+      return response.json();
+    },
+  });
+
+  // Save memory mutation
+  const saveMemoryMutation = useMutation({
+    mutationFn: async (memory: UserProfile) => {
+      return await apiRequest('/api/chatbot/memory', 'POST', memory);
+    },
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,12 +80,23 @@ export default function Chatbot() {
   }, [messages]);
 
   useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      // Initial greeting
-      addBotMessage("Namaste! I'm Sunaarji, your personal jewelry consultant. May I ask your age, beta?");
-      setConversationStage('age');
+    if (isOpen && messages.length === 0 && isAuthenticated) {
+      // Load user memory and personalize greeting
+      if (userMemory) {
+        const greeting = userMemory.age 
+          ? `Namaste ji! Welcome back. I remember you're ${userMemory.age} years old. How can I help you with jewelry today?`
+          : "Namaste! I'm Sunaarji, your personal jewelry consultant. I remember our previous conversations. How may I assist you today, beta?";
+        addBotMessage(greeting);
+        setConversationStage('ai');
+        setUserProfile({ age: userMemory.age || '', lifestyle: userMemory.lifestyle || '' });
+      } else {
+        addBotMessage("Namaste! I'm Sunaarji, your personal jewelry consultant. May I ask your age, beta?");
+        setConversationStage('age');
+      }
+    } else if (isOpen && messages.length === 0 && !isAuthenticated) {
+      addBotMessage("Namaste! I'm Sunaarji, your personal jewelry consultant. To provide personalized recommendations and remember our conversations, please log in first, ji.");
     }
-  }, [isOpen]);
+  }, [isOpen, isAuthenticated, userMemory]);
 
   const addBotMessage = (content: string) => {
     const message: Message = {
