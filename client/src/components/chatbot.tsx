@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageCircle, X, Send, Sparkles, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { MessageCircle, X, Send, Sparkles, Mic, MicOff, Volume2, VolumeX, Camera, Upload, Shirt, Calendar } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -17,6 +17,10 @@ interface Message {
 interface UserProfile {
   age?: string;
   lifestyle?: string;
+  faceShape?: string;
+  skinTone?: string;
+  style?: string;
+  occasions?: string[];
 }
 
 export default function Chatbot() {
@@ -25,7 +29,14 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [userProfile, setUserProfile] = useState<UserProfile>({});
-  const [conversationStage, setConversationStage] = useState<'greeting' | 'age' | 'lifestyle' | 'ai' | 'recommendations'>('greeting');
+  const [conversationStage, setConversationStage] = useState<'greeting' | 'age' | 'lifestyle' | 'ai' | 'recommendations' | 'face_analysis' | 'style_consultation' | 'occasion_selection'>('greeting');
+  const [analysisMode, setAnalysisMode] = useState<'face' | 'outfit' | 'occasion' | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(true);
@@ -42,6 +53,30 @@ export default function Chatbot() {
   const chatMutation = useMutation({
     mutationFn: async ({ message, userProfile }: { message: string; userProfile?: UserProfile }) => {
       const response = await apiRequest('/api/chatbot/chat', 'POST', { message, userProfile });
+      return response;
+    },
+  });
+
+  // Face shape analysis mutation
+  const faceAnalysisMutation = useMutation({
+    mutationFn: async (imageData: string) => {
+      const response = await apiRequest('/api/chatbot/analyze-face', 'POST', { image: imageData });
+      return response;
+    },
+  });
+
+  // Fashion styling mutation
+  const fashionAnalysisMutation = useMutation({
+    mutationFn: async ({ imageData, occasion }: { imageData: string; occasion?: string }) => {
+      const response = await apiRequest('/api/chatbot/analyze-outfit', 'POST', { image: imageData, occasion });
+      return response;
+    },
+  });
+
+  // Occasion-based recommendations mutation
+  const occasionRecommendationMutation = useMutation({
+    mutationFn: async ({ occasion, style, budget }: { occasion: string; style?: string; budget?: string }) => {
+      const response = await apiRequest('/api/chatbot/recommend-occasion', 'POST', { occasion, style, budget });
       return response;
     },
   });
@@ -297,6 +332,133 @@ export default function Chatbot() {
     }
   };
 
+  // Camera functions
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setCameraStream(stream);
+      setShowCamera(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (error) {
+      addBotMessage("I'm sorry beta, I couldn't access your camera. Please ensure camera permissions are enabled and try uploading an image instead.");
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    setShowCamera(false);
+  };
+
+  const captureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(video, 0, 0);
+      const imageData = canvas.toDataURL('image/jpeg');
+      setUploadedImage(imageData);
+      stopCamera();
+      
+      if (analysisMode === 'face') {
+        analyzeFaceShape(imageData);
+      } else if (analysisMode === 'outfit') {
+        analyzeOutfit(imageData);
+      }
+    }
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageData = e.target?.result as string;
+        setUploadedImage(imageData);
+        
+        if (analysisMode === 'face') {
+          analyzeFaceShape(imageData);
+        } else if (analysisMode === 'outfit') {
+          analyzeOutfit(imageData);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const analyzeFaceShape = (imageData: string) => {
+    addBotMessage("Let me analyze your face shape to suggest the perfect jewelry for you, beta...");
+    
+    faceAnalysisMutation.mutate(imageData, {
+      onSuccess: (response: any) => {
+        const faceShape = response.faceShape;
+        const recommendations = response.recommendations;
+        
+        setUserProfile(prev => ({ ...prev, faceShape }));
+        
+        addBotMessage(`Based on your beautiful ${faceShape} face shape, here are my personalized recommendations: ${recommendations}`);
+        
+        if (audioEnabled) {
+          speakMessage(`I can see you have a lovely ${faceShape} face shape. ${recommendations}`);
+        }
+      },
+      onError: () => {
+        addBotMessage("I'm having trouble analyzing the image right now, beta. Please try again or describe your face shape to me.");
+      }
+    });
+  };
+
+  const analyzeOutfit = (imageData: string, occasion?: string) => {
+    addBotMessage("Let me analyze your outfit and suggest jewelry that would complement it perfectly...");
+    
+    fashionAnalysisMutation.mutate({ imageData, occasion }, {
+      onSuccess: (response: any) => {
+        const suggestions = response.suggestions;
+        const styleAnalysis = response.styleAnalysis;
+        
+        addBotMessage(`Looking at your outfit, I can see it has a ${styleAnalysis} style. Here are my jewelry suggestions: ${suggestions}`);
+        
+        if (audioEnabled) {
+          speakMessage(`Your outfit has a lovely ${styleAnalysis} style. ${suggestions}`);
+        }
+      },
+      onError: () => {
+        addBotMessage("I'm having trouble analyzing your outfit right now, beta. Please describe your outfit to me and I'll suggest jewelry accordingly.");
+      }
+    });
+  };
+
+  const getOccasionRecommendations = (occasion: string, style?: string, budget?: string) => {
+    addBotMessage(`Let me suggest the perfect jewelry collection for your ${occasion}...`);
+    
+    occasionRecommendationMutation.mutate({ occasion, style, budget }, {
+      onSuccess: (response: any) => {
+        const recommendations = response.recommendations;
+        const products = response.products;
+        
+        addBotMessage(`For your ${occasion}, I recommend: ${recommendations}`);
+        
+        if (products && products.length > 0) {
+          addBotMessage("I've found some beautiful pieces from our collection that would be perfect for this occasion. Let me show you:");
+          // Display product recommendations
+        }
+        
+        if (audioEnabled) {
+          speakMessage(`For your ${occasion}, ${recommendations}`);
+        }
+      },
+      onError: () => {
+        addBotMessage("Let me suggest some general jewelry options for your occasion based on my expertise.");
+      }
+    });
+  };
+
   if (!isOpen) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
@@ -377,19 +539,167 @@ export default function Chatbot() {
                 {audioEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
               </Button>
               {isAuthenticated && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={isRecording ? stopRecording : startRecording}
-                  disabled={speechToTextMutation.isPending}
-                  className={`${isRecording ? 'text-red-500 animate-pulse' : 'text-gray-600'}`}
-                  title={isRecording ? 'Stop recording' : 'Start voice message'}
-                >
-                  {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={isRecording ? stopRecording : startRecording}
+                    disabled={speechToTextMutation.isPending}
+                    className={`${isRecording ? 'text-red-500 animate-pulse' : 'text-gray-600'}`}
+                    title={isRecording ? 'Stop recording' : 'Start voice message'}
+                  >
+                    {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  </Button>
+                  
+                  {/* Face Analysis Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setAnalysisMode('face');
+                      startCamera();
+                    }}
+                    className="text-purple-600 hover:text-purple-700"
+                    title="Face shape analysis"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                  
+                  {/* Fashion Styling Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setAnalysisMode('outfit');
+                      startCamera();
+                    }}
+                    className="text-pink-600 hover:text-pink-700"
+                    title="Outfit styling analysis"
+                  >
+                    <Shirt className="h-4 w-4" />
+                  </Button>
+                  
+                  {/* Occasion Recommendations Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setAnalysisMode('occasion');
+                      addBotMessage("Tell me about your upcoming occasion, beta! Is it a wedding, festival, office party, or something special?");
+                    }}
+                    className="text-emerald-600 hover:text-emerald-700"
+                    title="Occasion-based recommendations"
+                  >
+                    <Calendar className="h-4 w-4" />
+                  </Button>
+                  
+                  {/* Image Upload Button */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-blue-600 hover:text-blue-700"
+                    title="Upload image for analysis"
+                  >
+                    <Upload className="h-4 w-4" />
+                  </Button>
+                  
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </>
               )}
             </div>
+            
+            {/* Camera View */}
+            {showCamera && (
+              <div className="mb-3 relative">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  className="w-full h-32 object-cover rounded-lg bg-black"
+                />
+                <canvas ref={canvasRef} className="hidden" />
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={captureImage}
+                    className="bg-gold hover:bg-gold/90 text-white"
+                  >
+                    Capture
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={stopCamera}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Uploaded Image Preview */}
+            {uploadedImage && (
+              <div className="mb-3">
+                <img 
+                  src={uploadedImage} 
+                  alt="Uploaded for analysis" 
+                  className="w-full h-32 object-cover rounded-lg"
+                />
+              </div>
+            )}
+            
             <div className="flex gap-2">
+              <Input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={
+                  !isAuthenticated 
+                    ? "Please log in to chat..." 
+                    : isRecording 
+                      ? "Recording..." 
+                      : "Type your message..."
+                }
+                disabled={!isAuthenticated || isRecording || chatMutation.isPending}
+                className="flex-1"
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!isAuthenticated || !inputValue.trim() || chatMutation.isPending}
+                className="bg-gold hover:bg-gold/90 text-white"
+              >
+                {chatMutation.isPending ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            
+            {/* Loading States */}
+            {(faceAnalysisMutation.isPending || fashionAnalysisMutation.isPending || occasionRecommendationMutation.isPending) && (
+              <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gold"></div>
+                <span>
+                  {faceAnalysisMutation.isPending && "Analyzing your beautiful features..."}
+                  {fashionAnalysisMutation.isPending && "Studying your style..."}
+                  {occasionRecommendationMutation.isPending && "Finding perfect jewelry for your occasion..."}
+                </span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
