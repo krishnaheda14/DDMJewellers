@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import express from "express";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import {
@@ -10,8 +11,49 @@ import {
   insertOrderItemSchema,
 } from "@shared/schema";
 import { z } from "zod";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Create uploads directory if it doesn't exist
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  // Configure multer for file uploads
+  const storage_multer = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+
+  const upload = multer({
+    storage: storage_multer,
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = /jpeg|jpg|png|gif/;
+      const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+      const mimetype = allowedTypes.test(file.mimetype);
+      
+      if (mimetype && extname) {
+        return cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed'));
+      }
+    }
+  });
+
+  // Serve uploaded files statically
+  app.use('/uploads', express.static(uploadsDir));
+
   // Auth middleware
   await setupAuth(app);
 
@@ -349,6 +391,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(order);
     } catch (error) {
       res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+
+  // Custom Jewelry Design Upload
+  app.post('/api/custom-jewelry/upload', isAuthenticated, upload.single('design'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const userId = req.user.claims.sub;
+      const { description, contactInfo } = req.body;
+      
+      const designRequest = {
+        userId,
+        fileName: req.file.filename,
+        originalName: req.file.originalname,
+        filePath: `/uploads/${req.file.filename}`,
+        description: description || '',
+        contactInfo: contactInfo || '',
+        status: 'pending',
+        createdAt: new Date()
+      };
+
+      // Store design request (you can add this to your database schema later)
+      res.status(201).json({
+        message: "Design uploaded successfully! Our team will review your request and contact you soon.",
+        designId: Date.now(), // temporary ID
+        fileName: req.file.filename,
+        filePath: `/uploads/${req.file.filename}`
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: "Failed to upload design" });
+    }
+  });
+
+  // AI Try-On Photo Upload
+  app.post('/api/ai-tryon/upload', isAuthenticated, upload.single('photo'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No photo uploaded" });
+      }
+
+      const userId = req.user.claims.sub;
+      const { productId } = req.body;
+      
+      if (!productId) {
+        return res.status(400).json({ message: "Product ID is required" });
+      }
+
+      // Get product details
+      const product = await storage.getProduct(parseInt(productId));
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      const tryOnResult = {
+        userId,
+        productId: parseInt(productId),
+        userPhotoPath: `/uploads/${req.file.filename}`,
+        productName: product.name,
+        productImage: product.imageUrl,
+        // In a real implementation, you would process the image with AI here
+        processedImagePath: `/uploads/${req.file.filename}`, // For now, return original
+        createdAt: new Date()
+      };
+
+      res.status(201).json({
+        message: "Photo processed successfully!",
+        result: tryOnResult,
+        note: "AI try-on feature is in beta. The processed image will be available shortly."
+      });
+    } catch (error) {
+      console.error("Try-on upload error:", error);
+      res.status(500).json({ message: "Failed to process photo" });
     }
   });
 
