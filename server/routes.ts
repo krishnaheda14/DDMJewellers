@@ -53,6 +53,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Audio upload configuration for chatbot voice messages
+  const audioUpload = multer({
+    storage: storage_multer,
+    limits: {
+      fileSize: 25 * 1024 * 1024, // 25MB limit for audio
+    },
+    fileFilter: (req, file, cb) => {
+      // Accept audio files and webm format for voice messages
+      if (file.mimetype.startsWith('audio/') || file.mimetype === 'video/webm') {
+        return cb(null, true);
+      } else {
+        cb(new Error('Only audio files are allowed'));
+      }
+    }
+  });
+
   // Serve uploaded files statically
   app.use('/uploads', express.static(uploadsDir));
 
@@ -570,7 +586,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Speech-to-text endpoint
-  app.post('/api/chatbot/speech-to-text', isAuthenticated, upload.single('audio'), async (req: any, res) => {
+  app.post('/api/chatbot/speech-to-text', isAuthenticated, audioUpload.single('audio'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: 'No audio file uploaded' });
