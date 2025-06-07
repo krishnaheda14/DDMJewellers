@@ -5,6 +5,8 @@ import {
   cartItems,
   orders,
   orderItems,
+  userMemories,
+  chatConversations,
   type User,
   type UpsertUser,
   type Category,
@@ -17,6 +19,10 @@ import {
   type InsertOrder,
   type OrderItem,
   type InsertOrderItem,
+  type UserMemory,
+  type InsertUserMemory,
+  type ChatConversation,
+  type InsertChatConversation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, like, or } from "drizzle-orm";
@@ -58,6 +64,12 @@ export interface IStorage {
   getOrder(id: number): Promise<(Order & { orderItems: (OrderItem & { product: Product })[] }) | undefined>;
   createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order>;
   updateOrderStatus(id: number, status: string): Promise<Order>;
+
+  // Chatbot memory operations
+  getUserMemory(userId: string): Promise<UserMemory | undefined>;
+  upsertUserMemory(userId: string, memory: Partial<InsertUserMemory>): Promise<UserMemory>;
+  saveChatConversation(userId: string, sessionId: string, messages: any[]): Promise<ChatConversation>;
+  getChatHistory(userId: string, limit?: number): Promise<ChatConversation[]>;
 }
 
 export class DatabaseStorage implements IStorage {

@@ -132,6 +132,38 @@ export const orderItems = pgTable("order_items", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// User memories for Sunaarji chatbot
+export const userMemories = pgTable("user_memories", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  age: varchar("age"),
+  lifestyle: text("lifestyle"),
+  preferences: jsonb("preferences").$type<{
+    favoriteMetals?: string[];
+    budgetRange?: string;
+    occasions?: string[];
+    stylePreferences?: string[];
+    previousRecommendations?: string[];
+    conversationHistory?: string[];
+  }>(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Chat conversations for context
+export const chatConversations = pgTable("chat_conversations", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  sessionId: varchar("session_id").notNull(),
+  messages: jsonb("messages").$type<Array<{
+    type: 'bot' | 'user';
+    content: string;
+    timestamp: Date;
+  }>>().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, {
@@ -204,6 +236,18 @@ export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
   createdAt: true,
 });
 
+export const insertUserMemorySchema = createInsertSchema(userMemories).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertChatConversationSchema = createInsertSchema(chatConversations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -217,3 +261,7 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+export type UserMemory = typeof userMemories.$inferSelect;
+export type InsertUserMemory = z.infer<typeof insertUserMemorySchema>;
+export type ChatConversation = typeof chatConversations.$inferSelect;
+export type InsertChatConversation = z.infer<typeof insertChatConversationSchema>;
