@@ -104,6 +104,114 @@ export default function Home() {
         </div>
       </section>
 
+      {/* New Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-deep-navy mb-4">Experience Innovation</h2>
+            <p className="text-xl text-warm-gray max-w-2xl mx-auto">
+              Revolutionary features that transform how you discover and design jewelry
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Custom Jewelry Design */}
+            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg">
+              <div className="relative">
+                <div 
+                  className="h-64 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
+                  style={{
+                    backgroundImage: "url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400')"
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute top-4 right-4">
+                  <Badge className="bg-gold text-white">NEW</Badge>
+                </div>
+              </div>
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-gold/10 rounded-full">
+                    <Palette className="h-6 w-6 text-gold" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-deep-navy">Custom Jewelry Design</h3>
+                </div>
+                <p className="text-warm-gray mb-6 leading-relaxed">
+                  Upload your design ideas, sketches, or inspiration photos. Our master craftsmen will bring your unique vision to life with expert precision and artistry.
+                </p>
+                <ul className="space-y-2 mb-6 text-sm text-warm-gray">
+                  <li className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-gold" />
+                    Upload design sketches or photos
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-gold" />
+                    Expert consultation and feedback
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-gold" />
+                    Custom quotes and timeline
+                  </li>
+                </ul>
+                <Button 
+                  className="w-full bg-gold hover:bg-gold/90 text-white"
+                  onClick={() => navigate("/custom-jewelry")}
+                >
+                  Start Custom Design
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* AI Try-On */}
+            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg">
+              <div className="relative">
+                <div 
+                  className="h-64 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
+                  style={{
+                    backgroundImage: "url('https://images.unsplash.com/photo-1506629905607-c4bae1b1c5e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400')"
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute top-4 right-4">
+                  <Badge className="bg-purple-600 text-white">AI POWERED</Badge>
+                </div>
+              </div>
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <Camera className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-deep-navy">Virtual Try-On</h3>
+                </div>
+                <p className="text-warm-gray mb-6 leading-relaxed">
+                  See how jewelry looks on you before making a purchase. Upload your photo and virtually try on necklaces, earrings, rings, and bracelets with AI technology.
+                </p>
+                <ul className="space-y-2 mb-6 text-sm text-warm-gray">
+                  <li className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    Upload your photo securely
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    Try on any jewelry piece
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    Instant realistic preview
+                  </li>
+                </ul>
+                <Button 
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  onClick={() => navigate("/ai-tryon")}
+                >
+                  Try Virtual Fitting
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Products */}
       <section className="py-20 bg-cream-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
