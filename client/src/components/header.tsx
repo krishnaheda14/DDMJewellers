@@ -37,10 +37,11 @@ export default function Header() {
 
   const navigationItems = [
     { name: "Collections", href: "/products" },
+    { name: "Custom Design", href: "/custom-jewelry" },
+    { name: "Virtual Try-On", href: "/ai-tryon" },
     { name: "Rings", href: "/products?search=ring" },
     { name: "Necklaces", href: "/products?search=necklace" },
     { name: "Earrings", href: "/products?search=earring" },
-    { name: "Bracelets", href: "/products?search=bracelet" },
   ];
 
   return (

@@ -38,7 +38,7 @@ export default function AITryOn() {
   const [tryOnResult, setTryOnResult] = useState<TryOnResponse | null>(null);
   const [step, setStep] = useState<'upload' | 'select' | 'process' | 'result'>('upload');
 
-  const { data: products = [] } = useQuery({
+  const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     enabled: isAuthenticated,
   });
@@ -129,7 +129,7 @@ export default function AITryOn() {
   };
 
   // Filter products suitable for try-on (necklaces, earrings, bracelets, rings)
-  const tryOnProducts = products.filter(product => 
+  const tryOnProducts = products.filter((product: Product) => 
     product.name.toLowerCase().includes('necklace') ||
     product.name.toLowerCase().includes('earring') ||
     product.name.toLowerCase().includes('bracelet') ||
@@ -280,7 +280,7 @@ export default function AITryOn() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {tryOnProducts.map((product) => (
+                  {tryOnProducts.map((product: Product) => (
                     <div
                       key={product.id}
                       className={`cursor-pointer transition-all ${

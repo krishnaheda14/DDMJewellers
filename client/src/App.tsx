@@ -11,6 +11,8 @@ import Products from "@/pages/products";
 import ProductDetail from "@/pages/product-detail";
 import Cart from "@/pages/cart";
 import Admin from "@/pages/admin";
+import CustomJewelry from "@/pages/custom-jewelry";
+import AITryOn from "@/pages/ai-tryon";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -26,6 +28,8 @@ function Router() {
           <Route path="/products/:id" component={ProductDetail} />
           <Route path="/cart" component={Cart} />
           <Route path="/admin" component={Admin} />
+          <Route path="/custom-jewelry" component={CustomJewelry} />
+          <Route path="/ai-tryon" component={AITryOn} />
         </>
       )}
       <Route component={NotFound} />

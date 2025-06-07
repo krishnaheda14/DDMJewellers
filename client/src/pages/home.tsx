@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { Gem, ShieldCheck, Truck, RotateCcw } from "lucide-react";
+import { Gem, ShieldCheck, Truck, RotateCcw, Sparkles, Camera, Palette } from "lucide-react";
 import type { Product, Category } from "@shared/schema";
 
 export default function Home() {
