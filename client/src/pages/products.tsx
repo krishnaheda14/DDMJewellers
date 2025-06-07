@@ -188,20 +188,7 @@ export default function Products() {
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Card key={i} className="overflow-hidden">
-                  <div className="aspect-square bg-gray-200 animate-pulse" />
-                  <CardContent className="p-6">
-                    <div className="space-y-3">
-                      <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                      <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse" />
-                      <div className="h-6 bg-gray-200 rounded w-1/2 animate-pulse" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ProductLoader />
           ) : products.length > 0 ? (
             <>
               <div className="flex justify-between items-center mb-8">
@@ -215,12 +202,13 @@ export default function Products() {
                   ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
                   : "space-y-6"
               }>
-                {products.map((product) => (
-                  <ProductCard 
-                    key={product.id} 
-                    product={product} 
-                    variant={viewMode}
-                  />
+                {products.map((product, index) => (
+                  <CardReveal key={product.id} delay={index * 0.05}>
+                    <ProductCard 
+                      product={product} 
+                      variant={viewMode}
+                    />
+                  </CardReveal>
                 ))}
               </div>
             </>

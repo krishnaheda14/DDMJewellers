@@ -14,6 +14,8 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { useAuth } from "@/hooks/useAuth";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from "lucide-react";
 import type { CartItem, Product } from "@shared/schema";
+import { CartLoader, SubmissionLoader } from "@/components/loading/jewelry-loader";
+import { CardReveal, PageTransition } from "@/components/loading/page-transition";
 
 interface CartItemWithProduct extends CartItem {
   product: Product;
@@ -173,28 +175,17 @@ export default function Cart() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 rounded w-1/4" />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-32 bg-gray-200 rounded" />
-                ))}
-              </div>
-              <div className="h-64 bg-gray-200 rounded" />
-            </div>
-          </div>
-        </div>
+        <CartLoader />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <PageTransition>
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-deep-navy">Shopping Cart</h1>
           <p className="text-warm-gray mt-2">
@@ -408,7 +399,8 @@ export default function Cart() {
         )}
       </div>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </PageTransition>
   );
 }
