@@ -3,6 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import JewelryCustomizer from "@/components/jewelry-customizer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,8 @@ export default function ProductDetail() {
   const { toast } = useToast();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [customizations, setCustomizations] = useState<any>({});
+  const [additionalPrice, setAdditionalPrice] = useState(0);
 
   const { data: product, isLoading } = useQuery<Product>({
     queryKey: [`/api/products/${id}`],
@@ -30,6 +33,7 @@ export default function ProductDetail() {
       await apiRequest("POST", "/api/cart", {
         productId: parseInt(id!),
         quantity,
+        customizations: Object.keys(customizations).length > 0 ? customizations : null,
       });
     },
     onSuccess: () => {

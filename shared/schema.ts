@@ -62,6 +62,19 @@ export const products = pgTable("products", {
   dimensions: varchar("dimensions", { length: 100 }),
   inStock: boolean("in_stock").default(true),
   featured: boolean("featured").default(false),
+  customizable: boolean("customizable").default(false),
+  customizationOptions: jsonb("customization_options").$type<{
+    metals?: string[];
+    gemstones?: string[];
+    sizes?: string[];
+    engravingOptions?: {
+      maxLength: number;
+      fonts: string[];
+    };
+    priceAdjustments?: {
+      [key: string]: number;
+    };
+  }>(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -72,6 +85,14 @@ export const cartItems = pgTable("cart_items", {
   userId: varchar("user_id").notNull().references(() => users.id),
   productId: integer("product_id").notNull().references(() => products.id),
   quantity: integer("quantity").notNull().default(1),
+  customizations: jsonb("customizations").$type<{
+    metal?: string;
+    gemstone?: string;
+    size?: string;
+    engraving?: string;
+    font?: string;
+    additionalPrice?: number;
+  }>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -100,6 +121,14 @@ export const orderItems = pgTable("order_items", {
   productId: integer("product_id").notNull().references(() => products.id),
   quantity: integer("quantity").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  customizations: jsonb("customizations").$type<{
+    metal?: string;
+    gemstone?: string;
+    size?: string;
+    engraving?: string;
+    font?: string;
+    additionalPrice?: number;
+  }>(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
