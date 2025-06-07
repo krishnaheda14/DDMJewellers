@@ -11,6 +11,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, Grid, List } from "lucide-react";
 import type { Product, Category } from "@shared/schema";
+import { ProductLoader } from "@/components/loading/jewelry-loader";
+import { CardReveal, StaggeredList } from "@/components/loading/page-transition";
 
 export default function Products() {
   const [location] = useLocation();
