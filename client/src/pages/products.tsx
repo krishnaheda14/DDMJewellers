@@ -32,10 +32,6 @@ export default function Products() {
   }, [location]);
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
-    queryKey: [
-      "/api/products",
-      { search: search || undefined, categoryId, featured }
-    ],
     queryKey: [`/api/products?${new URLSearchParams({
       ...(search && { search }),
       ...(categoryId && { categoryId: categoryId.toString() }),
