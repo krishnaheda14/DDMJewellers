@@ -7,6 +7,8 @@ import {
   orderItems,
   userMemories,
   chatConversations,
+  wholesalerDesigns,
+  wishlists,
   type User,
   type UpsertUser,
   type Category,
@@ -23,6 +25,10 @@ import {
   type InsertUserMemory,
   type ChatConversation,
   type InsertChatConversation,
+  type WholesalerDesign,
+  type InsertWholesalerDesign,
+  type Wishlist,
+  type InsertWishlist,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, like, or } from "drizzle-orm";
@@ -70,6 +76,30 @@ export interface IStorage {
   upsertUserMemory(userId: string, memory: Partial<InsertUserMemory>): Promise<UserMemory>;
   saveChatConversation(userId: string, sessionId: string, messages: any[]): Promise<ChatConversation>;
   getChatHistory(userId: string, limit?: number): Promise<ChatConversation[]>;
+
+  // Wholesaler design operations
+  getWholesalerDesigns(filters?: {
+    wholesalerId?: string;
+    status?: string;
+    category?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<(WholesalerDesign & { wholesaler: User })[]>;
+  getWholesalerDesign(id: number): Promise<(WholesalerDesign & { wholesaler: User }) | undefined>;
+  createWholesalerDesign(design: InsertWholesalerDesign): Promise<WholesalerDesign>;
+  updateWholesalerDesign(id: number, design: Partial<InsertWholesalerDesign>): Promise<WholesalerDesign>;
+  approveWholesalerDesign(id: number, approvedBy: string): Promise<WholesalerDesign>;
+  rejectWholesalerDesign(id: number, approvedBy: string): Promise<WholesalerDesign>;
+  deleteWholesalerDesign(id: number): Promise<boolean>;
+
+  // Wishlist operations
+  getWishlist(userId: string): Promise<(Wishlist & { product?: Product; design?: WholesalerDesign })[]>;
+  addToWishlist(item: InsertWishlist): Promise<Wishlist>;
+  removeFromWishlist(id: number): Promise<boolean>;
+
+  // User role operations
+  updateUserRole(userId: string, role: string): Promise<User>;
+  getWholesalers(approved?: boolean): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
