@@ -29,7 +29,7 @@ export default function Admin() {
   const [isCategoryFormOpen, setIsCategoryFormOpen] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && (!user || !user.isAdmin)) {
+    if (!authLoading && (!user || user.role !== 'admin')) {
       toast({
         title: "Access Denied",
         description: "You don't have admin privileges.",
@@ -43,17 +43,17 @@ export default function Admin() {
 
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    enabled: user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
-    enabled: user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   const { data: orders = [] } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
-    enabled: user?.isAdmin,
+    enabled: user?.role === 'admin',
   });
 
   const deleteProductMutation = useMutation({
@@ -136,7 +136,7 @@ export default function Admin() {
     );
   }
 
-  if (!user?.isAdmin) {
+  if (!user || user.role !== 'admin') {
     return null;
   }
 
