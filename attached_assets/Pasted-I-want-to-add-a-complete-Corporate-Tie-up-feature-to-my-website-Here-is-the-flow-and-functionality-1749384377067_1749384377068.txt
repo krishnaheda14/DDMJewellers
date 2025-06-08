@@ -1,0 +1,85 @@
+I want to add a complete Corporate Tie-up feature to my website.
+
+Here is the flow and functionality I need:
+
+Corporate Tie-up Registration:
+
+Add a section on the website where corporate owners / HR managers can register their company for a tie-up.
+
+They should be able to fill a form with:
+
+Company Name
+
+Company Registration Number / GSTIN
+
+Company Address
+
+Contact Person Name & Contact Details
+
+Company Email Address
+
+Approximate number of employees
+
+Purpose of tie-up (bulk gifting / employee offers / maintenance service / all of these)
+
+Admin should get notified of new tie-up requests and be able to approve/reject them.
+
+Corporate Portal:
+
+Once approved, the corporate owner should get login access to a Corporate Portal where they can:
+
+Place bulk orders for jewelry (for gifting, events, etc.) at special corporate discounted rates.
+
+View and track their orders.
+
+Download invoices.
+
+Manage their company profile.
+
+Employee Benefits:
+
+Approved corporate partners should get a unique Corporate Code / Link.
+
+Employees of these companies can use this Corporate Code to:
+
+Get special offers/discounts on personal purchases.
+
+Enroll for Free Jewelry Maintenance Program (cleaning, polishing, minor repairs once per year free).
+
+Access other exclusive offers.
+
+Free Jewelry Maintenance Feature:
+
+If an employee uses the Corporate Code and opts for maintenance, a record should be kept in their profile.
+
+The Admin dashboard should show:
+
+Which employees are enrolled.
+
+When maintenance was last done.
+
+Allow admin to schedule and confirm maintenance.
+
+Admin Controls:
+
+Admin should have full control to:
+
+Approve/reject corporate registrations.
+
+Set corporate discount rates.
+
+Set offers for employees of each corporate.
+
+Track corporate orders.
+
+Track employee participation in maintenance program.
+
+Marketing Text:
+
+Please also add a landing page section to promote this feature:
+
+Suggested Heading: "Corporate Gifting & Employee Privileges Program"
+
+Suggested text: "Partner with us to offer exclusive jewelry privileges to your employees. From bulk gifting to personal discounts and free maintenance, reward your team with the timeless gift of jewelry!"
+
+CTA: "Partner With Us Today"

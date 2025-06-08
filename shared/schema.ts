@@ -860,3 +860,180 @@ export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;
 export type InsertLoyaltyReward = z.infer<typeof insertLoyaltyRewardSchema>;
 export type UserRedemption = typeof userRedemptions.$inferSelect;
 export type InsertUserRedemption = z.infer<typeof insertUserRedemptionSchema>;
+
+// Corporate Tie-up Tables
+export const corporateRegistrations = pgTable("corporate_registrations", {
+  id: serial("id").primaryKey(),
+  companyName: varchar("company_name").notNull(),
+  registrationNumber: varchar("registration_number").notNull(),
+  gstin: varchar("gstin"),
+  companyAddress: text("company_address").notNull(),
+  contactPersonName: varchar("contact_person_name").notNull(),
+  contactPersonPhone: varchar("contact_person_phone").notNull(),
+  contactPersonEmail: varchar("contact_person_email").notNull(),
+  companyEmail: varchar("company_email").notNull(),
+  approximateEmployees: integer("approximate_employees").notNull(),
+  purposeOfTieup: text("purpose_of_tieup").notNull(), // JSON array of purposes
+  status: varchar("status", { enum: ["pending", "approved", "rejected"] }).default("pending"),
+  corporateCode: varchar("corporate_code").unique(),
+  discountPercentage: decimal("discount_percentage", { precision: 5, scale: 2 }).default("0"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  approvedAt: timestamp("approved_at"),
+  approvedBy: varchar("approved_by").references(() => users.id),
+});
+
+export const corporateUsers = pgTable("corporate_users", {
+  id: serial("id").primaryKey(),
+  corporateId: integer("corporate_id").notNull().references(() => corporateRegistrations.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  role: varchar("role", { enum: ["admin", "manager", "employee"] }).default("employee"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const corporateOrders = pgTable("corporate_orders", {
+  id: serial("id").primaryKey(),
+  corporateId: integer("corporate_id").notNull().references(() => corporateRegistrations.id),
+  orderId: integer("order_id").notNull().references(() => orders.id),
+  orderType: varchar("order_type", { enum: ["bulk_gifting", "corporate_event", "employee_reward"] }).notNull(),
+  discountApplied: decimal("discount_applied", { precision: 5, scale: 2 }),
+  specialInstructions: text("special_instructions"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const employeeBenefits = pgTable("employee_benefits", {
+  id: serial("id").primaryKey(),
+  corporateId: integer("corporate_id").notNull().references(() => corporateRegistrations.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  employeeId: varchar("employee_id"),
+  maintenanceEnrolled: boolean("maintenance_enrolled").default(false),
+  lastMaintenanceDate: timestamp("last_maintenance_date"),
+  maintenanceCount: integer("maintenance_count").default(0),
+  maxMaintenancePerYear: integer("max_maintenance_per_year").default(1),
+  enrolledAt: timestamp("enrolled_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const maintenanceSchedules = pgTable("maintenance_schedules", {
+  id: serial("id").primaryKey(),
+  benefitId: integer("benefit_id").notNull().references(() => employeeBenefits.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  corporateId: integer("corporate_id").notNull().references(() => corporateRegistrations.id),
+  serviceType: varchar("service_type", { enum: ["cleaning", "polishing", "minor_repair", "full_service"] }).notNull(),
+  scheduledDate: timestamp("scheduled_date").notNull(),
+  status: varchar("status", { enum: ["scheduled", "in_progress", "completed", "cancelled"] }).default("scheduled"),
+  notes: text("notes"),
+  completedAt: timestamp("completed_at"),
+  completedBy: varchar("completed_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const corporateOffers = pgTable("corporate_offers", {
+  id: serial("id").primaryKey(),
+  corporateId: integer("corporate_id").notNull().references(() => corporateRegistrations.id),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  discountType: varchar("discount_type", { enum: ["percentage", "fixed_amount"] }).notNull(),
+  discountValue: decimal("discount_value", { precision: 10, scale: 2 }).notNull(),
+  minOrderAmount: decimal("min_order_amount", { precision: 10, scale: 2 }),
+  maxDiscountAmount: decimal("max_discount_amount", { precision: 10, scale: 2 }),
+  validFrom: timestamp("valid_from").notNull(),
+  validUntil: timestamp("valid_until").notNull(),
+  isActive: boolean("is_active").default(true),
+  usageLimit: integer("usage_limit"),
+  usageCount: integer("usage_count").default(0),
+  applicableCategories: text("applicable_categories"), // JSON array
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Corporate Relations
+export const corporateRegistrationsRelations = relations(corporateRegistrations, ({ one, many }) => ({
+  approver: one(users, { fields: [corporateRegistrations.approvedBy], references: [users.id] }),
+  corporateUsers: many(corporateUsers),
+  corporateOrders: many(corporateOrders),
+  employeeBenefits: many(employeeBenefits),
+  maintenanceSchedules: many(maintenanceSchedules),
+  corporateOffers: many(corporateOffers),
+}));
+
+export const corporateUsersRelations = relations(corporateUsers, ({ one }) => ({
+  corporate: one(corporateRegistrations, { fields: [corporateUsers.corporateId], references: [corporateRegistrations.id] }),
+  user: one(users, { fields: [corporateUsers.userId], references: [users.id] }),
+}));
+
+export const corporateOrdersRelations = relations(corporateOrders, ({ one }) => ({
+  corporate: one(corporateRegistrations, { fields: [corporateOrders.corporateId], references: [corporateRegistrations.id] }),
+  order: one(orders, { fields: [corporateOrders.orderId], references: [orders.id] }),
+}));
+
+export const employeeBenefitsRelations = relations(employeeBenefits, ({ one, many }) => ({
+  corporate: one(corporateRegistrations, { fields: [employeeBenefits.corporateId], references: [corporateRegistrations.id] }),
+  user: one(users, { fields: [employeeBenefits.userId], references: [users.id] }),
+  maintenanceSchedules: many(maintenanceSchedules),
+}));
+
+export const maintenanceSchedulesRelations = relations(maintenanceSchedules, ({ one }) => ({
+  benefit: one(employeeBenefits, { fields: [maintenanceSchedules.benefitId], references: [employeeBenefits.id] }),
+  user: one(users, { fields: [maintenanceSchedules.userId], references: [users.id] }),
+  corporate: one(corporateRegistrations, { fields: [maintenanceSchedules.corporateId], references: [corporateRegistrations.id] }),
+  completedByUser: one(users, { fields: [maintenanceSchedules.completedBy], references: [users.id] }),
+}));
+
+export const corporateOffersRelations = relations(corporateOffers, ({ one }) => ({
+  corporate: one(corporateRegistrations, { fields: [corporateOffers.corporateId], references: [corporateRegistrations.id] }),
+}));
+
+// Corporate Insert Schemas
+export const insertCorporateRegistrationSchema = createInsertSchema(corporateRegistrations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  approvedAt: true,
+  corporateCode: true,
+});
+
+export const insertCorporateUserSchema = createInsertSchema(corporateUsers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCorporateOrderSchema = createInsertSchema(corporateOrders).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertEmployeeBenefitSchema = createInsertSchema(employeeBenefits).omit({
+  id: true,
+  enrolledAt: true,
+  updatedAt: true,
+});
+
+export const insertMaintenanceScheduleSchema = createInsertSchema(maintenanceSchedules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  completedAt: true,
+});
+
+export const insertCorporateOfferSchema = createInsertSchema(corporateOffers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  usageCount: true,
+});
+
+// Corporate Type exports
+export type CorporateRegistration = typeof corporateRegistrations.$inferSelect;
+export type InsertCorporateRegistration = z.infer<typeof insertCorporateRegistrationSchema>;
+export type CorporateUser = typeof corporateUsers.$inferSelect;
+export type InsertCorporateUser = z.infer<typeof insertCorporateUserSchema>;
+export type CorporateOrder = typeof corporateOrders.$inferSelect;
+export type InsertCorporateOrder = z.infer<typeof insertCorporateOrderSchema>;
+export type EmployeeBenefit = typeof employeeBenefits.$inferSelect;
+export type InsertEmployeeBenefit = z.infer<typeof insertEmployeeBenefitSchema>;
+export type MaintenanceSchedule = typeof maintenanceSchedules.$inferSelect;
+export type InsertMaintenanceSchedule = z.infer<typeof insertMaintenanceScheduleSchema>;
+export type CorporateOffer = typeof corporateOffers.$inferSelect;
+export type InsertCorporateOffer = z.infer<typeof insertCorporateOfferSchema>;

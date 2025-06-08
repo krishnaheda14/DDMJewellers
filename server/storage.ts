@@ -121,6 +121,38 @@ export interface IStorage {
   // Gold rates
   createGoldRate(rate: InsertGoldRate): Promise<GoldRate>;
   getCurrentGoldRates(): Promise<GoldRate | undefined>;
+
+  // Corporate operations
+  createCorporateRegistration(registration: InsertCorporateRegistration): Promise<CorporateRegistration>;
+  getCorporateRegistrations(): Promise<CorporateRegistration[]>;
+  getCorporateRegistration(id: number): Promise<CorporateRegistration | undefined>;
+  updateCorporateRegistration(id: number, updates: Partial<InsertCorporateRegistration>): Promise<CorporateRegistration>;
+  approveCorporateRegistration(id: number, approvedBy: string): Promise<CorporateRegistration>;
+  rejectCorporateRegistration(id: number): Promise<CorporateRegistration>;
+  
+  // Corporate user operations
+  createCorporateUser(corporateUser: InsertCorporateUser): Promise<CorporateUser>;
+  getCorporateUsersByCompany(corporateId: number): Promise<CorporateUser[]>;
+  getCorporateUserByUserId(userId: string): Promise<CorporateUser | undefined>;
+  
+  // Employee benefits operations
+  createEmployeeBenefit(benefit: InsertEmployeeBenefit): Promise<EmployeeBenefit>;
+  getEmployeeBenefit(userId: string, corporateId: number): Promise<EmployeeBenefit | undefined>;
+  updateEmployeeBenefit(id: number, updates: Partial<InsertEmployeeBenefit>): Promise<EmployeeBenefit>;
+  getEmployeeBenefitsByCorporate(corporateId: number): Promise<EmployeeBenefit[]>;
+  
+  // Maintenance operations
+  createMaintenanceSchedule(schedule: InsertMaintenanceSchedule): Promise<MaintenanceSchedule>;
+  getMaintenanceSchedules(): Promise<MaintenanceSchedule[]>;
+  getMaintenanceSchedulesByUser(userId: string): Promise<MaintenanceSchedule[]>;
+  getMaintenanceSchedulesByCorporate(corporateId: number): Promise<MaintenanceSchedule[]>;
+  updateMaintenanceSchedule(id: number, updates: Partial<InsertMaintenanceSchedule>): Promise<MaintenanceSchedule>;
+  
+  // Corporate offers operations
+  createCorporateOffer(offer: InsertCorporateOffer): Promise<CorporateOffer>;
+  getCorporateOffers(corporateId: number): Promise<CorporateOffer[]>;
+  getActiveCorporateOffers(corporateId: number): Promise<CorporateOffer[]>;
+  updateCorporateOffer(id: number, updates: Partial<InsertCorporateOffer>): Promise<CorporateOffer>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -689,6 +721,180 @@ export class DatabaseStorage implements IStorage {
   async createGoldRate(rate: InsertGoldRate): Promise<GoldRate> {
     const [newRate] = await db.insert(goldRates).values(rate).returning();
     return newRate;
+  }
+
+  // Corporate operations
+  async createCorporateRegistration(registration: InsertCorporateRegistration): Promise<CorporateRegistration> {
+    // Generate unique corporate code
+    const corporateCode = `CORP${Date.now()}`;
+    
+    const [corporate] = await db
+      .insert(corporateRegistrations)
+      .values({
+        ...registration,
+        corporateCode
+      })
+      .returning();
+    return corporate;
+  }
+
+  async getCorporateRegistrations(): Promise<CorporateRegistration[]> {
+    return await db.select().from(corporateRegistrations).orderBy(desc(corporateRegistrations.createdAt));
+  }
+
+  async getCorporateRegistration(id: number): Promise<CorporateRegistration | undefined> {
+    const [corporate] = await db.select().from(corporateRegistrations).where(eq(corporateRegistrations.id, id));
+    return corporate;
+  }
+
+  async updateCorporateRegistration(id: number, updates: Partial<InsertCorporateRegistration>): Promise<CorporateRegistration> {
+    const [corporate] = await db
+      .update(corporateRegistrations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(corporateRegistrations.id, id))
+      .returning();
+    return corporate;
+  }
+
+  async approveCorporateRegistration(id: number, approvedBy: string): Promise<CorporateRegistration> {
+    const [corporate] = await db
+      .update(corporateRegistrations)
+      .set({
+        status: "approved",
+        approvedAt: new Date(),
+        approvedBy,
+        updatedAt: new Date()
+      })
+      .where(eq(corporateRegistrations.id, id))
+      .returning();
+    return corporate;
+  }
+
+  async rejectCorporateRegistration(id: number): Promise<CorporateRegistration> {
+    const [corporate] = await db
+      .update(corporateRegistrations)
+      .set({
+        status: "rejected",
+        updatedAt: new Date()
+      })
+      .where(eq(corporateRegistrations.id, id))
+      .returning();
+    return corporate;
+  }
+
+  // Corporate user operations
+  async createCorporateUser(corporateUser: InsertCorporateUser): Promise<CorporateUser> {
+    const [user] = await db
+      .insert(corporateUsers)
+      .values(corporateUser)
+      .returning();
+    return user;
+  }
+
+  async getCorporateUsersByCompany(corporateId: number): Promise<CorporateUser[]> {
+    return await db.select().from(corporateUsers).where(eq(corporateUsers.corporateId, corporateId));
+  }
+
+  async getCorporateUserByUserId(userId: string): Promise<CorporateUser | undefined> {
+    const [user] = await db.select().from(corporateUsers).where(eq(corporateUsers.userId, userId));
+    return user;
+  }
+
+  // Employee benefits operations
+  async createEmployeeBenefit(benefit: InsertEmployeeBenefit): Promise<EmployeeBenefit> {
+    const [employeeBenefit] = await db
+      .insert(employeeBenefits)
+      .values(benefit)
+      .returning();
+    return employeeBenefit;
+  }
+
+  async getEmployeeBenefit(userId: string, corporateId: number): Promise<EmployeeBenefit | undefined> {
+    const [benefit] = await db
+      .select()
+      .from(employeeBenefits)
+      .where(and(eq(employeeBenefits.userId, userId), eq(employeeBenefits.corporateId, corporateId)));
+    return benefit;
+  }
+
+  async updateEmployeeBenefit(id: number, updates: Partial<InsertEmployeeBenefit>): Promise<EmployeeBenefit> {
+    const [benefit] = await db
+      .update(employeeBenefits)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(employeeBenefits.id, id))
+      .returning();
+    return benefit;
+  }
+
+  async getEmployeeBenefitsByCorporate(corporateId: number): Promise<EmployeeBenefit[]> {
+    return await db.select().from(employeeBenefits).where(eq(employeeBenefits.corporateId, corporateId));
+  }
+
+  // Maintenance operations
+  async createMaintenanceSchedule(schedule: InsertMaintenanceSchedule): Promise<MaintenanceSchedule> {
+    const [maintenanceSchedule] = await db
+      .insert(maintenanceSchedules)
+      .values(schedule)
+      .returning();
+    return maintenanceSchedule;
+  }
+
+  async getMaintenanceSchedules(): Promise<MaintenanceSchedule[]> {
+    return await db.select().from(maintenanceSchedules).orderBy(desc(maintenanceSchedules.scheduledDate));
+  }
+
+  async getMaintenanceSchedulesByUser(userId: string): Promise<MaintenanceSchedule[]> {
+    return await db.select().from(maintenanceSchedules).where(eq(maintenanceSchedules.userId, userId));
+  }
+
+  async getMaintenanceSchedulesByCorporate(corporateId: number): Promise<MaintenanceSchedule[]> {
+    return await db.select().from(maintenanceSchedules).where(eq(maintenanceSchedules.corporateId, corporateId));
+  }
+
+  async updateMaintenanceSchedule(id: number, updates: Partial<InsertMaintenanceSchedule>): Promise<MaintenanceSchedule> {
+    const [schedule] = await db
+      .update(maintenanceSchedules)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(maintenanceSchedules.id, id))
+      .returning();
+    return schedule;
+  }
+
+  // Corporate offers operations
+  async createCorporateOffer(offer: InsertCorporateOffer): Promise<CorporateOffer> {
+    const [corporateOffer] = await db
+      .insert(corporateOffers)
+      .values(offer)
+      .returning();
+    return corporateOffer;
+  }
+
+  async getCorporateOffers(corporateId: number): Promise<CorporateOffer[]> {
+    return await db.select().from(corporateOffers).where(eq(corporateOffers.corporateId, corporateId));
+  }
+
+  async getActiveCorporateOffers(corporateId: number): Promise<CorporateOffer[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(corporateOffers)
+      .where(
+        and(
+          eq(corporateOffers.corporateId, corporateId),
+          eq(corporateOffers.isActive, true),
+          lte(corporateOffers.validFrom, now),
+          gte(corporateOffers.validUntil, now)
+        )
+      );
+  }
+
+  async updateCorporateOffer(id: number, updates: Partial<InsertCorporateOffer>): Promise<CorporateOffer> {
+    const [offer] = await db
+      .update(corporateOffers)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(corporateOffers.id, id))
+      .returning();
+    return offer;
   }
 }
 
