@@ -63,6 +63,10 @@ export default function CreateGullak() {
   const { data: metalRates, isLoading: ratesLoading } = useQuery<MetalRates>({
     queryKey: ["/api/gullak/gold-rates"],
     enabled: isAuthenticated,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
   });
 
   // Create Gullak account mutation
