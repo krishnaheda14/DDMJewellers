@@ -5,8 +5,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import CartSidebar from "./cart-sidebar";
-import { Search, ShoppingBag, User, Menu, X, Heart, Home, Trophy, Sparkles } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, Heart, Home, Trophy, Sparkles, Globe, DollarSign } from "lucide-react";
 import type { CartItem, Product } from "@shared/schema";
 
 interface CartItemWithProduct extends CartItem {
@@ -19,6 +21,8 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [selectedCurrency, setSelectedCurrency] = useState("INR");
 
   const { data: cartItems = [] } = useQuery<CartItemWithProduct[]>({
     queryKey: ["/api/cart"],
@@ -34,6 +38,23 @@ export default function Header() {
       setSearchQuery("");
     }
   };
+
+  const languages = [
+    { code: "en", name: "English", flag: "🇺🇸" },
+    { code: "hi", name: "हिंदी", flag: "🇮🇳" },
+    { code: "gu", name: "ગુજરાતી", flag: "🇮🇳" },
+    { code: "mr", name: "मराठी", flag: "🇮🇳" },
+    { code: "ta", name: "தமிழ்", flag: "🇮🇳" },
+    { code: "te", name: "తెలుగు", flag: "🇮🇳" },
+  ];
+
+  const currencies = [
+    { code: "INR", symbol: "₹", name: "Indian Rupee" },
+    { code: "USD", symbol: "$", name: "US Dollar" },
+    { code: "EUR", symbol: "€", name: "Euro" },
+    { code: "GBP", symbol: "£", name: "British Pound" },
+    { code: "AED", symbol: "د.إ", name: "UAE Dirham" },
+  ];
 
   const navigationItems = [
     { name: "Home", href: "/", icon: Home },
@@ -69,7 +90,64 @@ export default function Header() {
                   <span className="relative z-10">Track Order</span>
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold group-hover:w-full transition-all duration-300"></div>
                 </a>
-                <a href="#" className="relative group hover:text-gold transition-all duration-300 transform hover:scale-105 hidden md:block">
+                
+                {/* Language Selector */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="sm" className="hidden md:flex items-center gap-1 hover:text-gold hover:bg-gold/10 text-xs">
+                      <Globe className="w-3 h-3" />
+                      <span>{languages.find(lang => lang.code === selectedLanguage)?.flag}</span>
+                      <span className="hidden lg:inline">{languages.find(lang => lang.code === selectedLanguage)?.name}</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-2" align="end">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-gray-900 mb-2">Select Language</p>
+                      {languages.map((language) => (
+                        <button
+                          key={language.code}
+                          onClick={() => setSelectedLanguage(language.code)}
+                          className={`w-full flex items-center gap-2 px-2 py-1 text-sm rounded hover:bg-gold/10 transition-colors ${
+                            selectedLanguage === language.code ? 'bg-gold/20 text-gold font-medium' : 'text-gray-700'
+                          }`}
+                        >
+                          <span>{language.flag}</span>
+                          <span>{language.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {/* Currency Selector */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="sm" className="hidden md:flex items-center gap-1 hover:text-gold hover:bg-gold/10 text-xs">
+                      <DollarSign className="w-3 h-3" />
+                      <span>{currencies.find(curr => curr.code === selectedCurrency)?.symbol}</span>
+                      <span className="hidden lg:inline">{selectedCurrency}</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-48 p-2" align="end">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-gray-900 mb-2">Select Currency</p>
+                      {currencies.map((currency) => (
+                        <button
+                          key={currency.code}
+                          onClick={() => setSelectedCurrency(currency.code)}
+                          className={`w-full flex items-center gap-2 px-2 py-1 text-sm rounded hover:bg-gold/10 transition-colors ${
+                            selectedCurrency === currency.code ? 'bg-gold/20 text-gold font-medium' : 'text-gray-700'
+                          }`}
+                        >
+                          <span>{currency.symbol}</span>
+                          <span>{currency.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                
+                <a href="#" className="relative group hover:text-gold transition-all duration-300 transform hover:scale-105 hidden lg:block">
                   <span className="relative z-10">Store Locator</span>
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold group-hover:w-full transition-all duration-300"></div>
                 </a>
@@ -284,6 +362,61 @@ export default function Header() {
                     </button>
                   ))}
                 </nav>
+
+                {/* Mobile Language and Currency Selectors */}
+                <div className="pt-4 border-t border-gray-100 space-y-3">
+                  <div className="flex items-center gap-4">
+                    {/* Mobile Language Selector */}
+                    <div className="flex-1">
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">Language</label>
+                      <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                        <SelectTrigger className="w-full h-8 text-xs">
+                          <SelectValue>
+                            <span className="flex items-center gap-1">
+                              <span>{languages.find(lang => lang.code === selectedLanguage)?.flag}</span>
+                              <span>{languages.find(lang => lang.code === selectedLanguage)?.name}</span>
+                            </span>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {languages.map((language) => (
+                            <SelectItem key={language.code} value={language.code}>
+                              <span className="flex items-center gap-2">
+                                <span>{language.flag}</span>
+                                <span>{language.name}</span>
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Mobile Currency Selector */}
+                    <div className="flex-1">
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">Currency</label>
+                      <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                        <SelectTrigger className="w-full h-8 text-xs">
+                          <SelectValue>
+                            <span className="flex items-center gap-1">
+                              <span>{currencies.find(curr => curr.code === selectedCurrency)?.symbol}</span>
+                              <span>{selectedCurrency}</span>
+                            </span>
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currencies.map((currency) => (
+                            <SelectItem key={currency.code} value={currency.code}>
+                              <span className="flex items-center gap-2">
+                                <span>{currency.symbol}</span>
+                                <span>{currency.name}</span>
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Mobile User Actions */}
                 {isAuthenticated && (
