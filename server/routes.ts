@@ -2350,6 +2350,287 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Corporate Tie-up API Routes
+  
+  // Corporate registration endpoints
+  app.post('/api/corporate/register', async (req, res) => {
+    try {
+      const validatedData = insertCorporateRegistrationSchema.parse(req.body);
+      const registration = await storage.createCorporateRegistration(validatedData);
+      res.json(registration);
+    } catch (error) {
+      console.error("Error creating corporate registration:", error);
+      res.status(400).json({ message: "Failed to create corporate registration" });
+    }
+  });
+
+  app.get('/api/corporate/registrations', isAuthenticated, async (req, res) => {
+    try {
+      const registrations = await storage.getCorporateRegistrations();
+      res.json(registrations);
+    } catch (error) {
+      console.error("Error fetching corporate registrations:", error);
+      res.status(500).json({ message: "Failed to fetch corporate registrations" });
+    }
+  });
+
+  app.get('/api/corporate/registrations/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const registration = await storage.getCorporateRegistration(id);
+      if (!registration) {
+        return res.status(404).json({ message: "Corporate registration not found" });
+      }
+      res.json(registration);
+    } catch (error) {
+      console.error("Error fetching corporate registration:", error);
+      res.status(500).json({ message: "Failed to fetch corporate registration" });
+    }
+  });
+
+  app.patch('/api/corporate/registrations/:id/approve', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = (req.user as any).claims.sub;
+      const registration = await storage.approveCorporateRegistration(id, userId);
+      res.json(registration);
+    } catch (error) {
+      console.error("Error approving corporate registration:", error);
+      res.status(500).json({ message: "Failed to approve corporate registration" });
+    }
+  });
+
+  app.patch('/api/corporate/registrations/:id/reject', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const registration = await storage.rejectCorporateRegistration(id);
+      res.json(registration);
+    } catch (error) {
+      console.error("Error rejecting corporate registration:", error);
+      res.status(500).json({ message: "Failed to reject corporate registration" });
+    }
+  });
+
+  // Corporate user management
+  app.post('/api/corporate/users', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertCorporateUserSchema.parse(req.body);
+      const corporateUser = await storage.createCorporateUser(validatedData);
+      res.json(corporateUser);
+    } catch (error) {
+      console.error("Error creating corporate user:", error);
+      res.status(400).json({ message: "Failed to create corporate user" });
+    }
+  });
+
+  app.get('/api/corporate/:corporateId/users', isAuthenticated, async (req, res) => {
+    try {
+      const corporateId = parseInt(req.params.corporateId);
+      const users = await storage.getCorporateUsersByCompany(corporateId);
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching corporate users:", error);
+      res.status(500).json({ message: "Failed to fetch corporate users" });
+    }
+  });
+
+  // Employee benefits endpoints
+  app.post('/api/corporate/benefits', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertEmployeeBenefitSchema.parse(req.body);
+      const benefit = await storage.createEmployeeBenefit(validatedData);
+      res.json(benefit);
+    } catch (error) {
+      console.error("Error creating employee benefit:", error);
+      res.status(400).json({ message: "Failed to create employee benefit" });
+    }
+  });
+
+  app.get('/api/corporate/benefits/user/:userId', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const corporateId = parseInt(req.query.corporateId as string);
+      const benefit = await storage.getEmployeeBenefit(userId, corporateId);
+      res.json(benefit);
+    } catch (error) {
+      console.error("Error fetching employee benefit:", error);
+      res.status(500).json({ message: "Failed to fetch employee benefit" });
+    }
+  });
+
+  app.get('/api/corporate/:corporateId/benefits', isAuthenticated, async (req, res) => {
+    try {
+      const corporateId = parseInt(req.params.corporateId);
+      const benefits = await storage.getEmployeeBenefitsByCorporate(corporateId);
+      res.json(benefits);
+    } catch (error) {
+      console.error("Error fetching corporate benefits:", error);
+      res.status(500).json({ message: "Failed to fetch corporate benefits" });
+    }
+  });
+
+  // Corporate code verification for employees
+  app.post('/api/corporate/verify-code', async (req, res) => {
+    try {
+      const { corporateCode } = req.body;
+      const registration = await db.select()
+        .from(corporateRegistrations)
+        .where(and(
+          eq(corporateRegistrations.corporateCode, corporateCode),
+          eq(corporateRegistrations.status, "approved")
+        ));
+      
+      if (!registration.length) {
+        return res.status(404).json({ message: "Invalid or inactive corporate code" });
+      }
+      
+      res.json({ 
+        valid: true, 
+        corporate: registration[0],
+        benefits: {
+          discountPercentage: registration[0].discountPercentage,
+          maintenanceEnabled: true
+        }
+      });
+    } catch (error) {
+      console.error("Error verifying corporate code:", error);
+      res.status(500).json({ message: "Failed to verify corporate code" });
+    }
+  });
+
+  // Employee maintenance enrollment
+  app.post('/api/corporate/maintenance/enroll', isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any).claims.sub;
+      const { corporateCode, employeeId } = req.body;
+      
+      // Verify corporate code
+      const [corporate] = await db.select()
+        .from(corporateRegistrations)
+        .where(and(
+          eq(corporateRegistrations.corporateCode, corporateCode),
+          eq(corporateRegistrations.status, "approved")
+        ));
+      
+      if (!corporate) {
+        return res.status(404).json({ message: "Invalid corporate code" });
+      }
+
+      // Create or update employee benefit
+      const existingBenefit = await storage.getEmployeeBenefit(userId, corporate.id);
+      
+      if (existingBenefit) {
+        const updatedBenefit = await storage.updateEmployeeBenefit(existingBenefit.id, {
+          maintenanceEnrolled: true,
+          employeeId
+        });
+        res.json(updatedBenefit);
+      } else {
+        const benefit = await storage.createEmployeeBenefit({
+          corporateId: corporate.id,
+          userId,
+          employeeId,
+          maintenanceEnrolled: true
+        });
+        res.json(benefit);
+      }
+    } catch (error) {
+      console.error("Error enrolling in maintenance:", error);
+      res.status(500).json({ message: "Failed to enroll in maintenance program" });
+    }
+  });
+
+  // Maintenance scheduling endpoints
+  app.post('/api/corporate/maintenance/schedule', isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertMaintenanceScheduleSchema.parse(req.body);
+      const schedule = await storage.createMaintenanceSchedule(validatedData);
+      res.json(schedule);
+    } catch (error) {
+      console.error("Error creating maintenance schedule:", error);
+      res.status(400).json({ message: "Failed to create maintenance schedule" });
+    }
+  });
+
+  app.get('/api/corporate/maintenance/schedules', isAuthenticated, async (req, res) => {
+    try {
+      const schedules = await storage.getMaintenanceSchedules();
+      res.json(schedules);
+    } catch (error) {
+      console.error("Error fetching maintenance schedules:", error);
+      res.status(500).json({ message: "Failed to fetch maintenance schedules" });
+    }
+  });
+
+  app.get('/api/corporate/maintenance/user/:userId', isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const schedules = await storage.getMaintenanceSchedulesByUser(userId);
+      res.json(schedules);
+    } catch (error) {
+      console.error("Error fetching user maintenance schedules:", error);
+      res.status(500).json({ message: "Failed to fetch user maintenance schedules" });
+    }
+  });
+
+  app.patch('/api/corporate/maintenance/:id/complete', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const completedBy = (req.user as any).claims.sub;
+      const { notes } = req.body;
+      
+      const schedule = await storage.updateMaintenanceSchedule(id, {
+        status: "completed",
+        completedAt: new Date(),
+        completedBy,
+        notes
+      });
+      
+      res.json(schedule);
+    } catch (error) {
+      console.error("Error completing maintenance:", error);
+      res.status(500).json({ message: "Failed to complete maintenance" });
+    }
+  });
+
+  // Corporate offers management
+  app.post('/api/corporate/:corporateId/offers', isAuthenticated, async (req, res) => {
+    try {
+      const corporateId = parseInt(req.params.corporateId);
+      const validatedData = insertCorporateOfferSchema.parse({
+        ...req.body,
+        corporateId
+      });
+      const offer = await storage.createCorporateOffer(validatedData);
+      res.json(offer);
+    } catch (error) {
+      console.error("Error creating corporate offer:", error);
+      res.status(400).json({ message: "Failed to create corporate offer" });
+    }
+  });
+
+  app.get('/api/corporate/:corporateId/offers', async (req, res) => {
+    try {
+      const corporateId = parseInt(req.params.corporateId);
+      const offers = await storage.getCorporateOffers(corporateId);
+      res.json(offers);
+    } catch (error) {
+      console.error("Error fetching corporate offers:", error);
+      res.status(500).json({ message: "Failed to fetch corporate offers" });
+    }
+  });
+
+  app.get('/api/corporate/:corporateId/offers/active', async (req, res) => {
+    try {
+      const corporateId = parseInt(req.params.corporateId);
+      const offers = await storage.getActiveCorporateOffers(corporateId);
+      res.json(offers);
+    } catch (error) {
+      console.error("Error fetching active corporate offers:", error);
+      res.status(500).json({ message: "Failed to fetch active corporate offers" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

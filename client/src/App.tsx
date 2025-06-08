@@ -22,6 +22,9 @@ import ShingaarGuru from "@/pages/shingaar-guru";
 import JewelryCare from "@/pages/jewelry-care";
 import JewelryExchange from "@/pages/jewelry-exchange";
 import CurrencyConverter from "@/pages/currency-converter";
+import CorporateRegistration from "@/pages/corporate-registration";
+import CorporateBenefits from "@/pages/corporate-benefits";
+import CorporateAdmin from "@/pages/corporate-admin";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -49,6 +52,9 @@ function Router() {
           <Route path="/jewelry-care" component={JewelryCare} />
           <Route path="/jewelry-exchange" component={JewelryExchange} />
           <Route path="/currency-converter" component={CurrencyConverter} />
+          <Route path="/corporate-registration" component={CorporateRegistration} />
+          <Route path="/corporate-benefits" component={CorporateBenefits} />
+          <Route path="/corporate-admin" component={CorporateAdmin} />
         </>
       )}
       <Route component={NotFound} />
