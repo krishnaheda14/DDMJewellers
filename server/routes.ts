@@ -1074,6 +1074,237 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Gullak Routes
+  
+  // Get current gold rates
+  app.get("/api/gullak/gold-rates", async (req, res) => {
+    try {
+      const currentRates = await storage.getCurrentGoldRates();
+      if (!currentRates) {
+        const defaultRates = {
+          rate24k: "7200",
+          rate22k: "6600", 
+          rate18k: "5400",
+          currency: "INR",
+          source: "manual",
+        };
+        const newRates = await storage.createGoldRate(defaultRates);
+        return res.json(newRates);
+      }
+      res.json(currentRates);
+    } catch (error) {
+      console.error("Error fetching gold rates:", error);
+      res.status(500).json({ message: "Failed to fetch gold rates" });
+    }
+  });
+
+  // Get user's Gullak accounts
+  app.get("/api/gullak/accounts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const accounts = await storage.getGullakAccounts(userId);
+      res.json(accounts);
+    } catch (error) {
+      console.error("Error fetching Gullak accounts:", error);
+      res.status(500).json({ message: "Failed to fetch Gullak accounts" });
+    }
+  });
+
+  // Create Gullak account
+  app.post("/api/gullak/accounts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const accountData = {
+        ...req.body,
+        userId,
+        nextPaymentDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      };
+      
+      const account = await storage.createGullakAccount(accountData);
+      res.json(account);
+    } catch (error) {
+      console.error("Error creating Gullak account:", error);
+      res.status(500).json({ message: "Failed to create Gullak account" });
+    }
+  });
+
+  // Update Gullak account
+  app.patch("/api/gullak/accounts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      const account = await storage.getGullakAccount(accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(404).json({ message: "Gullak account not found" });
+      }
+
+      const updatedAccount = await storage.updateGullakAccount(accountId, req.body);
+      res.json(updatedAccount);
+    } catch (error) {
+      console.error("Error updating Gullak account:", error);
+      res.status(500).json({ message: "Failed to update Gullak account" });
+    }
+  });
+
+  // Get Gullak transactions
+  app.get("/api/gullak/transactions/:accountId", isAuthenticated, async (req: any, res) => {
+    try {
+      const accountId = parseInt(req.params.accountId);
+      const userId = req.user.claims.sub;
+      
+      const account = await storage.getGullakAccount(accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(404).json({ message: "Gullak account not found" });
+      }
+
+      const transactions = await storage.getGullakTransactions(accountId);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching Gullak transactions:", error);
+      res.status(500).json({ message: "Failed to fetch Gullak transactions" });
+    }
+  });
+
+  // Create Gullak transaction
+  app.post("/api/gullak/transactions", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { gullakAccountId, amount, type, description } = req.body;
+      
+      const account = await storage.getGullakAccount(gullakAccountId);
+      if (!account || account.userId !== userId) {
+        return res.status(404).json({ message: "Gullak account not found" });
+      }
+
+      const goldRates = await storage.getCurrentGoldRates();
+      const goldRate = goldRates?.rate24k || "7200";
+      const goldValue = (parseFloat(amount) / parseFloat(goldRate)).toFixed(3);
+
+      const transactionData = {
+        gullakAccountId,
+        userId,
+        amount,
+        type,
+        description,
+        goldRate,
+        goldValue,
+      };
+
+      const transaction = await storage.createGullakTransaction(transactionData);
+      
+      const newBalance = (parseFloat(account.currentBalance || "0") + parseFloat(amount)).toString();
+      await storage.updateGullakAccount(gullakAccountId, { 
+        currentBalance: newBalance,
+        updatedAt: new Date()
+      });
+
+      res.json(transaction);
+    } catch (error) {
+      console.error("Error creating Gullak transaction:", error);
+      res.status(500).json({ message: "Failed to create transaction" });
+    }
+  });
+
+  // Get Gullak orders
+  app.get("/api/gullak/orders", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const orders = await storage.getGullakOrders(userId);
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching Gullak orders:", error);
+      res.status(500).json({ message: "Failed to fetch Gullak orders" });
+    }
+  });
+
+  // Create Gullak order
+  app.post("/api/gullak/orders", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { gullakAccountId, goldWeight, goldPurity, coinType, deliveryAddress } = req.body;
+      
+      const account = await storage.getGullakAccount(gullakAccountId);
+      if (!account || account.userId !== userId) {
+        return res.status(404).json({ message: "Gullak account not found" });
+      }
+
+      if (parseFloat(account.currentBalance || "0") < parseFloat(account.targetAmount)) {
+        return res.status(400).json({ message: "Insufficient balance to place order" });
+      }
+
+      const orderData = {
+        gullakAccountId,
+        userId,
+        goldWeight,
+        goldPurity,
+        coinType,
+        deliveryAddress,
+        amountUsed: account.targetAmount,
+      };
+
+      const order = await storage.createGullakOrder(orderData);
+      
+      await storage.updateGullakAccount(gullakAccountId, {
+        status: "completed",
+        completedAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      res.json(order);
+    } catch (error) {
+      console.error("Error creating Gullak order:", error);
+      res.status(500).json({ message: "Failed to create order" });
+    }
+  });
+
+  // Admin Gullak management
+  app.get("/api/admin/gullak/orders", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const orders = await storage.getGullakOrders();
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching all Gullak orders:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  app.patch("/api/admin/gullak/orders/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const orderId = parseInt(req.params.id);
+      const updatedOrder = await storage.updateGullakOrderStatus(orderId, req.body.status);
+      res.json(updatedOrder);
+    } catch (error) {
+      console.error("Error updating Gullak order:", error);
+      res.status(500).json({ message: "Failed to update order" });
+    }
+  });
+
+  app.post("/api/gullak/gold-rates", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const goldRate = await storage.createGoldRate(req.body);
+      res.json(goldRate);
+    } catch (error) {
+      console.error("Error creating gold rate:", error);
+      res.status(500).json({ message: "Failed to create gold rate" });
+    }
+  });
+
   // Orders - Admin exclusive execution
   app.post('/api/orders', isAuthenticated, async (req: any, res) => {
     try {

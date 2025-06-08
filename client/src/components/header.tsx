@@ -37,6 +37,7 @@ export default function Header() {
 
   const navigationItems = [
     { name: "Collections", href: "/products" },
+    { name: "Gullak", href: "/gullak" },
     { name: "Custom Design", href: "/custom-jewelry" },
     { name: "Virtual Try-On", href: "/ai-tryon" },
     { name: "Rings", href: "/products?search=ring" },
