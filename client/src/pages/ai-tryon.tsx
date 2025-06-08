@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Camera, Sparkles, ArrowRight, CheckCircle, Info, Home, ArrowLeft } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { Link } from "wouter";
 import type { Product } from "@shared/schema";
 
 interface TryOnResult {
@@ -165,6 +166,24 @@ export default function AITryOn() {
       <Header />
       
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Navigation Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Home className="w-4 h-4" />
+                Home
+              </Button>
+            </Link>
+            <Link href="/products">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Browse Products
+              </Button>
+            </Link>
+          </div>
+        </div>
+
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-deep-navy mb-4">AI Virtual Try-On</h1>
           <p className="text-warm-gray text-lg">
