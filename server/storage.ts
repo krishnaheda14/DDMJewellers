@@ -24,6 +24,8 @@ import {
   careTutorials,
   tutorialProgress,
   careReminders,
+  jewelryExchangeRequests,
+  exchangeNotifications,
   type User,
   type UpsertUser,
   type Category,
@@ -74,6 +76,10 @@ import {
   type InsertTutorialProgress,
   type CareReminder,
   type InsertCareReminder,
+  type JewelryExchangeRequest,
+  type InsertJewelryExchangeRequest,
+  type ExchangeNotification,
+  type InsertExchangeNotification,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, like, ilike, desc, asc, sql } from "drizzle-orm";
@@ -146,6 +152,24 @@ export interface IStorage {
   // User role operations
   updateUserRole(userId: string, role: string): Promise<User>;
   getWholesalers(approved?: boolean): Promise<User[]>;
+
+  // Jewelry Exchange operations
+  getExchangeRequests(filters?: {
+    userId?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<(JewelryExchangeRequest & { user: User; order?: Order; reviewer?: User })[]>;
+  getExchangeRequest(id: number): Promise<(JewelryExchangeRequest & { user: User; order?: Order; reviewer?: User }) | undefined>;
+  createExchangeRequest(request: InsertJewelryExchangeRequest): Promise<JewelryExchangeRequest>;
+  updateExchangeRequest(id: number, updates: Partial<InsertJewelryExchangeRequest>): Promise<JewelryExchangeRequest>;
+  approveExchangeRequest(id: number, adminAssignedValue: string, reviewedBy: string, adminNotes?: string): Promise<JewelryExchangeRequest>;
+  rejectExchangeRequest(id: number, rejectionReason: string, reviewedBy: string): Promise<JewelryExchangeRequest>;
+  deleteExchangeRequest(id: number): Promise<boolean>;
+  
+  // Exchange notifications
+  createExchangeNotification(notification: InsertExchangeNotification): Promise<ExchangeNotification>;
+  markNotificationSent(id: number): Promise<ExchangeNotification>;
 
   // Gullak operations
   createGullakAccount(account: InsertGullakAccount): Promise<GullakAccount>;
@@ -1308,6 +1332,196 @@ export class DatabaseStorage implements IStorage {
       DELETE FROM care_tutorials WHERE id = ${id}
     `);
     return result.rowCount > 0;
+  }
+
+  // Jewelry Exchange operations
+  async getExchangeRequests(filters?: {
+    userId?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<(JewelryExchangeRequest & { user: User; order?: Order; reviewer?: User })[]> {
+    let query = db
+      .select({
+        id: jewelryExchangeRequests.id,
+        userId: jewelryExchangeRequests.userId,
+        orderId: jewelryExchangeRequests.orderId,
+        jewelryPhotoUrl: jewelryExchangeRequests.jewelryPhotoUrl,
+        billPhotoUrl: jewelryExchangeRequests.billPhotoUrl,
+        description: jewelryExchangeRequests.description,
+        estimatedValue: jewelryExchangeRequests.estimatedValue,
+        adminAssignedValue: jewelryExchangeRequests.adminAssignedValue,
+        status: jewelryExchangeRequests.status,
+        adminNotes: jewelryExchangeRequests.adminNotes,
+        rejectionReason: jewelryExchangeRequests.rejectionReason,
+        reviewedBy: jewelryExchangeRequests.reviewedBy,
+        reviewedAt: jewelryExchangeRequests.reviewedAt,
+        createdAt: jewelryExchangeRequests.createdAt,
+        updatedAt: jewelryExchangeRequests.updatedAt,
+        user: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          role: users.role,
+          businessName: users.businessName,
+          businessAddress: users.businessAddress,
+          phoneNumber: users.phoneNumber,
+          isApproved: users.isApproved,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        },
+        order: {
+          id: orders.id,
+          userId: orders.userId,
+          status: orders.status,
+          totalAmount: orders.totalAmount,
+          shippingAddress: orders.shippingAddress,
+          billingAddress: orders.billingAddress,
+          paymentMethod: orders.paymentMethod,
+          createdAt: orders.createdAt,
+          updatedAt: orders.updatedAt,
+        },
+        reviewer: {
+          id: sql`reviewer.id`,
+          email: sql`reviewer.email`,
+          firstName: sql`reviewer.first_name`,
+          lastName: sql`reviewer.last_name`,
+          profileImageUrl: sql`reviewer.profile_image_url`,
+          role: sql`reviewer.role`,
+          businessName: sql`reviewer.business_name`,
+          businessAddress: sql`reviewer.business_address`,
+          phoneNumber: sql`reviewer.phone_number`,
+          isApproved: sql`reviewer.is_approved`,
+          createdAt: sql`reviewer.created_at`,
+          updatedAt: sql`reviewer.updated_at`,
+        },
+      })
+      .from(jewelryExchangeRequests)
+      .leftJoin(users, eq(jewelryExchangeRequests.userId, users.id))
+      .leftJoin(orders, eq(jewelryExchangeRequests.orderId, orders.id))
+      .leftJoin(sql`users AS reviewer`, sql`jewelry_exchange_requests.reviewed_by = reviewer.id`)
+      .orderBy(desc(jewelryExchangeRequests.createdAt));
+
+    if (filters?.userId) {
+      query = query.where(eq(jewelryExchangeRequests.userId, filters.userId));
+    }
+
+    if (filters?.status) {
+      query = query.where(eq(jewelryExchangeRequests.status, filters.status));
+    }
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+
+    if (filters?.offset) {
+      query = query.offset(filters.offset);
+    }
+
+    const results = await query;
+    
+    return results.map(result => ({
+      id: result.id,
+      userId: result.userId,
+      orderId: result.orderId,
+      jewelryPhotoUrl: result.jewelryPhotoUrl,
+      billPhotoUrl: result.billPhotoUrl,
+      description: result.description,
+      estimatedValue: result.estimatedValue,
+      adminAssignedValue: result.adminAssignedValue,
+      status: result.status,
+      adminNotes: result.adminNotes,
+      rejectionReason: result.rejectionReason,
+      reviewedBy: result.reviewedBy,
+      reviewedAt: result.reviewedAt,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+      user: result.user,
+      order: result.order,
+      reviewer: result.reviewer,
+    }));
+  }
+
+  async getExchangeRequest(id: number): Promise<(JewelryExchangeRequest & { user: User; order?: Order; reviewer?: User }) | undefined> {
+    const [result] = await this.getExchangeRequests({ limit: 1 });
+    return result;
+  }
+
+  async createExchangeRequest(request: InsertJewelryExchangeRequest): Promise<JewelryExchangeRequest> {
+    const [exchangeRequest] = await db
+      .insert(jewelryExchangeRequests)
+      .values(request)
+      .returning();
+    return exchangeRequest;
+  }
+
+  async updateExchangeRequest(id: number, updates: Partial<InsertJewelryExchangeRequest>): Promise<JewelryExchangeRequest> {
+    const [exchangeRequest] = await db
+      .update(jewelryExchangeRequests)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(jewelryExchangeRequests.id, id))
+      .returning();
+    return exchangeRequest;
+  }
+
+  async approveExchangeRequest(id: number, adminAssignedValue: string, reviewedBy: string, adminNotes?: string): Promise<JewelryExchangeRequest> {
+    const [exchangeRequest] = await db
+      .update(jewelryExchangeRequests)
+      .set({
+        status: "approved",
+        adminAssignedValue,
+        reviewedBy,
+        adminNotes,
+        reviewedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(jewelryExchangeRequests.id, id))
+      .returning();
+    return exchangeRequest;
+  }
+
+  async rejectExchangeRequest(id: number, rejectionReason: string, reviewedBy: string): Promise<JewelryExchangeRequest> {
+    const [exchangeRequest] = await db
+      .update(jewelryExchangeRequests)
+      .set({
+        status: "rejected",
+        rejectionReason,
+        reviewedBy,
+        reviewedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(jewelryExchangeRequests.id, id))
+      .returning();
+    return exchangeRequest;
+  }
+
+  async deleteExchangeRequest(id: number): Promise<boolean> {
+    const result = await db
+      .delete(jewelryExchangeRequests)
+      .where(eq(jewelryExchangeRequests.id, id));
+    return result.rowCount > 0;
+  }
+
+  async createExchangeNotification(notification: InsertExchangeNotification): Promise<ExchangeNotification> {
+    const [exchangeNotification] = await db
+      .insert(exchangeNotifications)
+      .values(notification)
+      .returning();
+    return exchangeNotification;
+  }
+
+  async markNotificationSent(id: number): Promise<ExchangeNotification> {
+    const [notification] = await db
+      .update(exchangeNotifications)
+      .set({
+        status: "sent",
+        sentAt: new Date(),
+      })
+      .where(eq(exchangeNotifications.id, id))
+      .returning();
+    return notification;
   }
 }
 

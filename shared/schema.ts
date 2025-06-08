@@ -843,6 +843,11 @@ export type InsertTutorialProgress = z.infer<typeof insertTutorialProgressSchema
 
 export type CareReminder = typeof careReminders.$inferSelect;
 export type InsertCareReminder = z.infer<typeof insertCareReminderSchema>;
+
+export type JewelryExchangeRequest = typeof jewelryExchangeRequests.$inferSelect;
+export type InsertJewelryExchangeRequest = z.infer<typeof insertJewelryExchangeRequestSchema>;
+export type ExchangeNotification = typeof exchangeNotifications.$inferSelect;
+export type InsertExchangeNotification = z.infer<typeof insertExchangeNotificationSchema>;
 export type UserChallenge = typeof userChallenges.$inferSelect;
 export type InsertUserChallenge = z.infer<typeof insertUserChallengeSchema>;
 export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;

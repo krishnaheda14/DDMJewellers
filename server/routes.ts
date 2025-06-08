@@ -1892,6 +1892,231 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Jewelry Exchange routes
+  app.get("/api/exchange/requests", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const filters: any = {};
+      
+      // Regular users can only see their own requests
+      if (user.role !== 'admin') {
+        filters.userId = user.id;
+      }
+
+      // Add query filters
+      if (req.query.status) {
+        filters.status = req.query.status;
+      }
+      if (req.query.limit) {
+        filters.limit = parseInt(req.query.limit as string);
+      }
+      if (req.query.offset) {
+        filters.offset = parseInt(req.query.offset as string);
+      }
+
+      const requests = await storage.getExchangeRequests(filters);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching exchange requests:", error);
+      res.status(500).json({ message: "Failed to fetch exchange requests" });
+    }
+  });
+
+  app.get("/api/exchange/requests/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const requestId = parseInt(req.params.id);
+      const exchangeRequest = await storage.getExchangeRequest(requestId);
+      
+      if (!exchangeRequest) {
+        return res.status(404).json({ message: "Exchange request not found" });
+      }
+
+      // Users can only view their own requests, admins can view all
+      if (user.role !== 'admin' && exchangeRequest.userId !== user.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      res.json(exchangeRequest);
+    } catch (error) {
+      console.error("Error fetching exchange request:", error);
+      res.status(500).json({ message: "Failed to fetch exchange request" });
+    }
+  });
+
+  app.post("/api/exchange/requests", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const requestData = {
+        userId: user.id,
+        orderId: req.body.orderId,
+        jewelryPhotoUrl: req.body.jewelryPhotoUrl,
+        billPhotoUrl: req.body.billPhotoUrl,
+        description: req.body.description,
+        estimatedValue: req.body.estimatedValue,
+        status: "pending" as const,
+      };
+
+      const exchangeRequest = await storage.createExchangeRequest(requestData);
+      
+      // Create notification for admin
+      await storage.createExchangeNotification({
+        userId: user.id,
+        type: "request_submitted",
+        message: `New jewelry exchange request submitted by ${user.firstName || user.email}`,
+        metadata: { exchangeRequestId: exchangeRequest.id },
+      });
+
+      res.status(201).json(exchangeRequest);
+    } catch (error) {
+      console.error("Error creating exchange request:", error);
+      res.status(500).json({ message: "Failed to create exchange request" });
+    }
+  });
+
+  app.patch("/api/exchange/requests/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const requestId = parseInt(req.params.id);
+      const exchangeRequest = await storage.getExchangeRequest(requestId);
+      
+      if (!exchangeRequest) {
+        return res.status(404).json({ message: "Exchange request not found" });
+      }
+
+      // Users can only edit their own pending requests
+      if (user.role !== 'admin' && exchangeRequest.userId !== user.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      if (user.role !== 'admin' && exchangeRequest.status !== 'pending') {
+        return res.status(400).json({ message: "Cannot edit request that has been reviewed" });
+      }
+
+      const updatedRequest = await storage.updateExchangeRequest(requestId, req.body);
+      res.json(updatedRequest);
+    } catch (error) {
+      console.error("Error updating exchange request:", error);
+      res.status(500).json({ message: "Failed to update exchange request" });
+    }
+  });
+
+  app.post("/api/exchange/requests/:id/approve", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const requestId = parseInt(req.params.id);
+      const { adminAssignedValue, adminNotes } = req.body;
+
+      if (!adminAssignedValue) {
+        return res.status(400).json({ message: "Admin assigned value is required" });
+      }
+
+      const exchangeRequest = await storage.approveExchangeRequest(
+        requestId,
+        adminAssignedValue,
+        user.id,
+        adminNotes
+      );
+
+      // Create notification for user
+      await storage.createExchangeNotification({
+        userId: exchangeRequest.userId,
+        type: "request_approved",
+        message: `Your jewelry exchange request has been approved with a value of ₹${adminAssignedValue}`,
+        metadata: { exchangeRequestId: exchangeRequest.id, approvedValue: adminAssignedValue },
+      });
+
+      res.json(exchangeRequest);
+    } catch (error) {
+      console.error("Error approving exchange request:", error);
+      res.status(500).json({ message: "Failed to approve exchange request" });
+    }
+  });
+
+  app.post("/api/exchange/requests/:id/reject", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const requestId = parseInt(req.params.id);
+      const { rejectionReason } = req.body;
+
+      if (!rejectionReason) {
+        return res.status(400).json({ message: "Rejection reason is required" });
+      }
+
+      const exchangeRequest = await storage.rejectExchangeRequest(
+        requestId,
+        rejectionReason,
+        user.id
+      );
+
+      // Create notification for user
+      await storage.createExchangeNotification({
+        userId: exchangeRequest.userId,
+        type: "request_rejected",
+        message: `Your jewelry exchange request has been rejected: ${rejectionReason}`,
+        metadata: { exchangeRequestId: exchangeRequest.id, rejectionReason },
+      });
+
+      res.json(exchangeRequest);
+    } catch (error) {
+      console.error("Error rejecting exchange request:", error);
+      res.status(500).json({ message: "Failed to reject exchange request" });
+    }
+  });
+
+  app.delete("/api/exchange/requests/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const requestId = parseInt(req.params.id);
+      const exchangeRequest = await storage.getExchangeRequest(requestId);
+      
+      if (!exchangeRequest) {
+        return res.status(404).json({ message: "Exchange request not found" });
+      }
+
+      // Users can only delete their own pending requests, admins can delete any
+      if (user.role !== 'admin') {
+        if (exchangeRequest.userId !== user.id || exchangeRequest.status !== 'pending') {
+          return res.status(403).json({ message: "Access denied" });
+        }
+      }
+
+      const success = await storage.deleteExchangeRequest(requestId);
+      res.json({ success });
+    } catch (error) {
+      console.error("Error deleting exchange request:", error);
+      res.status(500).json({ message: "Failed to delete exchange request" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
