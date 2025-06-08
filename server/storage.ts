@@ -919,6 +919,97 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getExchangeRequests(userId?: string): Promise<any[]> {
+    try {
+      if (userId) {
+        return await db.select().from(jewelryExchangeRequests).where(eq(jewelryExchangeRequests.userId, userId));
+      }
+      return await db.select().from(jewelryExchangeRequests);
+    } catch (error) {
+      console.log("Exchange requests table not available");
+      return [];
+    }
+  }
+
+  async getExchangeRequest(id: number): Promise<any | undefined> {
+    try {
+      const [request] = await db.select().from(jewelryExchangeRequests).where(eq(jewelryExchangeRequests.id, id));
+      return request;
+    } catch (error) {
+      console.log("Exchange requests table not available");
+      return undefined;
+    }
+  }
+
+  async createExchangeRequest(data: any): Promise<any> {
+    try {
+      const [request] = await db.insert(jewelryExchangeRequests).values(data).returning();
+      return request;
+    } catch (error) {
+      console.log("Exchange requests table not available");
+      throw error;
+    }
+  }
+
+  async updateExchangeRequest(id: number, data: any): Promise<any> {
+    try {
+      const [request] = await db.update(jewelryExchangeRequests).set(data).where(eq(jewelryExchangeRequests.id, id)).returning();
+      return request;
+    } catch (error) {
+      console.log("Exchange requests table not available");
+      throw error;
+    }
+  }
+
+  async approveExchangeRequest(id: number, approvedBy: string): Promise<any> {
+    try {
+      const [request] = await db.update(jewelryExchangeRequests).set({
+        status: 'approved',
+        approvedBy,
+        approvedAt: new Date()
+      }).where(eq(jewelryExchangeRequests.id, id)).returning();
+      return request;
+    } catch (error) {
+      console.log("Exchange requests table not available");
+      throw error;
+    }
+  }
+
+  async rejectExchangeRequest(id: number, approvedBy: string): Promise<any> {
+    try {
+      const [request] = await db.update(jewelryExchangeRequests).set({
+        status: 'rejected',
+        approvedBy,
+        approvedAt: new Date()
+      }).where(eq(jewelryExchangeRequests.id, id)).returning();
+      return request;
+    } catch (error) {
+      console.log("Exchange requests table not available");
+      throw error;
+    }
+  }
+
+  async deleteExchangeRequest(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(jewelryExchangeRequests).where(eq(jewelryExchangeRequests.id, id));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.log("Exchange requests table not available");
+      return false;
+    }
+  }
+
+  async createExchangeNotification(data: any): Promise<any> {
+    try {
+      // Placeholder for notification system
+      console.log("Exchange notification:", data);
+      return data;
+    } catch (error) {
+      console.log("Notification system not available");
+      return null;
+    }
+  }
+
   async getAllCorporateRequests(): Promise<any[]> {
     try {
       return await db.select().from(corporateRegistrations);
