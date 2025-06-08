@@ -25,6 +25,7 @@ import {
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import PageNavigation from "@/components/page-navigation";
 
 interface Product {
   id: number;
@@ -315,26 +316,8 @@ export default function Shop() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
+        <PageNavigation />
         <div className="max-w-7xl mx-auto px-4 py-6">
-          {/* Navigation Header */}
-          <div className="flex items-center justify-between mb-6">
-            <Button 
-              variant="outline" 
-              onClick={() => window.location.href = "/"}
-              className="flex items-center gap-2 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Home
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => window.location.href = "/"}
-              className="flex items-center gap-2 text-amber-600 hover:text-amber-700"
-            >
-              <Home className="h-4 w-4" />
-              DDM Jewellers
-            </Button>
-          </div>
 
           <div className="flex items-center justify-between mb-6">
             <div>
