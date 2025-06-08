@@ -521,6 +521,11 @@ export default function Admin() {
             </div>
           </TabsContent>
 
+          {/* Exchange Tab */}
+          <TabsContent value="exchange" className="space-y-6">
+            <ExchangeManagement />
+          </TabsContent>
+
           {/* Tutorials Tab */}
           <TabsContent value="tutorials" className="space-y-6">
             <TutorialManagement />
