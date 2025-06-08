@@ -25,6 +25,7 @@ import CurrencyConverter from "@/pages/currency-converter";
 import CorporateRegistration from "@/pages/corporate-registration";
 import CorporateBenefits from "@/pages/corporate-benefits";
 import CorporateAdmin from "@/pages/corporate-admin";
+import Shop from "@/pages/shop";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -41,8 +42,10 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Home} />
+          <Route path="/shop" component={Shop} />
           <Route path="/products" component={Products} />
           <Route path="/products/:id" component={ProductDetail} />
+          <Route path="/product/:id" component={ProductDetail} />
           <Route path="/cart" component={Cart} />
           <Route path="/admin" component={Admin} />
           <Route path="/custom-jewelry" component={CustomJewelry} />
