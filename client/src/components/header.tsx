@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import CartSidebar from "./cart-sidebar";
+import { useCurrencyContext } from "@/components/price-display";
 import { Search, ShoppingBag, User, Menu, X, Heart, Home, Trophy, Sparkles, Globe, DollarSign } from "lucide-react";
 import type { CartItem, Product } from "@shared/schema";
 
@@ -22,7 +23,7 @@ export default function Header() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState("en");
-  const [selectedCurrency, setSelectedCurrency] = useState("INR");
+  const { selectedCurrency, changeCurrency } = useCurrencyContext();
 
   const { data: cartItems = [] } = useQuery<CartItemWithProduct[]>({
     queryKey: ["/api/cart"],
@@ -63,6 +64,7 @@ export default function Header() {
     { name: "Shingaar Guru", href: "/shingaar-guru", icon: Sparkles },
     { name: "Jewelry Care", href: "/jewelry-care" },
     { name: "Exchange", href: "/jewelry-exchange" },
+    { name: "Currency Converter", href: "/currency-converter" },
     { name: "Custom Design", href: "/custom-jewelry" },
     { name: "Virtual Try-On", href: "/ai-tryon" },
     { name: "Rings", href: "/products?search=ring" },
