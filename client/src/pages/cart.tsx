@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useAuth } from "@/hooks/useAuth";
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Home, ArrowLeft } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Home, ArrowLeft, Gift, Upload, Camera } from "lucide-react";
 import type { CartItem, Product } from "@shared/schema";
 import { CartLoader, SubmissionLoader } from "@/components/loading/jewelry-loader";
 import { CardReveal, PageTransition } from "@/components/loading/page-transition";
@@ -33,6 +33,18 @@ export default function Cart() {
     state: "",
     postalCode: "",
     phone: "",
+  });
+
+  const [exchangeData, setExchangeData] = useState({
+    enabled: false,
+    jewelryType: "",
+    weight: "",
+    purity: "",
+    estimatedValue: 0,
+    jewelryPhotoUrl: "",
+    billPhotoUrl: "",
+    description: "",
+    appraisalId: null as number | null,
   });
 
   const { data: cartItems = [], isLoading } = useQuery<CartItemWithProduct[]>({
@@ -111,6 +123,30 @@ export default function Cart() {
     },
   });
 
+  const submitExchangeMutation = useMutation({
+    mutationFn: async (exchangeData: any) => {
+      return apiRequest("POST", "/api/jewelry-exchange", exchangeData);
+    },
+    onSuccess: (data) => {
+      setExchangeData(prev => ({ 
+        ...prev, 
+        appraisalId: data.id,
+        estimatedValue: data.estimatedValue || 0
+      }));
+      toast({
+        title: "Exchange request submitted",
+        description: "Your jewelry exchange request has been submitted for appraisal.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to submit exchange request.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const checkoutMutation = useMutation({
     mutationFn: async () => {
       const orderItems = cartItems.map(item => ({
@@ -121,6 +157,7 @@ export default function Cart() {
       await apiRequest("POST", "/api/orders", {
         shippingAddress,
         orderItems,
+        exchangeData: exchangeData.enabled ? exchangeData : null,
       });
     },
     onSuccess: () => {
@@ -156,7 +193,8 @@ export default function Cart() {
     sum + (parseFloat(item.product.price) * item.quantity), 0
   );
   const shipping = subtotal > 25000 ? 0 : 500;
-  const total = subtotal + shipping;
+  const exchangeDiscount = exchangeData.enabled ? exchangeData.estimatedValue : 0;
+  const total = Math.max(0, subtotal + shipping - exchangeDiscount);
 
   const handleCheckout = () => {
     if (!shippingAddress.name || !shippingAddress.address || !shippingAddress.city || 
@@ -312,6 +350,12 @@ export default function Cart() {
                       Free shipping on orders over ₹25,000!
                     </p>
                   )}
+                  {exchangeData.enabled && exchangeDiscount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Exchange Discount</span>
+                      <span>-₹{exchangeDiscount.toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
                   <Separator />
                   <div className="flex justify-between text-lg font-semibold">
                     <span>Total</span>
@@ -386,6 +430,154 @@ export default function Cart() {
                       </div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Jewelry Exchange Option */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Gift className="h-5 w-5 text-amber-600" />
+                    Jewelry Exchange
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="exchangeEnabled"
+                      checked={exchangeData.enabled}
+                      onChange={(e) => setExchangeData(prev => ({ ...prev, enabled: e.target.checked }))}
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor="exchangeEnabled" className="text-sm">
+                      I want to exchange old jewelry for discount
+                    </Label>
+                  </div>
+
+                  {exchangeData.enabled && (
+                    <div className="space-y-4 border-t pt-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="jewelryType">Jewelry Type</Label>
+                          <Input
+                            id="jewelryType"
+                            value={exchangeData.jewelryType}
+                            onChange={(e) => setExchangeData(prev => ({ ...prev, jewelryType: e.target.value }))}
+                            placeholder="Ring, Necklace, etc."
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="weight">Weight (grams)</Label>
+                          <Input
+                            id="weight"
+                            value={exchangeData.weight}
+                            onChange={(e) => setExchangeData(prev => ({ ...prev, weight: e.target.value }))}
+                            placeholder="e.g., 10.5"
+                            type="number"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="purity">Purity</Label>
+                        <Input
+                          id="purity"
+                          value={exchangeData.purity}
+                          onChange={(e) => setExchangeData(prev => ({ ...prev, purity: e.target.value }))}
+                          placeholder="22K, 18K, 916, etc."
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="jewelryPhotoUrl">Jewelry Photo URL</Label>
+                        <Input
+                          id="jewelryPhotoUrl"
+                          value={exchangeData.jewelryPhotoUrl}
+                          onChange={(e) => setExchangeData(prev => ({ ...prev, jewelryPhotoUrl: e.target.value }))}
+                          placeholder="Upload photo and paste URL"
+                        />
+                        {exchangeData.jewelryPhotoUrl && (
+                          <div className="mt-2">
+                            <img 
+                              src={exchangeData.jewelryPhotoUrl} 
+                              alt="Jewelry" 
+                              className="w-24 h-24 object-cover rounded-lg border"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="billPhotoUrl">Original Bill Photo URL</Label>
+                        <Input
+                          id="billPhotoUrl"
+                          value={exchangeData.billPhotoUrl}
+                          onChange={(e) => setExchangeData(prev => ({ ...prev, billPhotoUrl: e.target.value }))}
+                          placeholder="Upload bill photo and paste URL"
+                        />
+                        {exchangeData.billPhotoUrl && (
+                          <div className="mt-2">
+                            <img 
+                              src={exchangeData.billPhotoUrl} 
+                              alt="Bill" 
+                              className="w-24 h-24 object-cover rounded-lg border"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="exchangeDescription">Description</Label>
+                        <Input
+                          id="exchangeDescription"
+                          value={exchangeData.description}
+                          onChange={(e) => setExchangeData(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Describe your jewelry (stones, condition, etc.)"
+                        />
+                      </div>
+
+                      {!exchangeData.appraisalId && (
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            if (!exchangeData.jewelryType || !exchangeData.weight || !exchangeData.purity) {
+                              toast({
+                                title: "Missing information",
+                                description: "Please fill in jewelry type, weight, and purity.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            submitExchangeMutation.mutate({
+                              jewelryType: exchangeData.jewelryType,
+                              weight: exchangeData.weight,
+                              purity: exchangeData.purity,
+                              jewelryPhotoUrl: exchangeData.jewelryPhotoUrl,
+                              billPhotoUrl: exchangeData.billPhotoUrl,
+                              description: exchangeData.description,
+                            });
+                          }}
+                          disabled={submitExchangeMutation.isPending}
+                          className="w-full"
+                        >
+                          {submitExchangeMutation.isPending ? "Submitting..." : "Submit for Appraisal"}
+                          <Camera className="h-4 w-4 ml-2" />
+                        </Button>
+                      )}
+
+                      {exchangeData.appraisalId && (
+                        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                          <p className="text-sm text-green-700 dark:text-green-300">
+                            ✓ Exchange request submitted! Estimated value: ₹{exchangeData.estimatedValue.toLocaleString('en-IN')}
+                          </p>
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                            This discount will be applied to your order total.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
