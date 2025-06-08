@@ -185,64 +185,54 @@ export default function Cart() {
       <div className="min-h-screen bg-background">
         <Header />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-deep-navy">Shopping Cart</h1>
-          <p className="text-warm-gray mt-2">
+        <div className="container-fluid p-responsive-sm">
+        <div className="m-responsive-sm">
+          <h1 className="heading-lg text-deep-navy">Shopping Cart</h1>
+          <p className="responsive-text-sm text-warm-gray mt-2">
             {cartItems.length} item{cartItems.length !== 1 ? 's' : ''} in your cart
           </p>
         </div>
 
         {cartItems.length === 0 ? (
-          <div className="text-center py-16">
-            <ShoppingBag className="h-24 w-24 mx-auto text-gray-300 mb-6" />
-            <h2 className="text-2xl font-semibold text-deep-navy mb-4">Your cart is empty</h2>
-            <p className="text-warm-gray mb-8">
+          <div className="text-center p-responsive-sm">
+            <ShoppingBag className="h-20 w-20 sm:h-24 sm:w-24 mx-auto text-gray-300 m-responsive-sm" />
+            <h2 className="heading-md text-deep-navy m-responsive-sm">Your cart is empty</h2>
+            <p className="responsive-text-sm text-warm-gray m-responsive-sm">
               Discover our beautiful jewelry collection and add items to your cart.
             </p>
             <Button 
               size="lg"
-              className="bg-gold hover:bg-gold/90 text-white"
+              className="bg-gold hover:bg-gold/90 text-white btn-responsive touch-friendly"
               onClick={() => navigate("/products")}
             >
               Continue Shopping
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-responsive">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               {cartItems.map((item) => (
-                <Card key={item.id}>
-                  <CardContent className="p-6">
-                    <div className="flex gap-4">
-                      <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                <Card key={item.id} className="card-responsive">
+                  <CardContent className="responsive-card-sm">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="w-full sm:w-24 h-48 sm:h-24 rounded-lg overflow-hidden flex-shrink-0">
                         <img
                           src={item.product.imageUrl || "https://images.unsplash.com/photo-1605100804763-247f67b3557e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200"}
                           alt={item.product.name}
-                          className="w-full h-full object-cover"
+                          className="responsive-image"
                         />
                       </div>
                       
                       <div className="flex-1 space-y-2">
-                        <h3 className="font-semibold text-deep-navy">{item.product.name}</h3>
-                        <p className="text-sm text-warm-gray">{item.product.description}</p>
-                        <p className="text-lg font-bold text-gold">
+                        <h3 className="heading-sm text-deep-navy">{item.product.name}</h3>
+                        <p className="text-responsive-xs text-warm-gray">{item.product.description}</p>
+                        <p className="responsive-text text-gold font-bold">
                           ₹{parseFloat(item.product.price).toLocaleString('en-IN')}
                         </p>
                       </div>
 
-                      <div className="flex flex-col items-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeItemMutation.mutate(item.id)}
-                          disabled={removeItemMutation.isPending}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-
+                      <div className="flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-2 justify-between sm:justify-start">
                         <div className="flex items-center border rounded">
                           <Button
                             variant="ghost"
@@ -252,11 +242,11 @@ export default function Cart() {
                               quantity: Math.max(1, item.quantity - 1) 
                             })}
                             disabled={item.quantity <= 1 || updateQuantityMutation.isPending}
-                            className="px-2"
+                            className="touch-friendly px-2 sm:px-2"
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <span className="px-3 py-1 text-sm font-medium">{item.quantity}</span>
+                          <span className="px-3 py-2 text-responsive-xs font-medium">{item.quantity}</span>
                           <Button
                             variant="ghost"
                             size="sm"

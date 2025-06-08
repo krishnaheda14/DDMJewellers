@@ -105,10 +105,10 @@ export default function Gullak() {
   if (!isAuthenticated) {
     return (
       <PageTransition>
-        <div className="container mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">Please log in to access Gullak</h1>
+        <div className="container-narrow p-responsive text-center">
+          <h1 className="heading-md m-responsive">Please log in to access Gullak</h1>
           <Link href="/api/login">
-            <Button>Log In</Button>
+            <Button className="btn-responsive touch-friendly">Log In</Button>
           </Link>
         </div>
       </PageTransition>
@@ -118,12 +118,12 @@ export default function Gullak() {
   if (accountsLoading) {
     return (
       <PageTransition>
-        <div className="container mx-auto px-4 py-8">
+        <div className="container-fluid p-responsive">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="h-6 sm:h-8 bg-gray-200 rounded w-1/2 sm:w-1/4 m-responsive-sm"></div>
+            <div className="responsive-grid-3 gap-responsive">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
+                <div key={i} className="h-40 sm:h-48 bg-gray-200 rounded-lg"></div>
               ))}
             </div>
           </div>
