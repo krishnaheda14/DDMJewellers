@@ -69,7 +69,13 @@ export async function setupTempAuth(app: Express) {
 export const isAuthenticated: RequestHandler = (req, res, next) => {
   const sessionUser = (req as any).session?.user;
   if (sessionUser) {
-    (req as any).user = sessionUser;
+    (req as any).user = {
+      ...sessionUser,
+      claims: {
+        sub: sessionUser.id,
+        email: sessionUser.email
+      }
+    };
     next();
   } else {
     res.status(401).json({ message: "Unauthorized" });
