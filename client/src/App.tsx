@@ -26,7 +26,7 @@ import CorporateRegistration from "@/pages/corporate-registration";
 import CorporateBenefits from "@/pages/corporate-benefits";
 import CorporateAdmin from "@/pages/corporate-admin";
 import Shop from "@/pages/shop";
-import TempLogin from "@/pages/temp-login";
+import AuthPage from "@/pages/auth-page";
 import LiveMarketRates from "@/pages/live-market-rates";
 
 function Router() {
@@ -43,7 +43,7 @@ function Router() {
   return (
     <Switch>
       {/* Always accessible routes */}
-      <Route path="/temp-login" component={TempLogin} />
+      <Route path="/auth" component={AuthPage} />
       <Route path="/signup" component={Signup} />
       <Route path="/shop" component={Shop} />
       <Route path="/products" component={Products} />
