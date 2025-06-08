@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import CartSidebar from "./cart-sidebar";
-import { Search, ShoppingBag, User, Menu, X, Heart, Home } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, Heart, Home, Trophy } from "lucide-react";
 import type { CartItem, Product } from "@shared/schema";
 
 interface CartItemWithProduct extends CartItem {
@@ -155,6 +155,17 @@ export default function Header() {
                     <Heart className="h-5 w-5 transform group-hover:scale-110 transition-all duration-300 group-hover:fill-red-400 group-hover:text-red-400" />
                     <div className="absolute inset-0 bg-gradient-to-r from-pink-100/20 via-red-50/30 to-gold/10 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300"></div>
                     <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-400 rounded-full scale-0 group-hover:scale-100 transition-transform duration-500 delay-100"></div>
+                  </Button>
+
+                  {/* Loyalty Program */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="relative group p-2 text-warm-gray hover:text-gold transition-all duration-300 rounded-lg hover:bg-gold/10 hover:shadow-md transform hover:scale-105"
+                    onClick={() => navigate("/loyalty")}
+                  >
+                    <Trophy className="h-5 w-5 transform group-hover:scale-110 transition-all duration-300 group-hover:text-yellow-500" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/20 via-gold/10 to-amber-50/30 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300"></div>
                   </Button>
 
                   {/* Cart */}

@@ -1342,6 +1342,232 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Loyalty System API Routes
+  
+  // Get all loyalty badges
+  app.get('/api/loyalty/badges', isAuthenticated, async (req: any, res) => {
+    try {
+      const { category, rarity, isActive } = req.query;
+      const filters: any = {};
+      if (category) filters.category = category;
+      if (rarity) filters.rarity = rarity;
+      if (isActive !== undefined) filters.isActive = isActive === 'true';
+      
+      const badges = await storage.getLoyaltyBadges(filters);
+      res.json(badges);
+    } catch (error) {
+      console.error("Error fetching loyalty badges:", error);
+      res.status(500).json({ message: "Failed to fetch loyalty badges" });
+    }
+  });
+
+  // Get user's badge collection
+  app.get('/api/loyalty/user-badges', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userBadges = await storage.getUserBadges(userId);
+      res.json(userBadges);
+    } catch (error) {
+      console.error("Error fetching user badges:", error);
+      res.status(500).json({ message: "Failed to fetch user badges" });
+    }
+  });
+
+  // Get user's loyalty profile
+  app.get('/api/loyalty/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      let profile = await storage.getLoyaltyProfile(userId);
+      
+      // Create profile if it doesn't exist
+      if (!profile) {
+        profile = await storage.createLoyaltyProfile({
+          userId,
+          totalPoints: 0,
+          availablePoints: 0,
+          tier: "bronze",
+          tierProgress: 0,
+          streak: 0,
+          lastActivity: new Date(),
+          joinedAt: new Date(),
+          lifetimeSpent: "0.00",
+        });
+      }
+      
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching loyalty profile:", error);
+      res.status(500).json({ message: "Failed to fetch loyalty profile" });
+    }
+  });
+
+  // Get loyalty transactions
+  app.get('/api/loyalty/transactions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = req.query.limit ? parseInt(req.query.limit) : 50;
+      const transactions = await storage.getLoyaltyTransactions(userId, limit);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching loyalty transactions:", error);
+      res.status(500).json({ message: "Failed to fetch loyalty transactions" });
+    }
+  });
+
+  // Award points (admin only)
+  app.post('/api/loyalty/award-points', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only admin can award points" });
+      }
+
+      const { userId, points, source, description, metadata } = req.body;
+      const transaction = await storage.addLoyaltyPoints(userId, points, source, description, metadata);
+      res.json(transaction);
+    } catch (error) {
+      console.error("Error awarding points:", error);
+      res.status(500).json({ message: "Failed to award points" });
+    }
+  });
+
+  // Award badge (admin only)
+  app.post('/api/loyalty/award-badge', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only admin can award badges" });
+      }
+
+      const { userId, badgeId, level } = req.body;
+      const userBadge = await storage.awardBadge(userId, badgeId, level);
+      res.json(userBadge);
+    } catch (error) {
+      console.error("Error awarding badge:", error);
+      res.status(500).json({ message: "Failed to award badge" });
+    }
+  });
+
+  // Mark badge as viewed
+  app.post('/api/loyalty/mark-badge-viewed', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { badgeId } = req.body;
+      const success = await storage.markBadgeAsViewed(userId, badgeId);
+      res.json({ success });
+    } catch (error) {
+      console.error("Error marking badge as viewed:", error);
+      res.status(500).json({ message: "Failed to mark badge as viewed" });
+    }
+  });
+
+  // Get loyalty challenges
+  app.get('/api/loyalty/challenges', isAuthenticated, async (req: any, res) => {
+    try {
+      const { type, isActive } = req.query;
+      const filters: any = {};
+      if (type) filters.type = type;
+      if (isActive !== undefined) filters.isActive = isActive === 'true';
+      
+      const challenges = await storage.getLoyaltyChallenges(filters);
+      res.json(challenges);
+    } catch (error) {
+      console.error("Error fetching loyalty challenges:", error);
+      res.status(500).json({ message: "Failed to fetch loyalty challenges" });
+    }
+  });
+
+  // Get user challenges
+  app.get('/api/loyalty/user-challenges', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userChallenges = await storage.getUserChallenges(userId);
+      res.json(userChallenges);
+    } catch (error) {
+      console.error("Error fetching user challenges:", error);
+      res.status(500).json({ message: "Failed to fetch user challenges" });
+    }
+  });
+
+  // Get loyalty rewards
+  app.get('/api/loyalty/rewards', isAuthenticated, async (req: any, res) => {
+    try {
+      const { type, tierRequired, isActive } = req.query;
+      const filters: any = {};
+      if (type) filters.type = type;
+      if (tierRequired) filters.tierRequired = tierRequired;
+      if (isActive !== undefined) filters.isActive = isActive === 'true';
+      
+      const rewards = await storage.getLoyaltyRewards(filters);
+      res.json(rewards);
+    } catch (error) {
+      console.error("Error fetching loyalty rewards:", error);
+      res.status(500).json({ message: "Failed to fetch loyalty rewards" });
+    }
+  });
+
+  // Redeem reward
+  app.post('/api/loyalty/redeem-reward', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { rewardId } = req.body;
+      const redemption = await storage.redeemReward(userId, rewardId);
+      res.json(redemption);
+    } catch (error) {
+      console.error("Error redeeming reward:", error);
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to redeem reward" });
+      }
+    }
+  });
+
+  // Get user redemptions
+  app.get('/api/loyalty/user-redemptions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const redemptions = await storage.getUserRedemptions(userId);
+      res.json(redemptions);
+    } catch (error) {
+      console.error("Error fetching user redemptions:", error);
+      res.status(500).json({ message: "Failed to fetch user redemptions" });
+    }
+  });
+
+  // Admin: Create loyalty badge
+  app.post('/api/loyalty/badges', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only admin can create badges" });
+      }
+
+      const badge = await storage.createLoyaltyBadge(req.body);
+      res.status(201).json(badge);
+    } catch (error) {
+      console.error("Error creating loyalty badge:", error);
+      res.status(500).json({ message: "Failed to create loyalty badge" });
+    }
+  });
+
+  // Admin: Update loyalty badge
+  app.put('/api/loyalty/badges/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Only admin can update badges" });
+      }
+
+      const badgeId = parseInt(req.params.id);
+      const badge = await storage.updateLoyaltyBadge(badgeId, req.body);
+      res.json(badge);
+    } catch (error) {
+      console.error("Error updating loyalty badge:", error);
+      res.status(500).json({ message: "Failed to update loyalty badge" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

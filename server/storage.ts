@@ -806,6 +806,337 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return updatedOrder;
   }
+
+  // Loyalty Program Implementation
+  
+  // Badge operations
+  async getLoyaltyBadges(filters?: { category?: string; rarity?: string; isActive?: boolean }): Promise<LoyaltyBadge[]> {
+    let query = db.select().from(loyaltyBadges);
+    
+    if (filters?.category) {
+      query = query.where(eq(loyaltyBadges.category, filters.category)) as any;
+    }
+    if (filters?.rarity) {
+      query = query.where(eq(loyaltyBadges.rarity, filters.rarity as any)) as any;
+    }
+    if (filters?.isActive !== undefined) {
+      query = query.where(eq(loyaltyBadges.isActive, filters.isActive)) as any;
+    }
+    
+    return await query.orderBy(loyaltyBadges.pointsRequired);
+  }
+
+  async getLoyaltyBadge(id: number): Promise<LoyaltyBadge | undefined> {
+    const [badge] = await db.select().from(loyaltyBadges).where(eq(loyaltyBadges.id, id));
+    return badge;
+  }
+
+  async createLoyaltyBadge(badge: InsertLoyaltyBadge): Promise<LoyaltyBadge> {
+    const [newBadge] = await db.insert(loyaltyBadges).values(badge).returning();
+    return newBadge;
+  }
+
+  async updateLoyaltyBadge(id: number, badge: Partial<InsertLoyaltyBadge>): Promise<LoyaltyBadge> {
+    const [updatedBadge] = await db
+      .update(loyaltyBadges)
+      .set(badge)
+      .where(eq(loyaltyBadges.id, id))
+      .returning();
+    return updatedBadge;
+  }
+
+  // User badge operations
+  async getUserBadges(userId: string): Promise<(UserBadge & { badge: LoyaltyBadge })[]> {
+    return await db
+      .select({
+        id: userBadges.id,
+        userId: userBadges.userId,
+        badgeId: userBadges.badgeId,
+        earnedAt: userBadges.earnedAt,
+        level: userBadges.level,
+        isNew: userBadges.isNew,
+        badge: loyaltyBadges,
+      })
+      .from(userBadges)
+      .innerJoin(loyaltyBadges, eq(userBadges.badgeId, loyaltyBadges.id))
+      .where(eq(userBadges.userId, userId))
+      .orderBy(desc(userBadges.earnedAt));
+  }
+
+  async awardBadge(userId: string, badgeId: number, level: number = 1): Promise<UserBadge> {
+    const [existingBadge] = await db
+      .select()
+      .from(userBadges)
+      .where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badgeId)));
+
+    if (existingBadge) {
+      // Upgrade existing badge level
+      const [updatedBadge] = await db
+        .update(userBadges)
+        .set({ level: Math.max(existingBadge.level, level), isNew: true })
+        .where(eq(userBadges.id, existingBadge.id))
+        .returning();
+      return updatedBadge;
+    } else {
+      // Award new badge
+      const [newBadge] = await db
+        .insert(userBadges)
+        .values({ userId, badgeId, level, isNew: true })
+        .returning();
+      return newBadge;
+    }
+  }
+
+  async markBadgeAsViewed(userId: string, badgeId: number): Promise<boolean> {
+    const result = await db
+      .update(userBadges)
+      .set({ isNew: false })
+      .where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badgeId)));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Loyalty profile operations
+  async getLoyaltyProfile(userId: string): Promise<LoyaltyProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(loyaltyProfiles)
+      .where(eq(loyaltyProfiles.userId, userId));
+    return profile;
+  }
+
+  async createLoyaltyProfile(profile: InsertLoyaltyProfile): Promise<LoyaltyProfile> {
+    const [newProfile] = await db
+      .insert(loyaltyProfiles)
+      .values(profile)
+      .returning();
+    return newProfile;
+  }
+
+  async updateLoyaltyProfile(userId: string, updates: Partial<InsertLoyaltyProfile>): Promise<LoyaltyProfile> {
+    const [updatedProfile] = await db
+      .update(loyaltyProfiles)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(loyaltyProfiles.userId, userId))
+      .returning();
+    return updatedProfile;
+  }
+
+  // Points operations
+  async addLoyaltyPoints(userId: string, points: number, source: string, description?: string, metadata?: any): Promise<LoyaltyTransaction> {
+    // Create transaction record
+    const [transaction] = await db
+      .insert(loyaltyTransactions)
+      .values({
+        userId,
+        points,
+        type: "earned",
+        source,
+        description,
+        metadata,
+      })
+      .returning();
+
+    // Update user profile
+    const profile = await this.getLoyaltyProfile(userId);
+    if (profile) {
+      await this.updateLoyaltyProfile(userId, {
+        totalPoints: profile.totalPoints + points,
+        availablePoints: profile.availablePoints + points,
+        lastActivity: new Date(),
+      });
+    } else {
+      await this.createLoyaltyProfile({
+        userId,
+        totalPoints: points,
+        availablePoints: points,
+        tier: "bronze",
+        tierProgress: points,
+        streak: 1,
+        lastActivity: new Date(),
+        joinedAt: new Date(),
+        lifetimeSpent: "0.00",
+      });
+    }
+
+    return transaction;
+  }
+
+  async spendLoyaltyPoints(userId: string, points: number, source: string, description?: string, metadata?: any): Promise<LoyaltyTransaction> {
+    const profile = await this.getLoyaltyProfile(userId);
+    if (!profile || profile.availablePoints < points) {
+      throw new Error("Insufficient points");
+    }
+
+    // Create transaction record
+    const [transaction] = await db
+      .insert(loyaltyTransactions)
+      .values({
+        userId,
+        points: -points,
+        type: "spent",
+        source,
+        description,
+        metadata,
+      })
+      .returning();
+
+    // Update user profile
+    await this.updateLoyaltyProfile(userId, {
+      availablePoints: profile.availablePoints - points,
+      lastActivity: new Date(),
+    });
+
+    return transaction;
+  }
+
+  async getLoyaltyTransactions(userId: string, limit: number = 50): Promise<LoyaltyTransaction[]> {
+    return await db
+      .select()
+      .from(loyaltyTransactions)
+      .where(eq(loyaltyTransactions.userId, userId))
+      .orderBy(desc(loyaltyTransactions.createdAt))
+      .limit(limit);
+  }
+
+  // Challenge operations
+  async getLoyaltyChallenges(filters?: { type?: string; isActive?: boolean }): Promise<LoyaltyChallenge[]> {
+    let query = db.select().from(loyaltyChallenges);
+    
+    if (filters?.type) {
+      query = query.where(eq(loyaltyChallenges.type, filters.type as any)) as any;
+    }
+    if (filters?.isActive !== undefined) {
+      query = query.where(eq(loyaltyChallenges.isActive, filters.isActive)) as any;
+    }
+    
+    return await query.orderBy(loyaltyChallenges.startDate);
+  }
+
+  async getUserChallenges(userId: string): Promise<(UserChallenge & { challenge: LoyaltyChallenge })[]> {
+    return await db
+      .select({
+        id: userChallenges.id,
+        userId: userChallenges.userId,
+        challengeId: userChallenges.challengeId,
+        progress: userChallenges.progress,
+        completedAt: userChallenges.completedAt,
+        claimedAt: userChallenges.claimedAt,
+        streak: userChallenges.streak,
+        createdAt: userChallenges.createdAt,
+        updatedAt: userChallenges.updatedAt,
+        challenge: loyaltyChallenges,
+      })
+      .from(userChallenges)
+      .innerJoin(loyaltyChallenges, eq(userChallenges.challengeId, loyaltyChallenges.id))
+      .where(eq(userChallenges.userId, userId))
+      .orderBy(desc(userChallenges.updatedAt));
+  }
+
+  async updateChallengeProgress(userId: string, challengeId: number, progress: any): Promise<UserChallenge> {
+    const [existingChallenge] = await db
+      .select()
+      .from(userChallenges)
+      .where(and(eq(userChallenges.userId, userId), eq(userChallenges.challengeId, challengeId)));
+
+    if (existingChallenge) {
+      const [updatedChallenge] = await db
+        .update(userChallenges)
+        .set({ progress, updatedAt: new Date() })
+        .where(eq(userChallenges.id, existingChallenge.id))
+        .returning();
+      return updatedChallenge;
+    } else {
+      const [newChallenge] = await db
+        .insert(userChallenges)
+        .values({ userId, challengeId, progress })
+        .returning();
+      return newChallenge;
+    }
+  }
+
+  async completeChallengeProgress(userId: string, challengeId: number): Promise<UserChallenge> {
+    const [updatedChallenge] = await db
+      .update(userChallenges)
+      .set({ completedAt: new Date(), updatedAt: new Date() })
+      .where(and(eq(userChallenges.userId, userId), eq(userChallenges.challengeId, challengeId)))
+      .returning();
+    return updatedChallenge;
+  }
+
+  // Reward operations
+  async getLoyaltyRewards(filters?: { type?: string; tierRequired?: string; isActive?: boolean }): Promise<LoyaltyReward[]> {
+    let query = db.select().from(loyaltyRewards);
+    
+    if (filters?.type) {
+      query = query.where(eq(loyaltyRewards.type, filters.type as any)) as any;
+    }
+    if (filters?.tierRequired) {
+      query = query.where(eq(loyaltyRewards.tierRequired, filters.tierRequired as any)) as any;
+    }
+    if (filters?.isActive !== undefined) {
+      query = query.where(eq(loyaltyRewards.isActive, filters.isActive)) as any;
+    }
+    
+    return await query.orderBy(loyaltyRewards.pointsCost);
+  }
+
+  async redeemReward(userId: string, rewardId: number): Promise<UserRedemption> {
+    const [reward] = await db.select().from(loyaltyRewards).where(eq(loyaltyRewards.id, rewardId));
+    if (!reward) {
+      throw new Error("Reward not found");
+    }
+
+    const profile = await this.getLoyaltyProfile(userId);
+    if (!profile || profile.availablePoints < reward.pointsCost) {
+      throw new Error("Insufficient points");
+    }
+
+    // Spend points
+    await this.spendLoyaltyPoints(userId, reward.pointsCost, "reward_redemption", `Redeemed: ${reward.name}`, { rewardId });
+
+    // Create redemption record
+    const [redemption] = await db
+      .insert(userRedemptions)
+      .values({
+        userId,
+        rewardId,
+        pointsSpent: reward.pointsCost,
+        status: "active",
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      })
+      .returning();
+
+    return redemption;
+  }
+
+  async getUserRedemptions(userId: string): Promise<(UserRedemption & { reward: LoyaltyReward })[]> {
+    return await db
+      .select({
+        id: userRedemptions.id,
+        userId: userRedemptions.userId,
+        rewardId: userRedemptions.rewardId,
+        pointsSpent: userRedemptions.pointsSpent,
+        status: userRedemptions.status,
+        couponCode: userRedemptions.couponCode,
+        usedAt: userRedemptions.usedAt,
+        expiresAt: userRedemptions.expiresAt,
+        createdAt: userRedemptions.createdAt,
+        reward: loyaltyRewards,
+      })
+      .from(userRedemptions)
+      .innerJoin(loyaltyRewards, eq(userRedemptions.rewardId, loyaltyRewards.id))
+      .where(eq(userRedemptions.userId, userId))
+      .orderBy(desc(userRedemptions.createdAt));
+  }
+
+  async useRedemption(redemptionId: number): Promise<UserRedemption> {
+    const [updatedRedemption] = await db
+      .update(userRedemptions)
+      .set({ status: "used", usedAt: new Date() })
+      .where(eq(userRedemptions.id, redemptionId))
+      .returning();
+    return updatedRedemption;
+  }
 }
 
 export const storage = new DatabaseStorage();
