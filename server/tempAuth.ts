@@ -1,8 +1,20 @@
 import type { Express, RequestHandler } from "express";
+import session from "express-session";
 import { storage } from "./storage";
 
 // Temporary authentication for development
 export async function setupTempAuth(app: Express) {
+  // Configure session middleware
+  app.use(session({
+    secret: 'dev-secret-key-for-ddm-jewellers-admin',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { 
+      secure: false, 
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      httpOnly: true
+    }
+  }));
   // Temporary admin login endpoint
   app.post("/api/temp-login", async (req, res) => {
     try {

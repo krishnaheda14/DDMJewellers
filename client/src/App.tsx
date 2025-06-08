@@ -26,6 +26,7 @@ import CorporateRegistration from "@/pages/corporate-registration";
 import CorporateBenefits from "@/pages/corporate-benefits";
 import CorporateAdmin from "@/pages/corporate-admin";
 import Shop from "@/pages/shop";
+import TempLogin from "@/pages/temp-login";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -66,6 +67,7 @@ function Router() {
           <Route path="/corporate-admin" component={CorporateAdmin} />
         </>
       )}
+      <Route path="/temp-login" component={TempLogin} />
       <Route component={NotFound} />
     </Switch>
   );
