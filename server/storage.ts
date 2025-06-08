@@ -1155,23 +1155,29 @@ export class DatabaseStorage implements IStorage {
     search?: string;
     userId?: string;
   }): Promise<any[]> {
+    const tutorials = await db.execute(sql`
+      SELECT * FROM care_tutorials 
+      WHERE is_active = true 
+      ORDER BY is_featured DESC, views DESC
+    `);
     return tutorials.rows;
   }
 
-  async getCareTutorial(id: number): Promise<CareTutorial | undefined> {
-    const [tutorial] = await db
-      .select()
-      .from(careTutorials)
-      .where(and(eq(careTutorials.id, id), eq(careTutorials.isActive, true)));
+  async getCareTutorial(id: number): Promise<any> {
+    const tutorial = await db.execute(sql`
+      SELECT * FROM care_tutorials 
+      WHERE id = ${id} AND is_active = true
+    `);
     
-    if (tutorial) {
+    if (tutorial.rows.length > 0) {
       // Increment view count
-      await db
-        .update(careTutorials)
-        .set({ views: tutorial.views + 1 })
-        .where(eq(careTutorials.id, id));
+      await db.execute(sql`
+        UPDATE care_tutorials 
+        SET views = views + 1 
+        WHERE id = ${id}
+      `);
       
-      return { ...tutorial, views: tutorial.views + 1 };
+      return tutorial.rows[0];
     }
     
     return undefined;
@@ -1180,100 +1186,85 @@ export class DatabaseStorage implements IStorage {
   async updateTutorialProgress(
     userId: string,
     tutorialId: number,
-    updates: Partial<InsertTutorialProgress>
-  ): Promise<TutorialProgress> {
-    const [existing] = await db
-      .select()
-      .from(tutorialProgress)
-      .where(
-        and(
-          eq(tutorialProgress.userId, userId),
-          eq(tutorialProgress.tutorialId, tutorialId)
-        )
-      );
+    updates: any
+  ): Promise<any> {
+    const existing = await db.execute(sql`
+      SELECT * FROM tutorial_progress 
+      WHERE user_id = ${userId} AND tutorial_id = ${tutorialId}
+    `);
 
-    if (existing) {
-      const [updated] = await db
-        .update(tutorialProgress)
-        .set({
-          ...updates,
-          updatedAt: new Date(),
-        })
-        .where(eq(tutorialProgress.id, existing.id))
-        .returning();
-      return updated;
+    if (existing.rows.length > 0) {
+      const updated = await db.execute(sql`
+        UPDATE tutorial_progress 
+        SET current_step = ${updates.currentStep || 0}, 
+            is_completed = ${updates.isCompleted || false},
+            updated_at = NOW()
+        WHERE user_id = ${userId} AND tutorial_id = ${tutorialId}
+        RETURNING *
+      `);
+      return updated.rows[0];
     } else {
-      const [created] = await db
-        .insert(tutorialProgress)
-        .values({
-          userId,
-          tutorialId,
-          ...updates,
-        })
-        .returning();
-      return created;
+      const created = await db.execute(sql`
+        INSERT INTO tutorial_progress (user_id, tutorial_id, current_step, is_completed)
+        VALUES (${userId}, ${tutorialId}, ${updates.currentStep || 0}, ${updates.isCompleted || false})
+        RETURNING *
+      `);
+      return created.rows[0];
     }
   }
 
-  async likeTutorial(tutorialId: number): Promise<CareTutorial> {
-    const [tutorial] = await db
-      .select()
-      .from(careTutorials)
-      .where(eq(careTutorials.id, tutorialId));
+  async likeTutorial(tutorialId: number): Promise<any> {
+    const updated = await db.execute(sql`
+      UPDATE care_tutorials 
+      SET likes = likes + 1 
+      WHERE id = ${tutorialId}
+      RETURNING *
+    `);
 
-    if (!tutorial) {
+    if (updated.rows.length === 0) {
       throw new Error("Tutorial not found");
     }
 
-    const [updated] = await db
-      .update(careTutorials)
-      .set({ likes: tutorial.likes + 1 })
-      .where(eq(careTutorials.id, tutorialId))
-      .returning();
-
-    return updated;
+    return updated.rows[0];
   }
 
-  async getCareReminders(userId: string): Promise<CareReminder[]> {
-    return await db
-      .select()
-      .from(careReminders)
-      .where(
-        and(
-          eq(careReminders.userId, userId),
-          eq(careReminders.isEnabled, true)
-        )
-      )
-      .orderBy(careReminders.nextDue);
+  async getCareReminders(userId: string): Promise<any[]> {
+    const reminders = await db.execute(sql`
+      SELECT * FROM care_reminders 
+      WHERE user_id = ${userId} AND is_enabled = true
+      ORDER BY next_due
+    `);
+    return reminders.rows;
   }
 
-  async createCareReminder(reminder: InsertCareReminder): Promise<CareReminder> {
-    const [created] = await db
-      .insert(careReminders)
-      .values(reminder)
-      .returning();
-    return created;
+  async createCareReminder(reminder: any): Promise<any> {
+    const created = await db.execute(sql`
+      INSERT INTO care_reminders (user_id, jewelry_name, jewelry_type, care_frequency, next_due, reminder_message)
+      VALUES (${reminder.userId}, ${reminder.jewelryName}, ${reminder.jewelryType}, ${reminder.careFrequency}, ${reminder.nextDue}, ${reminder.reminderMessage})
+      RETURNING *
+    `);
+    return created.rows[0];
   }
 
-  async updateCareReminder(
-    id: number,
-    updates: Partial<InsertCareReminder>
-  ): Promise<CareReminder> {
-    const [updated] = await db
-      .update(careReminders)
-      .set({
-        ...updates,
-        updatedAt: new Date(),
-      })
-      .where(eq(careReminders.id, id))
-      .returning();
-    return updated;
+  async updateCareReminder(id: number, updates: any): Promise<any> {
+    const updated = await db.execute(sql`
+      UPDATE care_reminders 
+      SET jewelry_name = COALESCE(${updates.jewelryName}, jewelry_name),
+          jewelry_type = COALESCE(${updates.jewelryType}, jewelry_type),
+          care_frequency = COALESCE(${updates.careFrequency}, care_frequency),
+          next_due = COALESCE(${updates.nextDue}, next_due),
+          reminder_message = COALESCE(${updates.reminderMessage}, reminder_message),
+          updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING *
+    `);
+    return updated.rows[0];
   }
 
   async deleteCareReminder(id: number): Promise<boolean> {
-    const result = await db
-      .delete(careReminders)
-      .where(eq(careReminders.id, id));
+    const result = await db.execute(sql`
+      DELETE FROM care_reminders WHERE id = ${id}
+    `);
     return result.rowCount > 0;
   }
 }
