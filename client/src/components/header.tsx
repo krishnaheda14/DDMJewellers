@@ -92,29 +92,31 @@ export default function Header() {
               </button>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex space-x-2">
-              {navigationItems.map((item, index) => (
-                <button
-                  key={item.name}
-                  onClick={() => navigate(item.href)}
-                  className="relative group px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 hover:shadow-md"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-gold/10 via-amber-50/50 to-gold/10 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300 origin-center"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/5 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  
-                  {item.icon && (
-                    <item.icon className="h-4 w-4 text-deep-navy group-hover:text-gold transition-all duration-300 transform group-hover:scale-110 group-hover:rotate-3 relative z-10" />
-                  )}
-                  <span className="text-deep-navy group-hover:text-gold transition-all duration-300 relative z-10 font-medium">
-                    {item.name}
-                  </span>
-                  
-                  <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-gold to-amber-500 group-hover:w-3/4 transition-all duration-300 transform -translate-x-1/2"></div>
-                  <div className="absolute top-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-amber-300 to-gold group-hover:w-1/2 transition-all duration-500 transform -translate-x-1/2 delay-100"></div>
-                </button>
-              ))}
+            {/* Desktop Navigation with Horizontal Scrolling */}
+            <nav className="hidden lg:block max-w-2xl xl:max-w-4xl overflow-hidden">
+              <div className="flex space-x-2 overflow-x-auto scrollbar-hide hover:scrollbar-show pb-1 scroll-smooth">
+                {navigationItems.map((item, index) => (
+                  <button
+                    key={item.name}
+                    onClick={() => navigate(item.href)}
+                    className="relative group px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 hover:shadow-md flex-shrink-0 whitespace-nowrap"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-gold/10 via-amber-50/50 to-gold/10 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300 origin-center"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/5 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    {item.icon && (
+                      <item.icon className="h-4 w-4 text-deep-navy group-hover:text-gold transition-all duration-300 transform group-hover:scale-110 group-hover:rotate-3 relative z-10" />
+                    )}
+                    <span className="text-deep-navy group-hover:text-gold transition-all duration-300 relative z-10 font-medium">
+                      {item.name}
+                    </span>
+                    
+                    <div className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-gold to-amber-500 group-hover:w-3/4 transition-all duration-300 transform -translate-x-1/2"></div>
+                    <div className="absolute top-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-amber-300 to-gold group-hover:w-1/2 transition-all duration-500 transform -translate-x-1/2 delay-100"></div>
+                  </button>
+                ))}
+              </div>
             </nav>
 
             {/* Search and Actions */}
