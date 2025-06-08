@@ -896,6 +896,29 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return offer;
   }
+
+  // Admin-specific methods
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async getAllExchangeRequests(): Promise<any[]> {
+    try {
+      return await db.select().from(jewelryExchangeRequests);
+    } catch (error) {
+      console.log("Exchange requests table not available");
+      return [];
+    }
+  }
+
+  async getAllCorporateRequests(): Promise<any[]> {
+    try {
+      return await db.select().from(corporateRegistrations);
+    } catch (error) {
+      console.log("Corporate registrations table not available");
+      return [];
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();

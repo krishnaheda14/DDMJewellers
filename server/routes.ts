@@ -158,6 +158,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes
+  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get('/api/admin/exchange-requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      const requests = await storage.getAllExchangeRequests();
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching exchange requests:", error);
+      res.status(500).json({ message: "Failed to fetch exchange requests" });
+    }
+  });
+
+  app.get('/api/admin/corporate-requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      const requests = await storage.getAllCorporateRequests();
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching corporate requests:", error);
+      res.status(500).json({ message: "Failed to fetch corporate requests" });
+    }
+  });
+
   // Category routes
   app.get('/api/categories', async (req, res) => {
     try {
