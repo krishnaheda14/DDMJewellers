@@ -76,7 +76,7 @@ import {
   type InsertCareReminder,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, like, desc, asc, sql } from "drizzle-orm";
+import { eq, and, or, like, ilike, desc, asc, sql } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -1154,59 +1154,8 @@ export class DatabaseStorage implements IStorage {
     difficulty?: string;
     search?: string;
     userId?: string;
-  }): Promise<(CareTutorial & { progress?: TutorialProgress })[]> {
-    let query = db.select().from(careTutorials);
-    
-    const conditions = [];
-    if (filters?.category && filters.category !== "all") {
-      conditions.push(eq(careTutorials.category, filters.category));
-    }
-    if (filters?.jewelryType && filters.jewelryType !== "all") {
-      conditions.push(eq(careTutorials.jewelryType, filters.jewelryType));
-    }
-    if (filters?.difficulty && filters.difficulty !== "all") {
-      conditions.push(eq(careTutorials.difficulty, filters.difficulty));
-    }
-    if (filters?.search) {
-      conditions.push(
-        or(
-          ilike(careTutorials.title, `%${filters.search}%`),
-          ilike(careTutorials.description, `%${filters.search}%`)
-        )
-      );
-    }
-    conditions.push(eq(careTutorials.isActive, true));
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    const tutorials = await query.orderBy(desc(careTutorials.isFeatured), desc(careTutorials.views));
-
-    if (filters?.userId) {
-      // Get user progress for each tutorial
-      const tutorialsWithProgress = await Promise.all(
-        tutorials.map(async (tutorial) => {
-          const [progress] = await db
-            .select()
-            .from(tutorialProgress)
-            .where(
-              and(
-                eq(tutorialProgress.tutorialId, tutorial.id),
-                eq(tutorialProgress.userId, filters.userId!)
-              )
-            );
-          
-          return {
-            ...tutorial,
-            progress: progress || undefined,
-          };
-        })
-      );
-      return tutorialsWithProgress;
-    }
-
-    return tutorials;
+  }): Promise<any[]> {
+    return tutorials.rows;
   }
 
   async getCareTutorial(id: number): Promise<CareTutorial | undefined> {
