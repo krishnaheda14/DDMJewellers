@@ -329,7 +329,7 @@ export default function LiveMarketRates() {
                         Estimated Price
                       </Label>
                       <p className="text-3xl font-bold text-primary">
-                        ${calculatedPrice.price.toLocaleString()}
+                        ₹{calculatedPrice.price.toLocaleString('en-IN')}
                       </p>
                     </div>
                     <div className="space-y-2">
