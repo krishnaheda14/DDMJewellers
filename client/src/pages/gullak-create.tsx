@@ -82,7 +82,7 @@ export default function CreateGullak() {
       return apiRequest("POST", "/api/gullak/accounts", {
         ...data,
         targetAmount,
-        userId: user?.id,
+        userId: (user as any)?.id,
       });
     },
     onSuccess: () => {
@@ -103,6 +103,15 @@ export default function CreateGullak() {
   });
 
   const watchedValues = form.watch();
+  
+  // Update metalPurity default when metalType changes
+  useEffect(() => {
+    if (watchedValues.metalType === "silver") {
+      form.setValue("metalPurity", "silver");
+    } else if (watchedValues.metalType === "gold" && watchedValues.metalPurity === "silver") {
+      form.setValue("metalPurity", "24k");
+    }
+  }, [watchedValues.metalType, form]);
   
   // Calculate target amount based on metal weight and type
   const calculateTargetAmount = () => {
