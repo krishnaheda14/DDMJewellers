@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useAuth } from "@/hooks/useAuth";
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Home, ArrowLeft } from "lucide-react";
 import type { CartItem, Product } from "@shared/schema";
 import { CartLoader, SubmissionLoader } from "@/components/loading/jewelry-loader";
 import { CardReveal, PageTransition } from "@/components/loading/page-transition";
@@ -184,6 +184,30 @@ export default function Cart() {
     <PageTransition>
       <div className="min-h-screen bg-background">
         <Header />
+        
+        {/* Navigation Header */}
+        <div className="bg-white border-b py-4">
+          <div className="container-fluid">
+            <div className="flex items-center justify-between">
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = "/"}
+                className="flex items-center gap-2 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Home
+              </Button>
+              <Button 
+                variant="ghost" 
+                onClick={() => window.location.href = "/"}
+                className="flex items-center gap-2 text-amber-600 hover:text-amber-700"
+              >
+                <Home className="h-4 w-4" />
+                DDM Jewellers
+              </Button>
+            </div>
+          </div>
+        </div>
         
         <div className="container-fluid p-responsive-sm">
         <div className="m-responsive-sm">

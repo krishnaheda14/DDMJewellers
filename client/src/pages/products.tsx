@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, Grid, List, Home } from "lucide-react";
+import { Search, Filter, Grid, List, Home, ArrowLeft } from "lucide-react";
 import type { Product, Category } from "@shared/schema";
 import { ProductLoader } from "@/components/loading/jewelry-loader";
 import { CardReveal, StaggeredList } from "@/components/loading/page-transition";
@@ -73,6 +73,30 @@ export default function Products() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      
+      {/* Navigation Header */}
+      <div className="bg-white border-b py-4">
+        <div className="container-fluid">
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = "/"}
+              className="flex items-center gap-2 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => window.location.href = "/"}
+              className="flex items-center gap-2 text-amber-600 hover:text-amber-700"
+            >
+              <Home className="h-4 w-4" />
+              DDM Jewellers
+            </Button>
+          </div>
+        </div>
+      </div>
       
       {/* Page Header */}
       <section className="bg-cream-white p-responsive-sm">
