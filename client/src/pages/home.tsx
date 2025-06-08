@@ -14,10 +14,17 @@ export default function Home() {
 
   const { data: featuredProducts = [] } = useQuery<Product[]>({
     queryKey: ["/api/products?featured=true&limit=8"],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 15 * 60 * 1000, // 15 minutes
+    refetchOnWindowFocus: false,
   });
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
+    staleTime: 30 * 60 * 1000, // 30 minutes - categories rarely change
+    cacheTime: 60 * 60 * 1000, // 1 hour
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const { data: goldRates } = useQuery<{
@@ -31,6 +38,10 @@ export default function Home() {
     createdAt: string;
   }>({
     queryKey: ["/api/gullak/gold-rates"],
+    staleTime: 2 * 60 * 1000, // 2 minutes for rates
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
   });
 
   return (

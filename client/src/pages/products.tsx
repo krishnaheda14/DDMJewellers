@@ -39,10 +39,17 @@ export default function Products() {
       ...(categoryId && { categoryId: categoryId.toString() }),
       ...(featured !== undefined && { featured: featured.toString() })
     }).toString()}`],
+    staleTime: 3 * 60 * 1000, // 3 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
+    staleTime: 30 * 60 * 1000, // 30 minutes
+    cacheTime: 60 * 60 * 1000, // 1 hour
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const handleSearch = (value: string) => {
