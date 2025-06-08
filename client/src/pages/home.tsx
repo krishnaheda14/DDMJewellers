@@ -301,45 +301,45 @@ export default function Home() {
             </Card>
 
             {/* AI Try-On */}
-            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg">
+            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg hover-effect">
               <div className="relative">
                 <div 
-                  className="h-64 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
+                  className="h-48 sm:h-56 lg:h-64 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
                   style={{
                     backgroundImage: "url('https://images.unsplash.com/photo-1506629905607-c4bae1b1c5e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400')"
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute top-4 right-4">
-                  <Badge className="bg-purple-600 text-white">AI POWERED</Badge>
+                <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
+                  <Badge className="bg-purple-600 text-white text-xs">AI POWERED</Badge>
                 </div>
               </div>
-              <CardContent className="p-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <Camera className="h-6 w-6 text-purple-600" />
+              <CardContent className="responsive-card">
+                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                  <div className="p-2 sm:p-3 bg-purple-100 rounded-full">
+                    <Camera className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600" />
                   </div>
-                  <h3 className="text-2xl font-bold text-deep-navy">Virtual Try-On</h3>
+                  <h3 className="responsive-text font-bold text-deep-navy">Virtual Try-On</h3>
                 </div>
-                <p className="text-warm-gray mb-6 leading-relaxed">
+                <p className="text-warm-gray mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
                   See how jewelry looks on you before making a purchase. Upload your photo and virtually try on necklaces, earrings, rings, and bracelets with AI technology.
                 </p>
-                <ul className="space-y-2 mb-6 text-sm text-warm-gray">
+                <ul className="space-y-2 mb-4 sm:mb-6 text-xs sm:text-sm text-warm-gray">
                   <li className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
                     Upload your photo securely
                   </li>
                   <li className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
                     Try on any jewelry piece
                   </li>
                   <li className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
                     Instant realistic preview
                   </li>
                 </ul>
                 <Button 
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  className="w-full btn-responsive bg-purple-600 hover:bg-purple-700 text-white touch-target"
                   onClick={() => navigate("/ai-tryon")}
                 >
                   Try Virtual Fitting
@@ -351,32 +351,32 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-20 bg-cream-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-deep-navy mb-4">Featured Collections</h2>
-            <p className="text-xl text-warm-gray max-w-2xl mx-auto">
+      <section className="p-responsive bg-cream-white">
+        <div className="container-fluid">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <h2 className="heading-lg font-bold text-deep-navy mb-3 sm:mb-4">Featured Collections</h2>
+            <p className="responsive-text text-warm-gray max-w-2xl mx-auto">
               Handpicked pieces from our latest collections
             </p>
           </div>
 
           {featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="responsive-grid gap-4 sm:gap-6 lg:gap-8">
               {featuredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-warm-gray text-lg">No featured products available at the moment.</p>
+            <div className="text-center py-8 sm:py-12">
+              <p className="text-warm-gray responsive-text">No featured products available at the moment.</p>
             </div>
           )}
 
-          <div className="text-center mt-12">
+          <div className="text-center mt-8 sm:mt-12">
             <Button 
               variant="outline" 
               size="lg"
-              className="border-2 border-gold text-gold hover:bg-gold hover:text-white px-8 py-3 rounded-full font-semibold text-lg transition-all"
+              className="btn-responsive border-2 border-gold text-gold hover:bg-gold hover:text-white rounded-full font-semibold transition-all touch-target"
               onClick={() => navigate("/products")}
             >
               View All Products
@@ -386,7 +386,7 @@ export default function Home() {
       </section>
 
       {/* Collection Banner */}
-      <section className="relative py-32 overflow-hidden">
+      <section className="relative py-16 sm:py-24 lg:py-32 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -395,17 +395,17 @@ export default function Home() {
         />
         <div className="absolute inset-0 bg-deep-navy/60" />
         
-        <div className="relative z-10 max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+        <div className="relative z-10 container-fluid text-center">
+          <h2 className="heading-xl font-bold text-white mb-4 sm:mb-6">
             Bridal Collection
           </h2>
-          <p className="text-xl text-white/90 mb-8 leading-relaxed">
+          <p className="responsive-text text-white/90 mb-6 sm:mb-8 leading-relaxed">
             Make your special day even more memorable with our exquisite bridal jewelry collection. 
             Each piece is crafted to perfection, designed to complement your unique style and celebrate your love story.
           </p>
           <Button 
             size="lg"
-            className="bg-gold hover:bg-gold/90 text-white px-10 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105"
+            className="btn-responsive bg-gold hover:bg-gold/90 text-white rounded-full font-semibold transition-all transform hover:scale-105 touch-target"
             onClick={() => navigate("/products?search=bridal")}
           >
             Explore Bridal Collection
@@ -414,60 +414,60 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-deep-navy mb-4">Why Choose DDM Jewellers</h2>
-            <p className="text-xl text-warm-gray max-w-2xl mx-auto">
+      <section className="p-responsive bg-white">
+        <div className="container-fluid">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <h2 className="heading-lg font-bold text-deep-navy mb-3 sm:mb-4">Why Choose DDM Jewellers</h2>
+            <p className="responsive-text text-warm-gray max-w-2xl mx-auto">
               Experience excellence in every aspect of your jewelry journey
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center group">
-              <div className="bg-cream-white rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:bg-gold transition-colors">
-                <Gem className="w-8 h-8 text-gold group-hover:text-white transition-colors" />
+          <div className="responsive-grid gap-4 sm:gap-6 lg:gap-8">
+            <div className="text-center group hover-effect">
+              <div className="bg-cream-white rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:bg-gold transition-colors">
+                <Gem className="w-6 h-6 sm:w-8 sm:h-8 text-gold group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-semibold text-deep-navy mb-3">Premium Quality</h3>
-              <p className="text-warm-gray">Only the finest materials and craftsmanship</p>
+              <h3 className="responsive-text font-semibold text-deep-navy mb-2 sm:mb-3">Premium Quality</h3>
+              <p className="text-warm-gray text-sm sm:text-base">Only the finest materials and craftsmanship</p>
             </div>
 
-            <div className="text-center group">
-              <div className="bg-cream-white rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:bg-gold transition-colors">
-                <ShieldCheck className="w-8 h-8 text-gold group-hover:text-white transition-colors" />
+            <div className="text-center group hover-effect">
+              <div className="bg-cream-white rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:bg-gold transition-colors">
+                <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8 text-gold group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-semibold text-deep-navy mb-3">Certified Authentic</h3>
-              <p className="text-warm-gray">All jewelry comes with authenticity certificates</p>
+              <h3 className="responsive-text font-semibold text-deep-navy mb-2 sm:mb-3">Certified Authentic</h3>
+              <p className="text-warm-gray text-sm sm:text-base">All jewelry comes with authenticity certificates</p>
             </div>
 
-            <div className="text-center group">
-              <div className="bg-cream-white rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:bg-gold transition-colors">
-                <Truck className="w-8 h-8 text-gold group-hover:text-white transition-colors" />
+            <div className="text-center group hover-effect">
+              <div className="bg-cream-white rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:bg-gold transition-colors">
+                <Truck className="w-6 h-6 sm:w-8 sm:h-8 text-gold group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-semibold text-deep-navy mb-3">Free Delivery</h3>
-              <p className="text-warm-gray">Complimentary secure delivery nationwide</p>
+              <h3 className="responsive-text font-semibold text-deep-navy mb-2 sm:mb-3">Free Delivery</h3>
+              <p className="text-warm-gray text-sm sm:text-base">Complimentary secure delivery nationwide</p>
             </div>
 
-            <div className="text-center group">
-              <div className="bg-cream-white rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 group-hover:bg-gold transition-colors">
-                <RotateCcw className="w-8 h-8 text-gold group-hover:text-white transition-colors" />
+            <div className="text-center group hover-effect">
+              <div className="bg-cream-white rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:bg-gold transition-colors">
+                <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 text-gold group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-semibold text-deep-navy mb-3">30-Day Returns</h3>
-              <p className="text-warm-gray">Hassle-free returns within 30 days</p>
+              <h3 className="responsive-text font-semibold text-deep-navy mb-2 sm:mb-3">30-Day Returns</h3>
+              <p className="text-warm-gray text-sm sm:text-base">Hassle-free returns within 30 days</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Newsletter Section */}
-      <section className="py-16 bg-deep-navy">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white mb-4">Stay Updated</h2>
-          <p className="text-xl text-white/80 mb-8">
+      <section className="py-12 sm:py-16 bg-deep-navy">
+        <div className="container-fluid text-center">
+          <h2 className="heading-lg font-bold text-white mb-3 sm:mb-4">Stay Updated</h2>
+          <p className="responsive-text text-white/80 mb-6 sm:mb-8">
             Be the first to know about new collections and exclusive offers
           </p>
           
-          <div className="flex flex-col sm:flex-row max-w-md mx-auto gap-4">
+          <div className="flex flex-col sm:flex-row max-w-md mx-auto gap-3 sm:gap-4">
             <input 
               type="email" 
               placeholder="Enter your email" 
