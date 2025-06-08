@@ -20,23 +20,25 @@ import { useToast } from "@/hooks/use-toast";
 
 const createGullakSchema = z.object({
   name: z.string().min(1, "Account name is required"),
+  metalType: z.enum(["gold", "silver"]),
   dailyAmount: z.string().min(1, "Daily amount is required").refine(
     (val) => !isNaN(Number(val)) && Number(val) > 0,
     "Daily amount must be a valid positive number"
   ),
-  targetGoldWeight: z.string().min(1, "Target gold weight is required").refine(
+  targetMetalWeight: z.string().min(1, "Target metal weight is required").refine(
     (val) => !isNaN(Number(val)) && Number(val) > 0,
-    "Target gold weight must be a valid positive number"
+    "Target metal weight must be a valid positive number"
   ),
-  goldPurity: z.enum(["24k", "22k", "18k"]),
+  metalPurity: z.enum(["24k", "22k", "18k", "silver"]),
 });
 
 type CreateGullakForm = z.infer<typeof createGullakSchema>;
 
-interface GoldRate {
+interface MetalRates {
   rate24k: string;
   rate22k: string;
   rate18k: string;
+  silverRate: string;
   effectiveDate: string;
 }
 
@@ -50,14 +52,15 @@ export default function CreateGullak() {
     resolver: zodResolver(createGullakSchema),
     defaultValues: {
       name: "",
+      metalType: "gold",
       dailyAmount: "",
-      targetGoldWeight: "",
-      goldPurity: "24k",
+      targetMetalWeight: "",
+      metalPurity: "24k",
     },
   });
 
-  // Fetch current gold rates
-  const { data: goldRates, isLoading: ratesLoading } = useQuery<GoldRate>({
+  // Fetch current metal rates
+  const { data: metalRates, isLoading: ratesLoading } = useQuery<MetalRates>({
     queryKey: ["/api/gullak/gold-rates"],
     enabled: isAuthenticated,
   });

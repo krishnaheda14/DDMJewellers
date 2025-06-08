@@ -208,8 +208,9 @@ export const gullakAccounts = pgTable("gullak_accounts", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
   name: varchar("name").notNull(), // e.g., "My First Gold Savings"
+  metalType: varchar("metal_type").notNull().default("gold"), // gold, silver
   dailyAmount: varchar("daily_amount").notNull(), // Amount in rupees
-  targetGoldWeight: varchar("target_gold_weight").notNull(), // In grams
+  targetMetalWeight: varchar("target_metal_weight").notNull(), // In grams (renamed from targetGoldWeight)
   targetAmount: varchar("target_amount").notNull(), // Total target amount in rupees
   currentBalance: varchar("current_balance").default("0"), // Current saved amount
   status: varchar("status").default("active"), // active, paused, completed, cancelled
