@@ -13,6 +13,14 @@ import {
   gullakTransactions,
   goldRates,
   gullakOrders,
+  loyaltyBadges,
+  userBadges,
+  loyaltyTransactions,
+  loyaltyProfiles,
+  loyaltyChallenges,
+  userChallenges,
+  loyaltyRewards,
+  userRedemptions,
   type User,
   type UpsertUser,
   type Category,
@@ -36,6 +44,27 @@ import {
   type GullakAccount,
   type InsertGullakAccount,
   type GullakTransaction,
+  type InsertGullakTransaction,
+  type GoldRate,
+  type InsertGoldRate,
+  type GullakOrder,
+  type InsertGullakOrder,
+  type LoyaltyBadge,
+  type InsertLoyaltyBadge,
+  type UserBadge,
+  type InsertUserBadge,
+  type LoyaltyTransaction,
+  type InsertLoyaltyTransaction,
+  type LoyaltyProfile,
+  type InsertLoyaltyProfile,
+  type LoyaltyChallenge,
+  type InsertLoyaltyChallenge,
+  type UserChallenge,
+  type InsertUserChallenge,
+  type LoyaltyReward,
+  type InsertLoyaltyReward,
+  type UserRedemption,
+  type InsertUserRedemption,
   type InsertGullakTransaction,
   type GoldRate,
   type InsertGoldRate,
@@ -136,6 +165,40 @@ export interface IStorage {
   getGullakOrders(userId?: string): Promise<GullakOrder[]>;
   getGullakOrder(id: number): Promise<GullakOrder | undefined>;
   updateGullakOrderStatus(id: number, status: string): Promise<GullakOrder>;
+
+  // Loyalty Program operations
+  // Badge operations
+  getLoyaltyBadges(filters?: { category?: string; rarity?: string; isActive?: boolean }): Promise<LoyaltyBadge[]>;
+  getLoyaltyBadge(id: number): Promise<LoyaltyBadge | undefined>;
+  createLoyaltyBadge(badge: InsertLoyaltyBadge): Promise<LoyaltyBadge>;
+  updateLoyaltyBadge(id: number, badge: Partial<InsertLoyaltyBadge>): Promise<LoyaltyBadge>;
+  
+  // User badge operations
+  getUserBadges(userId: string): Promise<(UserBadge & { badge: LoyaltyBadge })[]>;
+  awardBadge(userId: string, badgeId: number, level?: number): Promise<UserBadge>;
+  markBadgeAsViewed(userId: string, badgeId: number): Promise<boolean>;
+  
+  // Loyalty profile operations
+  getLoyaltyProfile(userId: string): Promise<LoyaltyProfile | undefined>;
+  createLoyaltyProfile(profile: InsertLoyaltyProfile): Promise<LoyaltyProfile>;
+  updateLoyaltyProfile(userId: string, updates: Partial<InsertLoyaltyProfile>): Promise<LoyaltyProfile>;
+  
+  // Points operations
+  addLoyaltyPoints(userId: string, points: number, source: string, description?: string, metadata?: any): Promise<LoyaltyTransaction>;
+  spendLoyaltyPoints(userId: string, points: number, source: string, description?: string, metadata?: any): Promise<LoyaltyTransaction>;
+  getLoyaltyTransactions(userId: string, limit?: number): Promise<LoyaltyTransaction[]>;
+  
+  // Challenge operations
+  getLoyaltyChallenges(filters?: { type?: string; isActive?: boolean }): Promise<LoyaltyChallenge[]>;
+  getUserChallenges(userId: string): Promise<(UserChallenge & { challenge: LoyaltyChallenge })[]>;
+  updateChallengeProgress(userId: string, challengeId: number, progress: any): Promise<UserChallenge>;
+  completeChallengeProgress(userId: string, challengeId: number): Promise<UserChallenge>;
+  
+  // Reward operations
+  getLoyaltyRewards(filters?: { type?: string; tierRequired?: string; isActive?: boolean }): Promise<LoyaltyReward[]>;
+  redeemReward(userId: string, rewardId: number): Promise<UserRedemption>;
+  getUserRedemptions(userId: string): Promise<(UserRedemption & { reward: LoyaltyReward })[]>;
+  useRedemption(redemptionId: number): Promise<UserRedemption>;
 }
 
 export class DatabaseStorage implements IStorage {

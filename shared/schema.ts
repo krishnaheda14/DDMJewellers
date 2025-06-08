@@ -452,6 +452,199 @@ export const insertGullakOrderSchema = createInsertSchema(gullakOrders).omit({
   updatedAt: true,
 });
 
+// Loyalty Program Tables
+
+// Digital Jewelry Badges
+export const loyaltyBadges = pgTable("loyalty_badges", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  iconUrl: varchar("icon_url").notNull(), // SVG or image URL
+  rarity: varchar("rarity", { enum: ["common", "rare", "epic", "legendary"] }).notNull().default("common"),
+  category: varchar("category", { length: 50 }).notNull(), // "purchase", "engagement", "milestone", "seasonal"
+  pointsRequired: integer("points_required").default(0),
+  criteria: jsonb("criteria"), // Unlock conditions
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User Badge Collection
+export const userBadges = pgTable("user_badges", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  badgeId: integer("badge_id").notNull().references(() => loyaltyBadges.id, { onDelete: "cascade" }),
+  earnedAt: timestamp("earned_at").defaultNow(),
+  level: integer("level").default(1), // Badge can be upgraded
+  isNew: boolean("is_new").default(true), // For notification purposes
+});
+
+// Loyalty Points Transactions
+export const loyaltyTransactions = pgTable("loyalty_transactions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  points: integer("points").notNull(),
+  type: varchar("type", { enum: ["earned", "spent", "bonus", "expired"] }).notNull(),
+  source: varchar("source", { length: 100 }).notNull(), // "purchase", "review", "referral", "daily_check", etc.
+  description: text("description"),
+  metadata: jsonb("metadata"), // Additional data like order_id, badge_id, etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User Loyalty Profile
+export const loyaltyProfiles = pgTable("loyalty_profiles", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  totalPoints: integer("total_points").default(0),
+  availablePoints: integer("available_points").default(0),
+  tier: varchar("tier", { enum: ["bronze", "silver", "gold", "platinum", "diamond"] }).notNull().default("bronze"),
+  tierProgress: integer("tier_progress").default(0), // Points toward next tier
+  streak: integer("streak").default(0), // Daily login streak
+  lastActivity: timestamp("last_activity").defaultNow(),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  lifetimeSpent: decimal("lifetime_spent", { precision: 10, scale: 2 }).default("0.00"),
+  preferences: jsonb("preferences"), // Notification settings, favorite categories
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Loyalty Challenges/Quests
+export const loyaltyChallenges = pgTable("loyalty_challenges", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  type: varchar("type", { enum: ["daily", "weekly", "monthly", "seasonal", "milestone"] }).notNull(),
+  criteria: jsonb("criteria").notNull(), // Completion requirements
+  rewards: jsonb("rewards").notNull(), // Points, badges, discounts
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  isActive: boolean("is_active").default(true),
+  maxCompletions: integer("max_completions").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User Challenge Progress
+export const userChallenges = pgTable("user_challenges", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  challengeId: integer("challenge_id").notNull().references(() => loyaltyChallenges.id, { onDelete: "cascade" }),
+  progress: jsonb("progress").default({}), // Current progress data
+  completedAt: timestamp("completed_at"),
+  claimedAt: timestamp("claimed_at"),
+  streak: integer("streak").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Loyalty Rewards Catalog
+export const loyaltyRewards = pgTable("loyalty_rewards", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  type: varchar("type", { enum: ["discount", "free_shipping", "exclusive_product", "early_access", "custom_design"] }).notNull(),
+  pointsCost: integer("points_cost").notNull(),
+  value: decimal("value", { precision: 10, scale: 2 }), // Monetary value
+  tierRequired: varchar("tier_required", { enum: ["bronze", "silver", "gold", "platinum", "diamond"] }),
+  stockLimit: integer("stock_limit"), // Limited quantity rewards
+  currentStock: integer("current_stock"),
+  validFrom: timestamp("valid_from").defaultNow(),
+  validUntil: timestamp("valid_until"),
+  isActive: boolean("is_active").default(true),
+  metadata: jsonb("metadata"), // Additional reward data
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User Reward Redemptions
+export const userRedemptions = pgTable("user_redemptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  rewardId: integer("reward_id").notNull().references(() => loyaltyRewards.id, { onDelete: "cascade" }),
+  pointsSpent: integer("points_spent").notNull(),
+  status: varchar("status", { enum: ["pending", "active", "used", "expired"] }).notNull().default("pending"),
+  couponCode: varchar("coupon_code"),
+  usedAt: timestamp("used_at"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Relations
+export const loyaltyBadgesRelations = relations(loyaltyBadges, ({ many }) => ({
+  userBadges: many(userBadges),
+}));
+
+export const userBadgesRelations = relations(userBadges, ({ one }) => ({
+  user: one(users, { fields: [userBadges.userId], references: [users.id] }),
+  badge: one(loyaltyBadges, { fields: [userBadges.badgeId], references: [loyaltyBadges.id] }),
+}));
+
+export const loyaltyTransactionsRelations = relations(loyaltyTransactions, ({ one }) => ({
+  user: one(users, { fields: [loyaltyTransactions.userId], references: [users.id] }),
+}));
+
+export const loyaltyProfilesRelations = relations(loyaltyProfiles, ({ one }) => ({
+  user: one(users, { fields: [loyaltyProfiles.userId], references: [users.id] }),
+}));
+
+export const loyaltyChallengesRelations = relations(loyaltyChallenges, ({ many }) => ({
+  userChallenges: many(userChallenges),
+}));
+
+export const userChallengesRelations = relations(userChallenges, ({ one }) => ({
+  user: one(users, { fields: [userChallenges.userId], references: [users.id] }),
+  challenge: one(loyaltyChallenges, { fields: [userChallenges.challengeId], references: [loyaltyChallenges.id] }),
+}));
+
+export const loyaltyRewardsRelations = relations(loyaltyRewards, ({ many }) => ({
+  userRedemptions: many(userRedemptions),
+}));
+
+export const userRedemptionsRelations = relations(userRedemptions, ({ one }) => ({
+  user: one(users, { fields: [userRedemptions.userId], references: [users.id] }),
+  reward: one(loyaltyRewards, { fields: [userRedemptions.rewardId], references: [loyaltyRewards.id] }),
+}));
+
+// Zod Schemas for Loyalty Program
+export const insertLoyaltyBadgeSchema = createInsertSchema(loyaltyBadges).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
+  id: true,
+  earnedAt: true,
+});
+
+export const insertLoyaltyTransactionSchema = createInsertSchema(loyaltyTransactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertLoyaltyProfileSchema = createInsertSchema(loyaltyProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertLoyaltyChallengeSchema = createInsertSchema(loyaltyChallenges).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserChallengeSchema = createInsertSchema(userChallenges).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertLoyaltyRewardSchema = createInsertSchema(loyaltyRewards).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserRedemptionSchema = createInsertSchema(userRedemptions).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -481,3 +674,19 @@ export type GoldRate = typeof goldRates.$inferSelect;
 export type InsertGoldRate = z.infer<typeof insertGoldRateSchema>;
 export type GullakOrder = typeof gullakOrders.$inferSelect;
 export type InsertGullakOrder = z.infer<typeof insertGullakOrderSchema>;
+export type LoyaltyBadge = typeof loyaltyBadges.$inferSelect;
+export type InsertLoyaltyBadge = z.infer<typeof insertLoyaltyBadgeSchema>;
+export type UserBadge = typeof userBadges.$inferSelect;
+export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+export type LoyaltyTransaction = typeof loyaltyTransactions.$inferSelect;
+export type InsertLoyaltyTransaction = z.infer<typeof insertLoyaltyTransactionSchema>;
+export type LoyaltyProfile = typeof loyaltyProfiles.$inferSelect;
+export type InsertLoyaltyProfile = z.infer<typeof insertLoyaltyProfileSchema>;
+export type LoyaltyChallenge = typeof loyaltyChallenges.$inferSelect;
+export type InsertLoyaltyChallenge = z.infer<typeof insertLoyaltyChallengeSchema>;
+export type UserChallenge = typeof userChallenges.$inferSelect;
+export type InsertUserChallenge = z.infer<typeof insertUserChallengeSchema>;
+export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;
+export type InsertLoyaltyReward = z.infer<typeof insertLoyaltyRewardSchema>;
+export type UserRedemption = typeof userRedemptions.$inferSelect;
+export type InsertUserRedemption = z.infer<typeof insertUserRedemptionSchema>;
