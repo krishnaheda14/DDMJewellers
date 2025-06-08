@@ -239,6 +239,7 @@ export const goldRates = pgTable("gold_rates", {
   rate24k: varchar("rate_24k").notNull(), // Per gram rate for 24k gold
   rate22k: varchar("rate_22k").notNull(), // Per gram rate for 22k gold
   rate18k: varchar("rate_18k").notNull(), // Per gram rate for 18k gold
+  silverRate: varchar("silver_rate"), // Per gram rate for silver
   currency: varchar("currency").default("INR"),
   source: varchar("source"), // API source or manual
   effectiveDate: timestamp("effective_date").defaultNow(),

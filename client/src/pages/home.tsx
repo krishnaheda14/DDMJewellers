@@ -20,7 +20,16 @@ export default function Home() {
     queryKey: ["/api/categories"],
   });
 
-  const { data: goldRates } = useQuery({
+  const { data: goldRates } = useQuery<{
+    id: number;
+    rate24k: string;
+    rate22k: string;
+    rate18k: string;
+    silverRate: string;
+    currency: string;
+    effectiveDate: string;
+    createdAt: string;
+  }>({
     queryKey: ["/api/gullak/gold-rates"],
   });
 
@@ -77,10 +86,10 @@ export default function Home() {
                 <h2 className="text-3xl font-bold text-deep-navy">Live Gold Rates</h2>
                 <Coins className="h-8 w-8 text-gold" />
               </div>
-              <p className="text-warm-gray text-lg">Current market prices for gold investments</p>
+              <p className="text-warm-gray text-lg">Current market prices for gold and silver investments</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-8">
               <Card className="border-2 border-gold/20 hover:border-gold/40 transition-colors">
                 <CardContent className="p-6 text-center">
                   <div className="bg-gold/10 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
@@ -128,6 +137,22 @@ export default function Home() {
                   </Badge>
                 </CardContent>
               </Card>
+
+              <Card className="border-2 border-gray-300/40 hover:border-gray-400/60 transition-colors">
+                <CardContent className="p-6 text-center">
+                  <div className="bg-gray-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-gray-600 font-bold text-lg">Ag</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-deep-navy mb-2">Pure Silver</h3>
+                  <p className="text-3xl font-bold text-gray-600 mb-1">
+                    ₹{goldRates.silverRate ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.silverRate)) : '85'}
+                  </p>
+                  <p className="text-sm text-warm-gray">per gram</p>
+                  <Badge variant="secondary" className="mt-3 bg-gray-100 text-gray-800">
+                    99.9% Pure
+                  </Badge>
+                </CardContent>
+              </Card>
             </div>
 
             <div className="text-center">
@@ -151,6 +176,13 @@ export default function Home() {
                   className="border-gold text-gold hover:bg-gold hover:text-white"
                 >
                   Browse Gold Jewelry
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate("/products?search=silver")}
+                  className="border-gray-500 text-gray-600 hover:bg-gray-500 hover:text-white"
+                >
+                  Browse Silver Jewelry
                 </Button>
               </div>
             </div>
