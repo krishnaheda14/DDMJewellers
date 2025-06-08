@@ -49,21 +49,31 @@ export default function Gullak() {
   const [selectedAccount, setSelectedAccount] = useState<number | null>(null);
 
   // Fetch Gullak accounts
-  const { data: gullakAccounts = [], isLoading: accountsLoading } = useQuery({
+  const { data: gullakAccounts = [], isLoading: accountsLoading } = useQuery<GullakAccount[]>({
     queryKey: ["/api/gullak/accounts"],
     enabled: isAuthenticated,
+    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   // Fetch current gold rates
   const { data: goldRates } = useQuery<GoldRate>({
     queryKey: ["/api/gullak/gold-rates"],
     enabled: isAuthenticated,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
   });
 
   // Fetch transactions for selected account
   const { data: transactions = [] } = useQuery<GullakTransaction[]>({
     queryKey: ["/api/gullak/transactions", selectedAccount],
     enabled: isAuthenticated && selectedAccount !== null,
+    staleTime: 30 * 1000, // 30 seconds for transaction data
+    gcTime: 3 * 60 * 1000, // 3 minutes
+    refetchOnWindowFocus: false,
   });
 
   // Toggle auto-pay mutation

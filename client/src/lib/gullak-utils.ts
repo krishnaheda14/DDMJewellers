@@ -1,167 +1,96 @@
-// Gullak utility functions for gold savings calculations
-
-export interface GoldRates {
-  rate_24k: string;
-  rate_22k: string;
-  rate_18k: string;
-  currency: string;
+export function formatCurrency(amount: string | number): string {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num);
 }
 
-export interface GullakAccount {
-  id: number;
-  name: string;
-  dailyAmount: string;
-  targetGoldWeight: string;
-  targetAmount: string;
-  currentBalance: string;
-  status: string;
-  autoPayEnabled: boolean;
-  nextPaymentDate?: Date;
-  completedAt?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
+export function formatWeight(weight: string | number): string {
+  const num = typeof weight === 'string' ? parseFloat(weight) : weight;
+  return `${num.toFixed(3)} grams`;
 }
 
-export interface GullakTransaction {
-  id: number;
-  amount: string;
-  type: string;
-  goldRate?: string;
-  goldValue?: string;
-  description?: string;
-  status: string;
-  transactionDate: Date;
-}
-
-// Calculate progress percentage
-export function calculateProgress(currentBalance: string, targetAmount: string): number {
-  const current = parseFloat(currentBalance);
-  const target = parseFloat(targetAmount);
-  return target > 0 ? Math.min((current / target) * 100, 100) : 0;
-}
-
-// Calculate days remaining to reach target
-export function calculateDaysRemaining(currentBalance: string, targetAmount: string, dailyAmount: string): number {
-  const current = parseFloat(currentBalance);
-  const target = parseFloat(targetAmount);
-  const daily = parseFloat(dailyAmount);
+export function calculateProgress(current: string | number, target: string | number): number {
+  const currentNum = typeof current === 'string' ? parseFloat(current) : current;
+  const targetNum = typeof target === 'string' ? parseFloat(target) : target;
   
-  if (daily <= 0 || current >= target) return 0;
+  if (targetNum === 0) return 0;
+  return Math.min((currentNum / targetNum) * 100, 100);
+}
+
+export function getDaysUntilTarget(
+  currentAmount: string | number,
+  targetAmount: string | number,
+  dailyAmount: string | number
+): number {
+  const current = typeof currentAmount === 'string' ? parseFloat(currentAmount) : currentAmount;
+  const target = typeof targetAmount === 'string' ? parseFloat(targetAmount) : targetAmount;
+  const daily = typeof dailyAmount === 'string' ? parseFloat(dailyAmount) : dailyAmount;
+  
+  if (daily === 0) return Infinity;
   
   const remaining = target - current;
+  if (remaining <= 0) return 0;
+  
   return Math.ceil(remaining / daily);
 }
 
-// Calculate equivalent gold weight based on current savings
-export function calculateCurrentGoldWeight(currentBalance: string, goldRate: string): number {
-  const balance = parseFloat(currentBalance);
-  const rate = parseFloat(goldRate);
-  
-  if (rate <= 0) return 0;
-  
-  return balance / rate; // Returns weight in grams
-}
-
-// Format currency amount
-export function formatCurrency(amount: string | number, currency: string = 'INR'): string {
-  const value = typeof amount === 'string' ? parseFloat(amount) : amount;
-  
-  if (currency === 'INR') {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+export function formatDaysRemaining(days: number): string {
+  if (days === Infinity) return 'Never';
+  if (days === 0) return 'Target reached!';
+  if (days === 1) return '1 day';
+  if (days < 30) return `${days} days`;
+  if (days < 365) {
+    const months = Math.floor(days / 30);
+    const remainingDays = days % 30;
+    if (remainingDays === 0) return `${months} month${months > 1 ? 's' : ''}`;
+    return `${months} month${months > 1 ? 's' : ''} ${remainingDays} day${remainingDays > 1 ? 's' : ''}`;
   }
   
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 2,
-  }).format(value);
+  const years = Math.floor(days / 365);
+  const remainingDays = days % 365;
+  if (remainingDays === 0) return `${years} year${years > 1 ? 's' : ''}`;
+  
+  const months = Math.floor(remainingDays / 30);
+  return `${years} year${years > 1 ? 's' : ''} ${months} month${months > 1 ? 's' : ''}`;
 }
 
-// Format gold weight
-export function formatGoldWeight(weight: number): string {
-  return `${weight.toFixed(3)}g`;
-}
-
-// Calculate target amount based on gold weight and rate
-export function calculateTargetAmount(goldWeight: string, goldRate: string): number {
-  const weight = parseFloat(goldWeight);
-  const rate = parseFloat(goldRate);
-  
-  return weight * rate;
-}
-
-// Validate Gullak account data
-export function validateGullakAccount(data: {
-  name: string;
-  dailyAmount: string;
-  targetGoldWeight: string;
-}): string[] {
-  const errors: string[] = [];
-  
-  if (!data.name.trim()) {
-    errors.push('Account name is required');
-  }
-  
-  const dailyAmount = parseFloat(data.dailyAmount);
-  if (isNaN(dailyAmount) || dailyAmount <= 0) {
-    errors.push('Daily amount must be a positive number');
-  }
-  
-  const goldWeight = parseFloat(data.targetGoldWeight);
-  if (isNaN(goldWeight) || goldWeight <= 0) {
-    errors.push('Target gold weight must be a positive number');
-  }
-  
-  return errors;
-}
-
-// Get status color for badges
 export function getStatusColor(status: string): string {
-  switch (status.toLowerCase()) {
+  switch (status?.toLowerCase()) {
     case 'active':
-      return 'bg-green-100 text-green-800';
-    case 'completed':
-      return 'bg-blue-100 text-blue-800';
+      return 'text-green-600 bg-green-50 border-green-200';
     case 'paused':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+    case 'completed':
+      return 'text-blue-600 bg-blue-50 border-blue-200';
     case 'cancelled':
-      return 'bg-red-100 text-red-800';
+      return 'text-red-600 bg-red-50 border-red-200';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'text-gray-600 bg-gray-50 border-gray-200';
   }
 }
 
-// Calculate next payment date
-export function calculateNextPaymentDate(): Date {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(9, 0, 0, 0); // Set to 9 AM
-  return tomorrow;
+export function getMetalIcon(metalType: string): string {
+  switch (metalType?.toLowerCase()) {
+    case 'gold':
+      return '🥇';
+    case 'silver':
+      return '🥈';
+    default:
+      return '💰';
+  }
 }
 
-// Format date for display
-export function formatDate(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('en-IN', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-// Format date and time for display
-export function formatDateTime(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleString('en-IN', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+export function calculateMetalAmount(
+  savedAmount: string | number,
+  currentRate: string | number
+): number {
+  const amount = typeof savedAmount === 'string' ? parseFloat(savedAmount) : savedAmount;
+  const rate = typeof currentRate === 'string' ? parseFloat(currentRate) : currentRate;
+  
+  if (rate === 0) return 0;
+  return amount / rate;
 }
