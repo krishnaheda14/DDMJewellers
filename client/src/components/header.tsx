@@ -67,6 +67,8 @@ export default function Header() {
     { name: "Currency Converter", href: "/currency-converter" },
     { name: "Custom Design", href: "/custom-jewelry" },
     { name: "Virtual Try-On", href: "/ai-tryon" },
+    { name: "Corporate Benefits", href: "/corporate-benefits" },
+    { name: "Corporate Partnership", href: "/corporate-registration" },
     { name: "Rings", href: "/products?search=ring" },
     { name: "Necklaces", href: "/products?search=necklace" },
     { name: "Earrings", href: "/products?search=earring" },
