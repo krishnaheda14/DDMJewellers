@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Camera, Sparkles, ArrowRight, CheckCircle, Info } from "lucide-react";
+import { Upload, Camera, Sparkles, ArrowRight, CheckCircle, Info, Home, ArrowLeft } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import type { Product } from "@shared/schema";
 

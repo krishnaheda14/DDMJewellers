@@ -13,10 +13,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Heart, Calendar, MapPin, Users, Crown, Palette, Zap, Star, Gift } from "lucide-react";
+import { Sparkles, Heart, Calendar, MapPin, Users, Crown, Palette, Zap, Star, Gift, Home, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { Link } from "wouter";
 import type { Product } from "@shared/schema";
 
 interface RecommendationRequest {
@@ -192,6 +193,24 @@ export default function ShingaarGuru() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Navigation Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Home className="w-4 h-4" />
+                Home
+              </Button>
+            </Link>
+            <Link href="/products">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Browse Products
+              </Button>
+            </Link>
+          </div>
+        </div>
+
         {/* Header Section */}
         <div className="text-center mb-12">
           <motion.div
