@@ -21,15 +21,19 @@ import { useToast } from "@/hooks/use-toast";
 const createGullakSchema = z.object({
   name: z.string().min(1, "Account name is required"),
   metalType: z.enum(["gold", "silver"]),
-  dailyAmount: z.string().min(1, "Daily amount is required").refine(
+  paymentAmount: z.string().min(1, "Payment amount is required").refine(
     (val) => !isNaN(Number(val)) && Number(val) > 0,
-    "Daily amount must be a valid positive number"
+    "Payment amount must be a valid positive number"
   ),
+  paymentFrequency: z.enum(["daily", "weekly", "monthly"]),
+  paymentDayOfWeek: z.number().min(0).max(6).optional(),
+  paymentDayOfMonth: z.number().min(1).max(28).optional(),
   targetMetalWeight: z.string().min(1, "Target metal weight is required").refine(
     (val) => !isNaN(Number(val)) && Number(val) > 0,
     "Target metal weight must be a valid positive number"
   ),
   metalPurity: z.enum(["24k", "22k", "18k", "silver"]),
+  autoPayEnabled: z.boolean().default(true),
 });
 
 type CreateGullakForm = z.infer<typeof createGullakSchema>;
@@ -53,9 +57,11 @@ export default function CreateGullak() {
     defaultValues: {
       name: "",
       metalType: "gold",
-      dailyAmount: "",
+      paymentAmount: "",
+      paymentFrequency: "daily",
       targetMetalWeight: "",
       metalPurity: "24k",
+      autoPayEnabled: true,
     },
   });
 
@@ -134,14 +140,26 @@ export default function CreateGullak() {
 
   // Calculate days to reach target
   const calculateDaysToTarget = () => {
-    if (!watchedValues.dailyAmount || !watchedValues.targetMetalWeight || !metalRates) return 0;
+    if (!watchedValues.paymentAmount || !watchedValues.targetMetalWeight || !metalRates) return 0;
     
     const targetAmount = parseFloat(calculateTargetAmount());
-    const dailyAmount = parseFloat(watchedValues.dailyAmount);
+    const paymentAmount = parseFloat(watchedValues.paymentAmount);
+    const frequency = watchedValues.paymentFrequency;
     
-    if (dailyAmount <= 0) return 0;
+    if (paymentAmount <= 0) return 0;
     
-    return Math.ceil(targetAmount / dailyAmount);
+    // Calculate based on frequency
+    let paymentsNeeded: number;
+    if (frequency === "daily") {
+      paymentsNeeded = Math.ceil(targetAmount / paymentAmount);
+      return paymentsNeeded; // Already in days
+    } else if (frequency === "weekly") {
+      paymentsNeeded = Math.ceil(targetAmount / paymentAmount);
+      return paymentsNeeded * 7; // Convert weeks to days
+    } else { // monthly
+      paymentsNeeded = Math.ceil(targetAmount / paymentAmount);
+      return paymentsNeeded * 30; // Convert months to days
+    }
   };
 
   const onSubmit = (data: CreateGullakForm) => {
