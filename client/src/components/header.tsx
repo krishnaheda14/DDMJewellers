@@ -136,7 +136,7 @@ export default function Header() {
                       {currencies.map((currency) => (
                         <button
                           key={currency.code}
-                          onClick={() => setSelectedCurrency(currency.code)}
+                          onClick={() => changeCurrency(currency.code)}
                           className={`w-full flex items-center gap-2 px-2 py-1 text-sm rounded hover:bg-gold/10 transition-colors ${
                             selectedCurrency === currency.code ? 'bg-gold/20 text-gold font-medium' : 'text-gray-700'
                           }`}
@@ -396,7 +396,7 @@ export default function Header() {
                     {/* Mobile Currency Selector */}
                     <div className="flex-1">
                       <label className="text-sm font-medium text-gray-700 mb-1 block">Currency</label>
-                      <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
+                      <Select value={selectedCurrency} onValueChange={changeCurrency}>
                         <SelectTrigger className="w-full h-8 text-xs">
                           <SelectValue>
                             <span className="flex items-center gap-1">
