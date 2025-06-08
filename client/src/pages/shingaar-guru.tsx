@@ -101,8 +101,21 @@ export default function ShingaarGuru() {
   });
 
   const recommendationMutation = useMutation({
-    mutationFn: async (request: RecommendationRequest) => {
-      return await apiRequest("POST", "/api/shingaar-guru/recommendations", request);
+    mutationFn: async (request: RecommendationRequest): Promise<ShingaarRecommendation> => {
+      const response = await fetch("/api/shingaar-guru/recommendations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to generate recommendations');
+      }
+      
+      return response.json();
     },
     onSuccess: (data: ShingaarRecommendation) => {
       setRecommendations(data);
