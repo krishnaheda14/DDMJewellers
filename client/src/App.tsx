@@ -21,6 +21,7 @@ import Loyalty from "@/pages/loyalty";
 import ShingaarGuru from "@/pages/shingaar-guru";
 import JewelryCare from "@/pages/jewelry-care";
 import JewelryExchange from "@/pages/jewelry-exchange";
+import CurrencyConverter from "@/pages/currency-converter";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -47,6 +48,7 @@ function Router() {
           <Route path="/shingaar-guru" component={ShingaarGuru} />
           <Route path="/jewelry-care" component={JewelryCare} />
           <Route path="/jewelry-exchange" component={JewelryExchange} />
+          <Route path="/currency-converter" component={CurrencyConverter} />
         </>
       )}
       <Route component={NotFound} />

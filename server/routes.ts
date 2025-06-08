@@ -2117,6 +2117,144 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Real-time Currency Converter API
+  app.get('/api/currency/rates', async (req, res) => {
+    try {
+      const { base = 'INR', currencies = 'USD,EUR,GBP,AED' } = req.query;
+      
+      // Use ExchangeRate-API for live exchange rates
+      const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${base}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch exchange rates');
+      }
+      
+      const data = await response.json();
+      
+      // Filter to only requested currencies
+      const requestedCurrencies = currencies.toString().split(',');
+      const filteredRates = Object.fromEntries(
+        Object.entries(data.rates).filter(([key]) => 
+          requestedCurrencies.includes(key) || key === base
+        )
+      );
+      
+      res.json({
+        base: data.base,
+        date: data.date,
+        rates: filteredRates,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error fetching exchange rates:', error);
+      
+      // Fallback rates for development
+      const fallbackRates = {
+        base: 'INR',
+        date: new Date().toISOString().split('T')[0],
+        rates: {
+          INR: 1,
+          USD: 0.012,
+          EUR: 0.011,
+          GBP: 0.0095,
+          AED: 0.044
+        },
+        timestamp: new Date().toISOString(),
+        fallback: true
+      };
+      
+      res.json(fallbackRates);
+    }
+  });
+
+  // Convert currency amounts
+  app.post('/api/currency/convert', async (req, res) => {
+    try {
+      const { amount, from, to } = req.body;
+      
+      if (!amount || !from || !to) {
+        return res.status(400).json({ 
+          message: 'Amount, from currency, and to currency are required' 
+        });
+      }
+      
+      const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${from}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch exchange rates');
+      }
+      
+      const data = await response.json();
+      const rate = data.rates[to];
+      
+      if (!rate) {
+        return res.status(400).json({ 
+          message: `Exchange rate not found for ${from} to ${to}` 
+        });
+      }
+      
+      const convertedAmount = parseFloat(amount) * rate;
+      
+      res.json({
+        amount: parseFloat(amount),
+        from,
+        to,
+        rate,
+        convertedAmount: Math.round(convertedAmount * 100) / 100,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error converting currency:', error);
+      res.status(500).json({ message: 'Failed to convert currency' });
+    }
+  });
+
+  // Get historical rates (last 7 days)
+  app.get('/api/currency/historical/:base', async (req, res) => {
+    try {
+      const { base } = req.params;
+      const { currencies = 'USD,EUR,GBP,AED' } = req.query;
+      
+      const historicalData = [];
+      const requestedCurrencies = currencies.toString().split(',');
+      
+      // Get data for last 7 days
+      for (let i = 0; i < 7; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        try {
+          const response = await fetch(`https://api.exchangerate-api.com/v4/history/${base}/${dateStr}`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            const filteredRates = Object.fromEntries(
+              Object.entries(data.rates).filter(([key]) => 
+                requestedCurrencies.includes(key)
+              )
+            );
+            
+            historicalData.push({
+              date: dateStr,
+              rates: filteredRates
+            });
+          }
+        } catch (error) {
+          console.error(`Error fetching historical data for ${dateStr}:`, error);
+        }
+      }
+      
+      res.json({
+        base,
+        data: historicalData.reverse() // Oldest first
+      });
+    } catch (error) {
+      console.error('Error fetching historical rates:', error);
+      res.status(500).json({ message: 'Failed to fetch historical rates' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
