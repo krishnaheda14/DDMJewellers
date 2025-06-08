@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import express from "express";
 import { storage } from "./storage";
 import { setupTempAuth, isAuthenticated, isAdmin } from "./tempAuth";
+import { marketRatesService } from "./market-rates";
 import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
 import fs from "fs";
@@ -155,6 +156,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Signup error:", error);
       res.status(500).json({ message: "Failed to create account" });
+    }
+  });
+
+  // Market rates routes
+  app.get('/api/market-rates', async (req, res) => {
+    try {
+      const rates = await marketRatesService.getCurrentRates();
+      if (!rates) {
+        return res.status(404).json({ message: "Market rates not available" });
+      }
+      res.json(rates);
+    } catch (error) {
+      console.error("Error fetching market rates:", error);
+      res.status(500).json({ message: "Failed to fetch market rates" });
+    }
+  });
+
+  app.post('/api/market-rates/update', isAdmin, async (req, res) => {
+    try {
+      await marketRatesService.updateRates();
+      res.json({ message: "Market rates updated successfully" });
+    } catch (error) {
+      console.error("Error updating market rates:", error);
+      res.status(500).json({ message: "Failed to update market rates" });
+    }
+  });
+
+  app.post('/api/market-rates/calculate-price', async (req, res) => {
+    try {
+      const { weight, purity, markup } = req.body;
+      
+      if (!weight || !purity) {
+        return res.status(400).json({ message: "Weight and purity are required" });
+      }
+
+      const price = await marketRatesService.calculateJewelryPrice(
+        parseFloat(weight),
+        purity,
+        markup ? parseFloat(markup) : undefined
+      );
+      
+      res.json({ price: parseFloat(price) });
+    } catch (error) {
+      console.error("Error calculating jewelry price:", error);
+      res.status(500).json({ message: "Failed to calculate price" });
     }
   });
 

@@ -119,8 +119,8 @@ export interface IStorage {
   updateGullakOrderStatus(id: number, status: string): Promise<GullakOrder>;
   
   // Gold rates
-  createGoldRate(rate: InsertGoldRate): Promise<GoldRate>;
-  getCurrentGoldRates(): Promise<GoldRate | undefined>;
+  createGoldRate(rate: any): Promise<any>;
+  getCurrentGoldRates(): Promise<any | undefined>;
 
   // Corporate operations
   createCorporateRegistration(registration: InsertCorporateRegistration): Promise<CorporateRegistration>;
@@ -639,16 +639,20 @@ export class DatabaseStorage implements IStorage {
     return await query;
   }
 
+  async createGoldRate(rate: any): Promise<any> {
+    const [newRate] = await db.insert(goldRates).values(rate).returning();
+    return newRate;
+  }
+
   async getCurrentGoldRates(): Promise<any> {
-    // Return default gold rates since we don't have external API
-    return {
-      id: 1,
-      rate24k: "7200",
-      rate22k: "6600",
-      rate18k: "5400",
-      currency: "INR",
-      lastUpdated: new Date()
-    };
+    // Get the most recent gold rates
+    const [latestRates] = await db
+      .select()
+      .from(goldRates)
+      .orderBy(desc(goldRates.effectiveDate))
+      .limit(1);
+    
+    return latestRates || null;
   }
 
   // Gullak operations
