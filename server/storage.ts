@@ -51,6 +51,27 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Enhanced authentication operations
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: Partial<User>): Promise<User>;
+  updateUserPassword(userId: string, passwordHash: string): Promise<void>;
+  updateUserSession(userId: string, sessionToken: string | null, sessionExpiresAt: Date | null): Promise<void>;
+  verifyUserEmail(userId: string): Promise<void>;
+  
+  // Email verification tokens
+  createEmailVerificationToken(token: InsertEmailVerificationToken): Promise<EmailVerificationToken>;
+  getEmailVerificationToken(token: string): Promise<EmailVerificationToken | undefined>;
+  deleteEmailVerificationToken(id: number): Promise<void>;
+  deleteEmailVerificationTokensByUserId(userId: string): Promise<void>;
+  
+  // Password reset tokens
+  createPasswordResetToken(token: InsertPasswordResetToken): Promise<PasswordResetToken>;
+  getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
+  markPasswordResetTokenUsed(id: number): Promise<void>;
+  
+  // User activity logging
+  createUserActivityLog(log: InsertUserActivityLog): Promise<UserActivityLog>;
 
   // Category operations
   getCategories(): Promise<Category[]>;
@@ -188,6 +209,92 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  // Enhanced authentication operations
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: Partial<User>): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
+    return user;
+  }
+
+  async updateUserPassword(userId: string, passwordHash: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  async updateUserSession(userId: string, sessionToken: string | null, sessionExpiresAt: Date | null): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        sessionToken, 
+        sessionExpiresAt, 
+        lastLoginAt: sessionToken ? new Date() : undefined,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async verifyUserEmail(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ isEmailVerified: true, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  // Email verification tokens
+  async createEmailVerificationToken(tokenData: InsertEmailVerificationToken): Promise<EmailVerificationToken> {
+    const [token] = await db.insert(emailVerificationTokens).values(tokenData).returning();
+    return token;
+  }
+
+  async getEmailVerificationToken(token: string): Promise<EmailVerificationToken | undefined> {
+    const [tokenData] = await db
+      .select()
+      .from(emailVerificationTokens)
+      .where(eq(emailVerificationTokens.token, token));
+    return tokenData;
+  }
+
+  async deleteEmailVerificationToken(id: number): Promise<void> {
+    await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.id, id));
+  }
+
+  async deleteEmailVerificationTokensByUserId(userId: string): Promise<void> {
+    await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.userId, userId));
+  }
+
+  // Password reset tokens
+  async createPasswordResetToken(tokenData: InsertPasswordResetToken): Promise<PasswordResetToken> {
+    const [token] = await db.insert(passwordResetTokens).values(tokenData).returning();
+    return token;
+  }
+
+  async getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+    const [tokenData] = await db
+      .select()
+      .from(passwordResetTokens)
+      .where(eq(passwordResetTokens.token, token));
+    return tokenData;
+  }
+
+  async markPasswordResetTokenUsed(id: number): Promise<void> {
+    await db
+      .update(passwordResetTokens)
+      .set({ used: true })
+      .where(eq(passwordResetTokens.id, id));
+  }
+
+  // User activity logging
+  async createUserActivityLog(logData: InsertUserActivityLog): Promise<UserActivityLog> {
+    const [log] = await db.insert(userActivityLog).values(logData).returning();
+    return log;
   }
 
   // Category operations

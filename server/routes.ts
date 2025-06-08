@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
 import { storage } from "./storage";
-import { setupTempAuth, isAuthenticated, isAdmin } from "./tempAuth";
+import { setupAuth, isAuthenticated, isAdmin } from "./auth";
 import { marketRatesService } from "./market-rates";
 import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
@@ -88,7 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auth middleware
-  await setupTempAuth(app);
+  await setupAuth(app);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
