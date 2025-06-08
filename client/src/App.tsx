@@ -15,6 +15,8 @@ import Cart from "@/pages/cart";
 import Admin from "@/pages/admin";
 import CustomJewelry from "@/pages/custom-jewelry";
 import AITryOn from "@/pages/ai-tryon";
+import Gullak from "@/pages/gullak";
+import CreateGullak from "@/pages/gullak-create";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -35,6 +37,8 @@ function Router() {
           <Route path="/admin" component={Admin} />
           <Route path="/custom-jewelry" component={CustomJewelry} />
           <Route path="/ai-tryon" component={AITryOn} />
+          <Route path="/gullak" component={Gullak} />
+          <Route path="/gullak/create" component={CreateGullak} />
         </>
       )}
       <Route component={NotFound} />
