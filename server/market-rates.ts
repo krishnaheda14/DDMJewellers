@@ -77,11 +77,14 @@ export class MarketRatesService {
 
       const data = await response.json();
       
+      // Convert USD to INR and per ounce to per gram
+      const usdToInr = 83;
+      
       return {
-        gold24k: data.gold,
-        gold22k: data.gold * 0.916, // 22k is 91.6% pure
-        gold18k: data.gold * 0.75,  // 18k is 75% pure
-        silver: data.silver,
+        gold24k: (data.gold * usdToInr) / 31.1035, // Convert to INR per gram
+        gold22k: (data.gold * usdToInr * 0.916) / 31.1035, // 22k is 91.6% pure
+        gold18k: (data.gold * usdToInr * 0.75) / 31.1035,  // 18k is 75% pure
+        silver: (data.silver * usdToInr) / 31.1035,
         source: 'Metals-API'
       };
     } catch (error) {
@@ -115,12 +118,15 @@ export class MarketRatesService {
       // Convert from per ounce to per gram and calculate different purities
       const goldPricePerOz = 1 / goldPrice; // XAU to USD gives USD per ounce
       const silverPricePerOz = 1 / silverPrice;
+      
+      // Convert USD to INR and per ounce to per gram
+      const usdToInr = 83;
 
       return {
-        gold24k: goldPricePerOz,
-        gold22k: goldPricePerOz * 0.916,
-        gold18k: goldPricePerOz * 0.75,
-        silver: silverPricePerOz,
+        gold24k: (goldPricePerOz * usdToInr) / 31.1035,
+        gold22k: (goldPricePerOz * usdToInr * 0.916) / 31.1035,
+        gold18k: (goldPricePerOz * usdToInr * 0.75) / 31.1035,
+        silver: (silverPricePerOz * usdToInr) / 31.1035,
         source: 'Alpha Vantage'
       };
     } catch (error) {
@@ -148,11 +154,14 @@ export class MarketRatesService {
       const goldData = await goldResponse.json();
       const silverData = await silverResponse.json();
 
+      // Convert USD to INR and per ounce to per gram
+      const usdToInr = 83;
+      
       return {
-        gold24k: goldData.c, // Current price
-        gold22k: goldData.c * 0.916,
-        gold18k: goldData.c * 0.75,
-        silver: silverData.c,
+        gold24k: (goldData.c * usdToInr) / 31.1035, // Convert to INR per gram
+        gold22k: (goldData.c * usdToInr * 0.916) / 31.1035,
+        gold18k: (goldData.c * usdToInr * 0.75) / 31.1035,
+        silver: (silverData.c * usdToInr) / 31.1035,
         source: 'Finnhub'
       };
     } catch (error) {
@@ -173,21 +182,26 @@ export class MarketRatesService {
 
       const data = await response.json();
       
+      // Convert USD to INR (approximate rate: 1 USD = 83 INR)
+      const usdToInr = 83;
+      const goldPriceUsd = data.gold || 2000;
+      const silverPriceUsd = data.silver || 25;
+      
       return {
-        gold24k: data.gold || 2000, // Fallback to reasonable values
-        gold22k: (data.gold || 2000) * 0.916,
-        gold18k: (data.gold || 2000) * 0.75,
-        silver: data.silver || 25,
+        gold24k: (goldPriceUsd * usdToInr) / 31.1035, // Convert per ounce to per gram
+        gold22k: (goldPriceUsd * usdToInr * 0.916) / 31.1035,
+        gold18k: (goldPriceUsd * usdToInr * 0.75) / 31.1035,
+        silver: (silverPriceUsd * usdToInr) / 31.1035,
         source: 'Free Metals API'
       };
     } catch (error) {
       console.log("Free API fetch failed, using sample rates:", (error as Error).message);
-      // Return realistic sample rates for demonstration
+      // Return realistic INR rates per gram for demonstration
       return {
-        gold24k: 2040.50,
-        gold22k: 1869.10,
-        gold18k: 1530.38,
-        silver: 24.85,
+        gold24k: 6800.00, // INR per gram
+        gold22k: 6200.00, // INR per gram
+        gold18k: 5100.00, // INR per gram
+        silver: 82.50,    // INR per gram
         source: 'Sample Data (Demo)'
       };
     }

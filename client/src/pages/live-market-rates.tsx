@@ -63,10 +63,11 @@ export default function LiveMarketRates() {
         markup: parseFloat(markup),
       });
       
-      setCalculatedPrice(result as PriceCalculation);
+      const data = await result.json();
+      setCalculatedPrice(data);
       toast({
         title: "Price Calculated",
-        description: `Estimated price: $${result.price}`,
+        description: `Estimated price: ₹${data.price.toLocaleString('en-IN')}`,
       });
     } catch (error) {
       toast({
@@ -84,9 +85,9 @@ export default function LiveMarketRates() {
   };
 
   const formatPrice = (price: string) => {
-    return parseFloat(price).toLocaleString('en-US', {
+    return parseFloat(price).toLocaleString('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 2,
     });
   };
