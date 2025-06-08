@@ -68,8 +68,16 @@ export default function CreateGullak() {
   // Create Gullak account mutation
   const createMutation = useMutation({
     mutationFn: async (data: CreateGullakForm) => {
-      const goldRate = goldRates?.[`rate${data.goldPurity}` as keyof GoldRate] || "0";
-      const targetAmount = (parseFloat(data.targetGoldWeight) * parseFloat(goldRate)).toString();
+      if (!metalRates) throw new Error("Metal rates not loaded");
+      
+      let ratePerGram: number;
+      if (data.metalType === "silver") {
+        ratePerGram = parseFloat(metalRates.silverRate);
+      } else {
+        ratePerGram = parseFloat(metalRates[`rate${data.metalPurity}` as keyof MetalRates]);
+      }
+      
+      const targetAmount = (parseFloat(data.targetMetalWeight) * ratePerGram).toString();
       
       return apiRequest("POST", "/api/gullak/accounts", {
         ...data,
@@ -78,9 +86,10 @@ export default function CreateGullak() {
       });
     },
     onSuccess: () => {
+      const selectedMetal = form.getValues().metalType;
       toast({
         title: "Gullak Account Created",
-        description: "Your gold savings journey has begun!",
+        description: `Your ${selectedMetal} savings journey has begun!`,
       });
       setLocation("/gullak");
     },
@@ -95,18 +104,24 @@ export default function CreateGullak() {
 
   const watchedValues = form.watch();
   
-  // Calculate target amount based on gold weight and purity
+  // Calculate target amount based on metal weight and type
   const calculateTargetAmount = () => {
-    if (!goldRates || !watchedValues.targetGoldWeight || !watchedValues.goldPurity) return "0";
+    if (!metalRates || !watchedValues.targetMetalWeight) return "0";
     
-    const goldRate = goldRates[`rate${watchedValues.goldPurity}` as keyof GoldRate];
-    const targetAmount = parseFloat(watchedValues.targetGoldWeight) * parseFloat(goldRate);
+    let ratePerGram: number;
+    if (watchedValues.metalType === "silver") {
+      ratePerGram = parseFloat(metalRates.silverRate);
+    } else {
+      ratePerGram = parseFloat(metalRates[`rate${watchedValues.metalPurity}` as keyof MetalRates]);
+    }
+    
+    const targetAmount = parseFloat(watchedValues.targetMetalWeight) * ratePerGram;
     return targetAmount.toFixed(2);
   };
 
   // Calculate days to reach target
   const calculateDaysToTarget = () => {
-    if (!watchedValues.dailyAmount || !watchedValues.targetGoldWeight || !goldRates) return 0;
+    if (!watchedValues.dailyAmount || !watchedValues.targetMetalWeight || !metalRates) return 0;
     
     const targetAmount = parseFloat(calculateTargetAmount());
     const dailyAmount = parseFloat(watchedValues.dailyAmount);
@@ -199,23 +214,22 @@ export default function CreateGullak() {
                       )}
                     />
 
-                    {/* Gold Purity */}
+                    {/* Metal Type */}
                     <FormField
                       control={form.control}
-                      name="goldPurity"
+                      name="metalType"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Gold Purity</FormLabel>
+                          <FormLabel>Metal Type</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Select gold purity" />
+                                <SelectValue placeholder="Select metal type" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="24k">24K Gold (₹{goldRates?.rate24k}/g)</SelectItem>
-                              <SelectItem value="22k">22K Gold (₹{goldRates?.rate22k}/g)</SelectItem>
-                              <SelectItem value="18k">18K Gold (₹{goldRates?.rate18k}/g)</SelectItem>
+                              <SelectItem value="gold">Gold</SelectItem>
+                              <SelectItem value="silver">Silver</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -223,13 +237,47 @@ export default function CreateGullak() {
                       )}
                     />
 
-                    {/* Target Gold Weight */}
+                    {/* Metal Purity */}
+                    {watchedValues.metalType === "gold" && (
+                      <FormField
+                        control={form.control}
+                        name="metalPurity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Gold Purity</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select gold purity" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="24k">24K Gold (₹{metalRates?.rate24k}/g)</SelectItem>
+                                <SelectItem value="22k">22K Gold (₹{metalRates?.rate22k}/g)</SelectItem>
+                                <SelectItem value="18k">18K Gold (₹{metalRates?.rate18k}/g)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {watchedValues.metalType === "silver" && (
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <p className="text-sm text-gray-600">
+                          Silver Rate: ₹{metalRates?.silverRate}/g
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Target Metal Weight */}
                     <FormField
                       control={form.control}
-                      name="targetGoldWeight"
+                      name="targetMetalWeight"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Target Gold Weight (grams)</FormLabel>
+                          <FormLabel>Target {watchedValues.metalType === "silver" ? "Silver" : "Gold"} Weight (grams)</FormLabel>
                           <FormControl>
                             <Input 
                               type="number" 
@@ -281,20 +329,24 @@ export default function CreateGullak() {
             {/* Current Gold Rates */}
             <Card className="border-gold/20">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gold">Today's Gold Rates</CardTitle>
+                <CardTitle className="text-sm font-medium text-gold">Today's Metal Rates</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>24K Gold</span>
-                  <span className="font-semibold">₹{goldRates?.rate24k}/g</span>
+                  <span className="font-semibold">₹{metalRates?.rate24k}/g</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>22K Gold</span>
-                  <span className="font-semibold">₹{goldRates?.rate22k}/g</span>
+                  <span className="font-semibold">₹{metalRates?.rate22k}/g</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>18K Gold</span>
-                  <span className="font-semibold">₹{goldRates?.rate18k}/g</span>
+                  <span className="font-semibold">₹{metalRates?.rate18k}/g</span>
+                </div>
+                <div className="flex justify-between text-sm border-t pt-2 mt-2">
+                  <span>Silver</span>
+                  <span className="font-semibold">₹{metalRates?.silverRate}/g</span>
                 </div>
               </CardContent>
             </Card>
@@ -310,9 +362,9 @@ export default function CreateGullak() {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Target Gold</span>
+                    <span className="text-sm text-gray-600">Target {watchedValues.metalType === "silver" ? "Silver" : "Gold"}</span>
                     <span className="font-semibold">
-                      {watchedValues.targetGoldWeight || "0"}g {watchedValues.goldPurity}
+                      {watchedValues.targetMetalWeight || "0"}g {watchedValues.metalType === "gold" ? watchedValues.metalPurity : "Silver"}
                     </span>
                   </div>
                   
