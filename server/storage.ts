@@ -13,6 +13,9 @@ import {
   gullakTransactions,
   gullakOrders,
   goldRates,
+  emailVerificationTokens,
+  passwordResetTokens,
+  userActivityLog,
   type User,
   type UpsertUser,
   type Category,
@@ -33,6 +36,12 @@ import {
   type InsertWholesalerDesign,
   type Wishlist,
   type InsertWishlist,
+  type EmailVerificationToken,
+  type InsertEmailVerificationToken,
+  type PasswordResetToken,
+  type InsertPasswordResetToken,
+  type UserActivityLog,
+  type InsertUserActivityLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, like, desc, asc, sql } from "drizzle-orm";

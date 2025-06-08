@@ -25,20 +25,64 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for Replit Auth
+// Enhanced user storage table with authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
+  email: varchar("email").unique().notNull(),
+  passwordHash: varchar("password_hash"), // For local authentication
+  firstName: varchar("first_name").notNull(),
+  lastName: varchar("last_name").notNull(),
   profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role", { enum: ["customer", "wholesaler", "admin"] }).notNull().default("customer"),
-  businessName: varchar("business_name"), // For wholesalers
-  businessAddress: text("business_address"), // For wholesalers
   phoneNumber: varchar("phone_number"),
-  isApproved: boolean("is_approved").default(true), // For wholesaler approval
+  role: varchar("role", { enum: ["customer", "wholesaler", "admin"] }).notNull().default("customer"),
+  
+  // Business details for wholesalers
+  businessName: varchar("business_name"),
+  businessAddress: text("business_address"),
+  businessRegistrationProof: varchar("business_registration_proof"), // File path
+  
+  // Account status
+  isEmailVerified: boolean("is_email_verified").default(false),
+  isApproved: boolean("is_approved").default(false), // Admin approval for wholesalers
+  isActive: boolean("is_active").default(true),
+  
+  // Session management
+  lastLoginAt: timestamp("last_login_at"),
+  sessionToken: varchar("session_token"),
+  sessionExpiresAt: timestamp("session_expires_at"),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Email verification tokens
+export const emailVerificationTokens = pgTable("email_verification_tokens", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  token: varchar("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Password reset tokens
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  token: varchar("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// User activity log for admin monitoring
+export const userActivityLog = pgTable("user_activity_log", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  action: varchar("action").notNull(), // 'signup', 'login', 'logout', 'password_reset', etc.
+  details: jsonb("details"),
+  ipAddress: varchar("ip_address"),
+  userAgent: varchar("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Product categories
@@ -1037,3 +1081,71 @@ export type MaintenanceSchedule = typeof maintenanceSchedules.$inferSelect;
 export type InsertMaintenanceSchedule = z.infer<typeof insertMaintenanceScheduleSchema>;
 export type CorporateOffer = typeof corporateOffers.$inferSelect;
 export type InsertCorporateOffer = z.infer<typeof insertCorporateOfferSchema>;
+
+// Authentication schemas
+export const insertEmailVerificationTokenSchema = createInsertSchema(emailVerificationTokens).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserActivityLogSchema = createInsertSchema(userActivityLog).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Enhanced user registration schemas
+export const customerSignupSchema = z.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+  password: z.string().min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
+});
+
+export const wholesalerSignupSchema = z.object({
+  firstName: z.string().min(2, "First name must be at least 2 characters"),
+  lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+  password: z.string().min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
+  businessName: z.string().min(2, "Business name is required"),
+  businessAddress: z.string().min(10, "Business address is required"),
+  businessRegistrationProof: z.string().optional(), // File path after upload
+});
+
+export const signinSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Reset token is required"),
+  password: z.string().min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
+});
+
+// Authentication type exports
+export type EmailVerificationToken = typeof emailVerificationTokens.$inferSelect;
+export type InsertEmailVerificationToken = z.infer<typeof insertEmailVerificationTokenSchema>;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSchema>;
+export type UserActivityLog = typeof userActivityLog.$inferSelect;
+export type InsertUserActivityLog = z.infer<typeof insertUserActivityLogSchema>;
+
+// Auth form types
+export type CustomerSignup = z.infer<typeof customerSignupSchema>;
+export type WholesalerSignup = z.infer<typeof wholesalerSignupSchema>;
+export type Signin = z.infer<typeof signinSchema>;
+export type ForgotPassword = z.infer<typeof forgotPasswordSchema>;
+export type ResetPassword = z.infer<typeof resetPasswordSchema>;
