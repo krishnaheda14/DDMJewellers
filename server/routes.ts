@@ -1755,6 +1755,95 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Jewelry Care Tutorial routes
+  app.get("/api/jewelry-care/tutorials", async (req, res) => {
+    try {
+      const { category, jewelryType, difficulty, search } = req.query;
+      const userId = req.user?.claims?.sub;
+      
+      const tutorials = await storage.getCareTutorials({
+        category: category as string,
+        jewelryType: jewelryType as string,
+        difficulty: difficulty as string,
+        search: search as string,
+        userId,
+      });
+      
+      res.json(tutorials);
+    } catch (error) {
+      console.error("Error fetching care tutorials:", error);
+      res.status(500).json({ message: "Failed to fetch tutorials" });
+    }
+  });
+
+  app.get("/api/jewelry-care/tutorials/:id", async (req, res) => {
+    try {
+      const tutorialId = parseInt(req.params.id);
+      const tutorial = await storage.getCareTutorial(tutorialId);
+      
+      if (!tutorial) {
+        return res.status(404).json({ message: "Tutorial not found" });
+      }
+      
+      res.json(tutorial);
+    } catch (error) {
+      console.error("Error fetching tutorial:", error);
+      res.status(500).json({ message: "Failed to fetch tutorial" });
+    }
+  });
+
+  app.post("/api/jewelry-care/progress", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { tutorialId, currentStep, isCompleted } = req.body;
+      
+      const progress = await storage.updateTutorialProgress(userId, tutorialId, {
+        currentStep,
+        isCompleted,
+      });
+      
+      res.json(progress);
+    } catch (error) {
+      console.error("Error updating tutorial progress:", error);
+      res.status(500).json({ message: "Failed to update progress" });
+    }
+  });
+
+  app.post("/api/jewelry-care/tutorials/:id/like", async (req, res) => {
+    try {
+      const tutorialId = parseInt(req.params.id);
+      const tutorial = await storage.likeTutorial(tutorialId);
+      res.json(tutorial);
+    } catch (error) {
+      console.error("Error liking tutorial:", error);
+      res.status(500).json({ message: "Failed to like tutorial" });
+    }
+  });
+
+  app.get("/api/jewelry-care/reminders", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const reminders = await storage.getCareReminders(userId);
+      res.json(reminders);
+    } catch (error) {
+      console.error("Error fetching care reminders:", error);
+      res.status(500).json({ message: "Failed to fetch reminders" });
+    }
+  });
+
+  app.post("/api/jewelry-care/reminders", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const reminderData = { ...req.body, userId };
+      
+      const reminder = await storage.createCareReminder(reminderData);
+      res.json(reminder);
+    } catch (error) {
+      console.error("Error creating care reminder:", error);
+      res.status(500).json({ message: "Failed to create reminder" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

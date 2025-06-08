@@ -21,6 +21,9 @@ import {
   userChallenges,
   loyaltyRewards,
   userRedemptions,
+  careTutorials,
+  tutorialProgress,
+  careReminders,
   type User,
   type UpsertUser,
   type Category,
@@ -65,6 +68,12 @@ import {
   type InsertLoyaltyReward,
   type UserRedemption,
   type InsertUserRedemption,
+  type CareTutorial,
+  type InsertCareTutorial,
+  type TutorialProgress,
+  type InsertTutorialProgress,
+  type CareReminder,
+  type InsertCareReminder,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, like, desc, asc, sql } from "drizzle-orm";
@@ -1136,6 +1145,187 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userRedemptions.id, redemptionId))
       .returning();
     return updatedRedemption;
+  }
+
+  // Jewelry Care Tutorial operations
+  async getCareTutorials(filters?: {
+    category?: string;
+    jewelryType?: string;
+    difficulty?: string;
+    search?: string;
+    userId?: string;
+  }): Promise<(CareTutorial & { progress?: TutorialProgress })[]> {
+    let query = db.select().from(careTutorials);
+    
+    const conditions = [];
+    if (filters?.category && filters.category !== "all") {
+      conditions.push(eq(careTutorials.category, filters.category));
+    }
+    if (filters?.jewelryType && filters.jewelryType !== "all") {
+      conditions.push(eq(careTutorials.jewelryType, filters.jewelryType));
+    }
+    if (filters?.difficulty && filters.difficulty !== "all") {
+      conditions.push(eq(careTutorials.difficulty, filters.difficulty));
+    }
+    if (filters?.search) {
+      conditions.push(
+        or(
+          ilike(careTutorials.title, `%${filters.search}%`),
+          ilike(careTutorials.description, `%${filters.search}%`)
+        )
+      );
+    }
+    conditions.push(eq(careTutorials.isActive, true));
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const tutorials = await query.orderBy(desc(careTutorials.isFeatured), desc(careTutorials.views));
+
+    if (filters?.userId) {
+      // Get user progress for each tutorial
+      const tutorialsWithProgress = await Promise.all(
+        tutorials.map(async (tutorial) => {
+          const [progress] = await db
+            .select()
+            .from(tutorialProgress)
+            .where(
+              and(
+                eq(tutorialProgress.tutorialId, tutorial.id),
+                eq(tutorialProgress.userId, filters.userId!)
+              )
+            );
+          
+          return {
+            ...tutorial,
+            progress: progress || undefined,
+          };
+        })
+      );
+      return tutorialsWithProgress;
+    }
+
+    return tutorials;
+  }
+
+  async getCareTutorial(id: number): Promise<CareTutorial | undefined> {
+    const [tutorial] = await db
+      .select()
+      .from(careTutorials)
+      .where(and(eq(careTutorials.id, id), eq(careTutorials.isActive, true)));
+    
+    if (tutorial) {
+      // Increment view count
+      await db
+        .update(careTutorials)
+        .set({ views: tutorial.views + 1 })
+        .where(eq(careTutorials.id, id));
+      
+      return { ...tutorial, views: tutorial.views + 1 };
+    }
+    
+    return undefined;
+  }
+
+  async updateTutorialProgress(
+    userId: string,
+    tutorialId: number,
+    updates: Partial<InsertTutorialProgress>
+  ): Promise<TutorialProgress> {
+    const [existing] = await db
+      .select()
+      .from(tutorialProgress)
+      .where(
+        and(
+          eq(tutorialProgress.userId, userId),
+          eq(tutorialProgress.tutorialId, tutorialId)
+        )
+      );
+
+    if (existing) {
+      const [updated] = await db
+        .update(tutorialProgress)
+        .set({
+          ...updates,
+          updatedAt: new Date(),
+        })
+        .where(eq(tutorialProgress.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(tutorialProgress)
+        .values({
+          userId,
+          tutorialId,
+          ...updates,
+        })
+        .returning();
+      return created;
+    }
+  }
+
+  async likeTutorial(tutorialId: number): Promise<CareTutorial> {
+    const [tutorial] = await db
+      .select()
+      .from(careTutorials)
+      .where(eq(careTutorials.id, tutorialId));
+
+    if (!tutorial) {
+      throw new Error("Tutorial not found");
+    }
+
+    const [updated] = await db
+      .update(careTutorials)
+      .set({ likes: tutorial.likes + 1 })
+      .where(eq(careTutorials.id, tutorialId))
+      .returning();
+
+    return updated;
+  }
+
+  async getCareReminders(userId: string): Promise<CareReminder[]> {
+    return await db
+      .select()
+      .from(careReminders)
+      .where(
+        and(
+          eq(careReminders.userId, userId),
+          eq(careReminders.isEnabled, true)
+        )
+      )
+      .orderBy(careReminders.nextDue);
+  }
+
+  async createCareReminder(reminder: InsertCareReminder): Promise<CareReminder> {
+    const [created] = await db
+      .insert(careReminders)
+      .values(reminder)
+      .returning();
+    return created;
+  }
+
+  async updateCareReminder(
+    id: number,
+    updates: Partial<InsertCareReminder>
+  ): Promise<CareReminder> {
+    const [updated] = await db
+      .update(careReminders)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(careReminders.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteCareReminder(id: number): Promise<boolean> {
+    const result = await db
+      .delete(careReminders)
+      .where(eq(careReminders.id, id));
+    return result.rowCount > 0;
   }
 }
 
