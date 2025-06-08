@@ -18,6 +18,7 @@ import AITryOn from "@/pages/ai-tryon";
 import Gullak from "@/pages/gullak";
 import CreateGullak from "@/pages/gullak-create";
 import Loyalty from "@/pages/loyalty";
+import ShingaarGuru from "@/pages/shingaar-guru";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -41,6 +42,7 @@ function Router() {
           <Route path="/gullak" component={Gullak} />
           <Route path="/gullak/create" component={CreateGullak} />
           <Route path="/loyalty" component={Loyalty} />
+          <Route path="/shingaar-guru" component={ShingaarGuru} />
         </>
       )}
       <Route component={NotFound} />

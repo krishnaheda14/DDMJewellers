@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import CartSidebar from "./cart-sidebar";
-import { Search, ShoppingBag, User, Menu, X, Heart, Home, Trophy } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, Heart, Home, Trophy, Sparkles } from "lucide-react";
 import type { CartItem, Product } from "@shared/schema";
 
 interface CartItemWithProduct extends CartItem {
@@ -39,6 +39,7 @@ export default function Header() {
     { name: "Home", href: "/", icon: Home },
     { name: "Collections", href: "/products" },
     { name: "Gullak", href: "/gullak" },
+    { name: "Shingaar Guru", href: "/shingaar-guru", icon: Sparkles },
     { name: "Custom Design", href: "/custom-jewelry" },
     { name: "Virtual Try-On", href: "/ai-tryon" },
     { name: "Rings", href: "/products?search=ring" },

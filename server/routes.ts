@@ -1074,6 +1074,193 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Shingaar Guru Routes
+  app.post("/api/shingaar-guru/recommendations", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const {
+        occasion,
+        budget,
+        style,
+        metalPreference,
+        gemstonePreference,
+        ageGroup,
+        relationship,
+        seasonalPreference,
+        additionalDetails
+      } = req.body;
+
+      // Get all products for filtering
+      const allProducts = await storage.getProducts();
+      
+      // Filter products based on budget range
+      const budgetMin = budget[0];
+      const budgetMax = budget[1];
+      const productsInBudget = allProducts.filter(product => {
+        const price = parseFloat(product.price);
+        return price >= budgetMin && price <= budgetMax;
+      });
+
+      // AI-powered recommendation logic
+      let recommendations = [];
+      let occasionTips = [];
+      let stylingAdvice = "";
+      let culturalSignificance = "";
+      let confidenceScore = 0.85;
+
+      // Occasion-based filtering and recommendations
+      switch (occasion) {
+        case 'wedding':
+          recommendations = productsInBudget.filter(p => 
+            p.name.toLowerCase().includes('ring') || 
+            p.name.toLowerCase().includes('necklace') ||
+            p.name.toLowerCase().includes('earring')
+          );
+          occasionTips = [
+            "Choose traditional designs with cultural significance",
+            "Gold jewelry is considered auspicious for weddings",
+            "Consider matching sets for a coordinated look",
+            "Intricate craftsmanship adds to the ceremonial value"
+          ];
+          stylingAdvice = "For weddings, opt for statement pieces that complement traditional attire. Heavy gold jewelry with intricate designs works best for bridal wear, while lighter pieces suit wedding guests.";
+          culturalSignificance = "In Indian culture, gold jewelry symbolizes prosperity and good fortune. Wedding jewelry often features traditional motifs like peacocks, lotus, and paisleys that represent beauty, purity, and fertility.";
+          break;
+
+        case 'engagement':
+          recommendations = productsInBudget.filter(p => 
+            p.name.toLowerCase().includes('ring') || 
+            p.name.toLowerCase().includes('diamond')
+          );
+          occasionTips = [
+            "Solitaire rings are classic choices for engagements",
+            "Consider the recipient's daily lifestyle",
+            "Diamond quality matters more than size",
+            "Choose a timeless design that won't go out of style"
+          ];
+          stylingAdvice = "Engagement rings should be elegant yet practical for daily wear. Choose a setting that protects the stone and complements the wearer's hand shape and lifestyle.";
+          culturalSignificance = "The engagement ring symbolizes eternal love and commitment. In many cultures, the circular shape represents infinity and the unending bond between partners.";
+          break;
+
+        case 'festival':
+          recommendations = productsInBudget.filter(p => 
+            p.name.toLowerCase().includes('necklace') || 
+            p.name.toLowerCase().includes('earring') ||
+            p.name.toLowerCase().includes('gold')
+          );
+          occasionTips = [
+            "Bright colors and traditional designs work well",
+            "Layer different pieces for a festive look",
+            "Temple jewelry adds cultural authenticity",
+            "Consider comfort for long celebration hours"
+          ];
+          stylingAdvice = "Festival jewelry should be vibrant and traditional. Mix different textures and metals, and don't be afraid to layer necklaces or stack bangles for a celebratory look.";
+          culturalSignificance = "Festival jewelry often features religious motifs and is believed to bring good luck. Each festival has its traditional jewelry customs that connect us to our heritage.";
+          break;
+
+        case 'office':
+          recommendations = productsInBudget.filter(p => 
+            !p.name.toLowerCase().includes('heavy') &&
+            (p.name.toLowerCase().includes('subtle') || 
+             p.name.toLowerCase().includes('elegant') ||
+             parseFloat(p.price) < 50000)
+          );
+          occasionTips = [
+            "Keep it minimal and professional",
+            "Avoid chunky or noisy pieces",
+            "Stick to neutral metals like silver or white gold",
+            "Choose pieces that won't interfere with work"
+          ];
+          stylingAdvice = "Office jewelry should be understated and professional. Choose delicate pieces that add elegance without being distracting in a workplace environment.";
+          culturalSignificance = "Professional jewelry reflects confidence and attention to detail. It should enhance your professional image while respecting workplace culture.";
+          break;
+
+        default:
+          recommendations = productsInBudget.slice(0, 3);
+          occasionTips = [
+            "Consider your personal style preferences",
+            "Think about when and where you'll wear the piece",
+            "Quality craftsmanship ensures longevity",
+            "Choose pieces that complement your wardrobe"
+          ];
+          stylingAdvice = "Select jewelry that reflects your personality and complements your lifestyle. Consider versatile pieces that can transition from day to evening wear.";
+          culturalSignificance = "Jewelry is a form of personal expression that connects us to our culture, traditions, and individual style preferences.";
+      }
+
+      // Style-based refinement
+      if (style === 'minimalist') {
+        recommendations = recommendations.filter(p => 
+          !p.name.toLowerCase().includes('heavy') && 
+          !p.name.toLowerCase().includes('elaborate')
+        );
+        stylingAdvice += " Focus on clean lines and simple designs that make a subtle statement.";
+      } else if (style === 'statement') {
+        recommendations = recommendations.filter(p => 
+          p.name.toLowerCase().includes('heavy') || 
+          p.name.toLowerCase().includes('bold') ||
+          parseFloat(p.price) > 75000
+        );
+        stylingAdvice += " Bold, eye-catching pieces that become the focal point of your outfit work best.";
+      }
+
+      // Metal preference filtering
+      if (metalPreference !== 'mixed') {
+        recommendations = recommendations.filter(p => 
+          p.name.toLowerCase().includes(metalPreference) ||
+          p.description?.toLowerCase().includes(metalPreference)
+        );
+      }
+
+      // Gemstone preference filtering
+      if (gemstonePreference && gemstonePreference !== 'none' && gemstonePreference !== 'mixed') {
+        recommendations = recommendations.filter(p => 
+          p.name.toLowerCase().includes(gemstonePreference) ||
+          p.description?.toLowerCase().includes(gemstonePreference)
+        );
+      }
+
+      // Age group adjustments
+      if (ageGroup === 'teen' || ageGroup === 'young-adult') {
+        occasionTips.push("Consider trendy designs that reflect your personality");
+        stylingAdvice += " Young wearers can experiment with contemporary designs and mixed metals.";
+      } else if (ageGroup === 'mature') {
+        occasionTips.push("Classic, timeless designs offer the best long-term value");
+        stylingAdvice += " Mature wearers often prefer classic designs with superior craftsmanship and heritage value.";
+      }
+
+      // Seasonal considerations
+      if (seasonalPreference === 'summer') {
+        occasionTips.push("Lighter pieces are more comfortable in warm weather");
+      } else if (seasonalPreference === 'winter') {
+        occasionTips.push("Layering jewelry works well with winter clothing");
+      }
+
+      // Ensure we have at least some recommendations
+      if (recommendations.length === 0) {
+        recommendations = productsInBudget.slice(0, 3);
+      }
+
+      // Limit to top 6 recommendations
+      recommendations = recommendations.slice(0, 6);
+
+      // Calculate confidence score based on available matches
+      if (recommendations.length >= 3) confidenceScore = 0.9;
+      else if (recommendations.length >= 2) confidenceScore = 0.75;
+      else confidenceScore = 0.6;
+
+      res.json({
+        recommendations,
+        occasionTips,
+        stylingAdvice,
+        culturalSignificance,
+        confidenceScore
+      });
+
+    } catch (error) {
+      console.error("Error generating recommendations:", error);
+      res.status(500).json({ message: "Failed to generate recommendations" });
+    }
+  });
+
   // Gullak Routes
   
   // Get current gold rates
