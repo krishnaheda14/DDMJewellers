@@ -295,7 +295,7 @@ export default function Admin() {
                         {order.status}
                       </Badge>
                     </td>
-                    <td className="p-2">{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td className="p-2">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</td>
                     <td className="p-2">
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline">
@@ -479,7 +479,7 @@ export default function Admin() {
                     </td>
                     <td className="p-2">{product.categoryId}</td>
                     <td className="p-2">₹{parseFloat(product.price).toLocaleString('en-IN')}</td>
-                    <td className="p-2">{product.stockQuantity || 'N/A'}</td>
+                    <td className="p-2">{(product as any).stockQuantity || 'N/A'}</td>
                     <td className="p-2">
                       <Badge variant={product.featured ? "default" : "outline"}>
                         {product.featured ? "Featured" : "Regular"}
