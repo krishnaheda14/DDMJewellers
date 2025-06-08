@@ -28,6 +28,9 @@ import CorporateAdmin from "@/pages/corporate-admin";
 import Shop from "@/pages/shop";
 import AuthPage from "@/pages/auth-page";
 import LiveMarketRates from "@/pages/live-market-rates";
+import AdminDashboard from "@/pages/admin-dashboard";
+import CustomerDashboard from "@/pages/customer-dashboard";
+import WholesalerDashboard from "@/pages/wholesaler-dashboard";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -62,6 +65,9 @@ function Router() {
       <Route path="/" component={isAuthenticated ? Home : Landing} />
       <Route path="/cart" component={isAuthenticated ? Cart : Landing} />
       <Route path="/admin" component={isAuthenticated ? Admin : Landing} />
+      <Route path="/admin/dashboard" component={isAuthenticated ? AdminDashboard : Landing} />
+      <Route path="/customer/dashboard" component={isAuthenticated ? CustomerDashboard : Landing} />
+      <Route path="/wholesaler/dashboard" component={isAuthenticated ? WholesalerDashboard : Landing} />
       <Route path="/gullak" component={isAuthenticated ? Gullak : Landing} />
       <Route path="/gullak/create" component={isAuthenticated ? CreateGullakEnhanced : Landing} />
       <Route path="/loyalty" component={isAuthenticated ? Loyalty : Landing} />
