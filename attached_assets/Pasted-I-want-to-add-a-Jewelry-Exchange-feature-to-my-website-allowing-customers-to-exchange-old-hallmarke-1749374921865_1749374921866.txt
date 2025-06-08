@@ -1,0 +1,69 @@
+I want to add a Jewelry Exchange feature to my website, allowing customers to exchange old hallmarked jewelry when purchasing new products.
+
+Here is the complete flow I need:
+
+Exchange Option for Customer:
+
+On the shopping cart or checkout page, add an option: "Exchange Old Jewelry".
+
+If selected, the customer must be able to:
+
+Upload a photo of their old hallmarked jewelry.
+
+Upload a copy of the original bill of the jewelry.
+
+Admin Review and Valuation:
+
+The uploaded files and request should go to the Admin dashboard.
+
+Admin should be able to:
+
+View the photo and bill.
+
+Manually assign an exchange value to the old jewelry.
+
+Approve or reject the exchange request.
+
+Edit exchange value if needed.
+
+Billing Adjustment:
+
+If the exchange is approved, the assigned exchange value should be automatically deducted from the order total.
+
+The customer should be able to see the updated final payable amount before completing the purchase.
+
+Status Tracking:
+
+In the customer’s account, add a section to show the status of the exchange request:
+
+Pending
+
+Approved (with value displayed)
+
+Rejected (with reason if possible)
+
+Notifications:
+
+When the Admin approves or rejects the exchange:
+
+The customer should receive an automatic email and/or SMS notification.
+
+The message should clearly state:
+
+If approved → the assigned exchange value.
+
+If rejected → the rejection reason.
+
+Example message for Approved:
+"Your jewelry exchange request has been approved! Exchange value assigned: ₹X, which has been applied to your order. Please proceed to complete your purchase."
+
+Example message for Rejected:
+"Your jewelry exchange request has been reviewed and unfortunately cannot be accepted at this time. Reason: [reason]. Please contact support if you have questions."
+
+Additional Requirements:
+
+The exchange process should be seamless and not interrupt the customer’s purchase flow.
+
+The Admin should have full visibility and control over exchange requests from the dashboard.
+
+Please implement this full Jewelry Exchange feature with proper UI for customer and admin sides, status tracking, billing logic, and notifications

@@ -272,10 +272,11 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="tutorials">Care Tutorials</TabsTrigger>
           </TabsList>
 
           {/* Products Tab */}
@@ -515,6 +516,11 @@ export default function Admin() {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          {/* Tutorials Tab */}
+          <TabsContent value="tutorials" className="space-y-6">
+            <TutorialManagement />
           </TabsContent>
         </Tabs>
       </div>

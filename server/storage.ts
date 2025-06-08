@@ -1267,6 +1267,48 @@ export class DatabaseStorage implements IStorage {
     `);
     return result.rowCount > 0;
   }
+
+  // Admin tutorial management
+  async createCareTutorial(tutorial: any): Promise<any> {
+    const created = await db.execute(sql`
+      INSERT INTO care_tutorials (title, description, video_url, thumbnail_url, category, jewelry_type, difficulty, duration, materials, tools, steps, tips, warnings)
+      VALUES (${tutorial.title}, ${tutorial.description}, ${tutorial.videoUrl}, ${tutorial.thumbnailUrl}, ${tutorial.category}, ${tutorial.jewelryType}, ${tutorial.difficulty}, ${tutorial.duration}, ${tutorial.materials}, ${tutorial.tools}, ${tutorial.steps}, ${tutorial.tips}, ${tutorial.warnings})
+      RETURNING *
+    `);
+    return created.rows[0];
+  }
+
+  async updateCareTutorial(id: number, updates: any): Promise<any> {
+    const updated = await db.execute(sql`
+      UPDATE care_tutorials 
+      SET title = COALESCE(${updates.title}, title),
+          description = COALESCE(${updates.description}, description),
+          video_url = COALESCE(${updates.videoUrl}, video_url),
+          thumbnail_url = COALESCE(${updates.thumbnailUrl}, thumbnail_url),
+          category = COALESCE(${updates.category}, category),
+          jewelry_type = COALESCE(${updates.jewelryType}, jewelry_type),
+          difficulty = COALESCE(${updates.difficulty}, difficulty),
+          duration = COALESCE(${updates.duration}, duration),
+          materials = COALESCE(${updates.materials}, materials),
+          tools = COALESCE(${updates.tools}, tools),
+          steps = COALESCE(${updates.steps}, steps),
+          tips = COALESCE(${updates.tips}, tips),
+          warnings = COALESCE(${updates.warnings}, warnings),
+          is_featured = COALESCE(${updates.isFeatured}, is_featured),
+          is_active = COALESCE(${updates.isActive}, is_active),
+          updated_at = NOW()
+      WHERE id = ${id}
+      RETURNING *
+    `);
+    return updated.rows[0];
+  }
+
+  async deleteCareTutorial(id: number): Promise<boolean> {
+    const result = await db.execute(sql`
+      DELETE FROM care_tutorials WHERE id = ${id}
+    `);
+    return result.rowCount > 0;
+  }
 }
 
 export const storage = new DatabaseStorage();

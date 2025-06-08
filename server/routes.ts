@@ -1844,6 +1844,54 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Admin tutorial management routes
+  app.post("/api/admin/jewelry-care/tutorials", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const tutorial = await storage.createCareTutorial(req.body);
+      res.json(tutorial);
+    } catch (error) {
+      console.error("Error creating tutorial:", error);
+      res.status(500).json({ message: "Failed to create tutorial" });
+    }
+  });
+
+  app.put("/api/admin/jewelry-care/tutorials/:id", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const tutorialId = parseInt(req.params.id);
+      const tutorial = await storage.updateCareTutorial(tutorialId, req.body);
+      res.json(tutorial);
+    } catch (error) {
+      console.error("Error updating tutorial:", error);
+      res.status(500).json({ message: "Failed to update tutorial" });
+    }
+  });
+
+  app.delete("/api/admin/jewelry-care/tutorials/:id", isAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const tutorialId = parseInt(req.params.id);
+      const success = await storage.deleteCareTutorial(tutorialId);
+      res.json({ success });
+    } catch (error) {
+      console.error("Error deleting tutorial:", error);
+      res.status(500).json({ message: "Failed to delete tutorial" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
