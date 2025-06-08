@@ -191,16 +191,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Weight and purity are required" });
       }
 
+      console.log("Calculating price for:", { weight, purity, markup });
+      
       const price = await marketRatesService.calculateJewelryPrice(
         parseFloat(weight),
         purity,
-        markup ? parseFloat(markup) : undefined
+        markup ? parseFloat(markup) : 1.3
       );
       
-      res.json({ price: parseFloat(price) });
+      console.log("Calculated price:", price);
+      
+      res.json({ 
+        price: price ? parseFloat(price) : null,
+        weight: parseFloat(weight),
+        purity,
+        markup: markup ? parseFloat(markup) : 1.3
+      });
     } catch (error) {
       console.error("Error calculating jewelry price:", error);
-      res.status(500).json({ message: "Failed to calculate price" });
+      res.status(500).json({ message: "Failed to calculate price", error: error.message });
     }
   });
 

@@ -224,13 +224,13 @@ export class MarketRatesService {
     let basePrice: number;
     switch (purity) {
       case '24k':
-        basePrice = rates.goldPrice24k;
+        basePrice = parseFloat(rates.rate24k);
         break;
       case '22k':
-        basePrice = rates.goldPrice22k;
+        basePrice = parseFloat(rates.rate22k);
         break;
       case '18k':
-        basePrice = rates.goldPrice18k;
+        basePrice = parseFloat(rates.rate18k);
         break;
       default:
         throw new Error("Invalid purity specified");
