@@ -20,6 +20,7 @@ import CreateGullak from "@/pages/gullak-create";
 import Loyalty from "@/pages/loyalty";
 import ShingaarGuru from "@/pages/shingaar-guru";
 import JewelryCare from "@/pages/jewelry-care";
+import JewelryExchange from "@/pages/jewelry-exchange";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -45,6 +46,7 @@ function Router() {
           <Route path="/loyalty" component={Loyalty} />
           <Route path="/shingaar-guru" component={ShingaarGuru} />
           <Route path="/jewelry-care" component={JewelryCare} />
+          <Route path="/jewelry-exchange" component={JewelryExchange} />
         </>
       )}
       <Route component={NotFound} />
