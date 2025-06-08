@@ -314,3 +314,128 @@
   @apply outline-2 outline-offset-2;
   outline-color: var(--luxury-gold);
 }
+
+/* Advanced responsive utilities for complete device coverage */
+.container-narrow {
+  @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.container-wide {
+  @apply max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12;
+}
+
+.p-responsive-sm {
+  @apply py-6 sm:py-8 md:py-10 lg:py-12 xl:py-16;
+}
+
+.m-responsive {
+  @apply mb-6 sm:mb-8 md:mb-10 lg:mb-12 xl:mb-16;
+}
+
+.m-responsive-sm {
+  @apply mb-4 sm:mb-6 md:mb-8 lg:mb-10;
+}
+
+.responsive-grid-2 {
+  @apply grid grid-cols-1 md:grid-cols-2;
+}
+
+.responsive-grid-3 {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.responsive-grid-4 {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+.responsive-text-sm {
+  @apply text-sm sm:text-base md:text-lg;
+}
+
+.responsive-card-sm {
+  @apply p-3 sm:p-4 md:p-6 lg:p-8;
+}
+
+.heading-hero {
+  @apply text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight;
+}
+
+.heading-sm {
+  @apply text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold;
+}
+
+.btn-responsive-sm {
+  @apply px-3 py-2 sm:px-4 sm:py-2 md:px-6 md:py-3 text-xs sm:text-sm md:text-base;
+}
+
+.responsive-flex {
+  @apply flex flex-col sm:flex-row items-center gap-4 sm:gap-6 lg:gap-8;
+}
+
+.responsive-aspect {
+  @apply aspect-square sm:aspect-[4/3] lg:aspect-[3/2];
+}
+
+/* Device-specific utilities */
+.mobile-only {
+  @apply block sm:hidden;
+}
+
+.tablet-up {
+  @apply hidden sm:block;
+}
+
+.desktop-only {
+  @apply hidden lg:block;
+}
+
+/* Safe area adjustments for modern mobile devices */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Enhanced touch interactions */
+.touch-friendly {
+  @apply min-h-[48px] min-w-[48px] cursor-pointer select-none;
+}
+
+/* Responsive image handling */
+.responsive-image {
+  @apply w-full h-auto object-cover;
+}
+
+.responsive-background {
+  @apply bg-cover bg-center bg-no-repeat;
+}
+
+/* Typography scaling for readability */
+.text-responsive-xs {
+  @apply text-xs sm:text-sm md:text-base;
+}
+
+.text-responsive-base {
+  @apply text-sm sm:text-base md:text-lg lg:text-xl;
+}
+
+/* Form element responsiveness */
+.form-responsive {
+  @apply w-full px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 text-sm sm:text-base md:text-lg;
+}
+
+/* Card scaling */
+.card-responsive {
+  @apply rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg lg:shadow-xl;
+}
+
+/* Spacing utilities */
+.gap-responsive {
+  @apply gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-10;
+}
+
+.gap-responsive-sm {
+  @apply gap-2 sm:gap-3 md:gap-4 lg:gap-6;
+}

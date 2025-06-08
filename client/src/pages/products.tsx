@@ -75,13 +75,13 @@ export default function Products() {
       <Header />
       
       {/* Page Header */}
-      <section className="bg-cream-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-cream-white p-responsive-sm">
+        <div className="container-fluid">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-deep-navy mb-4">
+            <h1 className="heading-lg text-deep-navy m-responsive-sm">
               Our Jewelry Collection
             </h1>
-            <p className="text-xl text-warm-gray max-w-2xl mx-auto">
+            <p className="responsive-text-sm text-warm-gray max-w-2xl mx-auto">
               Discover exquisite pieces crafted with passion and precision
             </p>
           </div>
@@ -89,25 +89,25 @@ export default function Products() {
       </section>
 
       {/* Filters and Search */}
-      <section className="py-8 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-4 flex-1">
+      <section className="py-6 sm:py-8 bg-white border-b">
+        <div className="container-fluid">
+          <div className="flex flex-col lg:flex-row gap-responsive items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-responsive-sm flex-1 w-full lg:w-auto">
               {/* Search */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-warm-gray" />
+              <div className="relative flex-1 w-full sm:max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-warm-gray" />
                 <Input
                   type="text"
                   placeholder="Search jewelry..."
                   value={search}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10"
+                  className="form-responsive pl-10"
                 />
               </div>
 
               {/* Category Filter */}
               <Select value={categoryId?.toString() || "all"} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-full sm:w-48">
+                <SelectTrigger className="w-full sm:w-48 md:w-56 touch-friendly">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -124,28 +124,32 @@ export default function Products() {
               <Button
                 variant={featured ? "default" : "outline"}
                 onClick={() => setFeatured(featured ? undefined : true)}
-                className="flex items-center gap-2"
+                className="btn-responsive-sm flex items-center gap-2 touch-friendly"
               >
                 <Filter className="h-4 w-4" />
-                Featured
+                <span className="hidden sm:inline">Featured</span>
               </Button>
             </div>
 
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center w-full lg:w-auto">
               {/* Clear Filters */}
               {(search || categoryId || featured) && (
-                <Button variant="ghost" onClick={clearFilters}>
+                <Button 
+                  variant="ghost" 
+                  onClick={clearFilters}
+                  className="btn-responsive-sm touch-friendly w-full sm:w-auto"
+                >
                   Clear Filters
                 </Button>
               )}
 
               {/* View Mode Toggle */}
-              <div className="flex border rounded-lg">
+              <div className="flex border rounded-lg w-full sm:w-auto">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="rounded-r-none"
+                  className="rounded-r-none flex-1 sm:flex-none touch-friendly"
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
@@ -153,7 +157,7 @@ export default function Products() {
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="rounded-l-none"
+                  className="rounded-l-none flex-1 sm:flex-none touch-friendly"
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -162,27 +166,39 @@ export default function Products() {
           </div>
 
           {/* Active Filters */}
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-responsive-sm mt-4">
             {search && (
-              <Badge variant="secondary" className="flex items-center gap-1">
+              <Badge variant="secondary" className="flex items-center gap-2 p-2 text-responsive-xs">
                 Search: {search}
-                <button onClick={() => setSearch("")} className="ml-1 hover:text-destructive">
+                <button 
+                  onClick={() => setSearch("")} 
+                  className="ml-1 hover:text-destructive touch-target text-lg"
+                  aria-label="Remove search filter"
+                >
                   ×
                 </button>
               </Badge>
             )}
             {categoryId && (
-              <Badge variant="secondary" className="flex items-center gap-1">
+              <Badge variant="secondary" className="flex items-center gap-2 p-2 text-responsive-xs">
                 Category: {categories.find(c => c.id === categoryId)?.name}
-                <button onClick={() => setCategoryId(undefined)} className="ml-1 hover:text-destructive">
+                <button 
+                  onClick={() => setCategoryId(undefined)} 
+                  className="ml-1 hover:text-destructive touch-target text-lg"
+                  aria-label="Remove category filter"
+                >
                   ×
                 </button>
               </Badge>
             )}
             {featured && (
-              <Badge variant="secondary" className="flex items-center gap-1">
+              <Badge variant="secondary" className="flex items-center gap-2 p-2 text-responsive-xs">
                 Featured
-                <button onClick={() => setFeatured(undefined)} className="ml-1 hover:text-destructive">
+                <button 
+                  onClick={() => setFeatured(undefined)} 
+                  className="ml-1 hover:text-destructive touch-target text-lg"
+                  aria-label="Remove featured filter"
+                >
                   ×
                 </button>
               </Badge>
@@ -192,21 +208,21 @@ export default function Products() {
       </section>
 
       {/* Products */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="p-responsive-sm">
+        <div className="container-fluid">
           {isLoading ? (
             <ProductLoader />
           ) : products.length > 0 ? (
             <>
-              <div className="flex justify-between items-center mb-8">
-                <p className="text-warm-gray">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center m-responsive-sm">
+                <p className="text-responsive-xs text-warm-gray mb-2 sm:mb-0">
                   Showing {products.length} product{products.length !== 1 ? 's' : ''}
                 </p>
               </div>
 
               <div className={
                 viewMode === "grid" 
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+                  ? "responsive-grid-4 gap-responsive"
                   : "space-y-6"
               }>
                 {products.map((product, index) => (
@@ -220,15 +236,19 @@ export default function Products() {
               </div>
             </>
           ) : (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                <Search className="h-12 w-12 text-gray-400" />
+            <div className="text-center p-responsive-sm">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto m-responsive-sm bg-gray-100 rounded-full flex items-center justify-center">
+                <Search className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
               </div>
-              <h3 className="text-xl font-semibold text-deep-navy mb-2">No products found</h3>
-              <p className="text-warm-gray mb-6">
+              <h3 className="heading-sm text-deep-navy m-responsive-sm">No products found</h3>
+              <p className="responsive-text-sm text-warm-gray m-responsive-sm">
                 Try adjusting your search or filter criteria
               </p>
-              <Button onClick={clearFilters} variant="outline">
+              <Button 
+                onClick={clearFilters} 
+                variant="outline"
+                className="btn-responsive-sm touch-friendly"
+              >
                 Clear all filters
               </Button>
             </div>
