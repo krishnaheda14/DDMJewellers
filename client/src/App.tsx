@@ -32,9 +32,17 @@ import LiveMarketRates from "@/pages/live-market-rates";
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
   return (
     <Switch>
-      {/* Public routes - always accessible */}
+      {/* Always accessible routes */}
       <Route path="/temp-login" component={TempLogin} />
       <Route path="/signup" component={Signup} />
       <Route path="/shop" component={Shop} />
@@ -50,23 +58,15 @@ function Router() {
       <Route path="/custom-jewelry" component={CustomJewelry} />
       <Route path="/shingaar-guru" component={ShingaarGuru} />
       
-      {/* Conditional routes based on authentication */}
-      {isLoading ? (
-        <Route path="/" component={Landing} />
-      ) : !isAuthenticated ? (
-        <Route path="/" component={Landing} />
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-          <Route path="/cart" component={Cart} />
-          <Route path="/admin" component={Admin} />
-          <Route path="/gullak" component={Gullak} />
-          <Route path="/gullak/create" component={CreateGullakEnhanced} />
-          <Route path="/loyalty" component={Loyalty} />
-          <Route path="/jewelry-exchange" component={JewelryExchange} />
-          <Route path="/corporate-admin" component={CorporateAdmin} />
-        </>
-      )}
+      {/* Authentication-based routes */}
+      <Route path="/" component={isAuthenticated ? Home : Landing} />
+      <Route path="/cart" component={isAuthenticated ? Cart : Landing} />
+      <Route path="/admin" component={isAuthenticated ? Admin : Landing} />
+      <Route path="/gullak" component={isAuthenticated ? Gullak : Landing} />
+      <Route path="/gullak/create" component={isAuthenticated ? CreateGullakEnhanced : Landing} />
+      <Route path="/loyalty" component={isAuthenticated ? Loyalty : Landing} />
+      <Route path="/jewelry-exchange" component={isAuthenticated ? JewelryExchange : Landing} />
+      <Route path="/corporate-admin" component={isAuthenticated ? CorporateAdmin : Landing} />
       
       <Route component={NotFound} />
     </Switch>

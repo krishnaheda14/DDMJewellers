@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 
 export default function TempLogin() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -18,11 +20,18 @@ export default function TempLogin() {
       const response = await apiRequest("POST", "/api/temp-login", { email });
       
       if (response.ok) {
+        // Invalidate auth cache to trigger refetch
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        
         toast({
           title: "Login Successful",
           description: "Welcome to admin dashboard",
         });
-        window.location.href = "/admin";
+        
+        // Use proper navigation instead of window.location
+        setTimeout(() => {
+          setLocation("/");
+        }, 500);
       } else {
         toast({
           title: "Login Failed",
