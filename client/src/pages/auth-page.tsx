@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -13,7 +13,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import { LoginLoading } from "@/components/login-loading";
 import { 
   customerSignupSchema, 
   wholesalerSignupSchema, 
@@ -47,6 +49,46 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [userType, setUserType] = useState<"customer" | "wholesaler">("customer");
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectUser, setRedirectUser] = useState<any>(null);
+  
+  const { user, isLoading } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isLoading && user) {
+      handleRoleBasedRedirect(user);
+    }
+  }, [user, isLoading]);
+
+  const handleRoleBasedRedirect = (userData: any) => {
+    setIsRedirecting(true);
+    setRedirectUser(userData);
+    
+    // Store user session in localStorage for persistence
+    localStorage.setItem('ddm_user_session', JSON.stringify({
+      id: userData.id,
+      role: userData.role,
+      timestamp: Date.now()
+    }));
+
+    // Delay redirect to show loading animation
+    setTimeout(() => {
+      switch (userData.role) {
+        case "admin":
+          setLocation("/admin-dashboard");
+          break;
+        case "customer":
+          setLocation("/customer-dashboard");
+          break;
+        case "wholesaler":
+          setLocation("/wholesaler-dashboard");
+          break;
+        default:
+          setLocation("/");
+      }
+    }, 2000);
+  };
 
   // Sign In Form
   const signinForm = useForm<Signin>({
@@ -114,14 +156,11 @@ export default function AuthPage() {
         description: "You have successfully signed in.",
       });
       
-      // Redirect based on user role
-      if (data.role === "admin") {
-        setLocation("/admin");
-      } else if (data.role === "wholesaler") {
-        setLocation("/wholesaler-dashboard");
-      } else {
-        setLocation("/");
-      }
+      // Invalidate auth query to trigger refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
+      // Use role-based redirect with loading animation
+      handleRoleBasedRedirect(data);
     },
     onError: (error: Error) => {
       toast({
