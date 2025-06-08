@@ -2255,6 +2255,101 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Gullak API endpoints
+  app.post("/api/gullak", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const accountData = {
+        ...req.body,
+        userId,
+        currentBalance: "0",
+        status: "active",
+        totalPayments: 0,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      const newAccount = await storage.createGullakAccount(accountData);
+      res.json(newAccount);
+    } catch (error) {
+      console.error("Error creating Gullak account:", error);
+      res.status(500).json({ message: "Failed to create Gullak account" });
+    }
+  });
+
+  app.get("/api/gullak", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const accounts = await storage.getGullakAccounts(userId);
+      res.json(accounts);
+    } catch (error) {
+      console.error("Error fetching Gullak accounts:", error);
+      res.status(500).json({ message: "Failed to fetch Gullak accounts" });
+    }
+  });
+
+  app.get("/api/gullak/:id/transactions", isAuthenticated, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      const transactions = await storage.getGullakTransactions(accountId);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ message: "Failed to fetch transactions" });
+    }
+  });
+
+  app.post("/api/gullak/:id/manual-payment", isAuthenticated, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      const { amount } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      const account = await storage.getGullakAccount(accountId);
+      if (!account || account.userId !== userId) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      const goldRates = await storage.getCurrentGoldRates();
+      const metalRate = account.metalType === "gold" ? goldRates.rate24k : goldRates.silverRate || "85";
+      const goldValue = (parseFloat(amount) / parseFloat(metalRate)).toFixed(6);
+
+      const transaction = await storage.createGullakTransaction({
+        gullakAccountId: accountId,
+        userId,
+        amount,
+        type: "manual_pay",
+        goldRate: metalRate,
+        goldValue,
+        description: "Manual payment",
+        status: "completed",
+        transactionDate: new Date()
+      });
+
+      const currentBalance = parseFloat(account.currentBalance || "0");
+      const newBalance = currentBalance + parseFloat(amount);
+      
+      await storage.updateGullakAccount(accountId, {
+        currentBalance: newBalance.toString(),
+        lastPaymentDate: new Date(),
+        totalPayments: (account.totalPayments || 0) + 1
+      });
+
+      res.json(transaction);
+    } catch (error) {
+      console.error("Error processing manual payment:", error);
+      res.status(500).json({ message: "Failed to process payment" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

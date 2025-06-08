@@ -16,7 +16,7 @@ import Admin from "@/pages/admin";
 import CustomJewelry from "@/pages/custom-jewelry";
 import AITryOn from "@/pages/ai-tryon";
 import Gullak from "@/pages/gullak";
-import CreateGullak from "@/pages/gullak-create";
+import CreateGullakEnhanced from "@/pages/gullak-create-enhanced";
 import Loyalty from "@/pages/loyalty";
 import ShingaarGuru from "@/pages/shingaar-guru";
 import JewelryCare from "@/pages/jewelry-care";
@@ -43,7 +43,7 @@ function Router() {
           <Route path="/custom-jewelry" component={CustomJewelry} />
           <Route path="/ai-tryon" component={AITryOn} />
           <Route path="/gullak" component={Gullak} />
-          <Route path="/gullak/create" component={CreateGullak} />
+          <Route path="/gullak/create" component={CreateGullakEnhanced} />
           <Route path="/loyalty" component={Loyalty} />
           <Route path="/shingaar-guru" component={ShingaarGuru} />
           <Route path="/jewelry-care" component={JewelryCare} />
