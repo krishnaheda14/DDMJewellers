@@ -60,7 +60,6 @@ export default function Header() {
   const navigationItems = [
     { name: "Home", href: "/", icon: Home },
     { name: "Shop", href: "/shop", icon: ShoppingBag },
-    { name: "Collections", href: "/products" },
     { name: "Gullak", href: "/gullak" },
     { name: "Shingaar Guru", href: "/shingaar-guru", icon: Sparkles },
     { name: "Jewelry Care", href: "/jewelry-care" },

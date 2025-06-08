@@ -410,7 +410,7 @@ export default function Shop() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="all" className="flex items-center gap-2">
               <Crown className="h-4 w-4" />
               All Products ({sortedProducts.length})
@@ -418,6 +418,10 @@ export default function Shop() {
             <TabsTrigger value="categories" className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
               By Category
+            </TabsTrigger>
+            <TabsTrigger value="collections" className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              Collections
             </TabsTrigger>
           </TabsList>
 
@@ -485,6 +489,98 @@ export default function Shop() {
                   </div>
                 )
               ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="collections">
+            <div className="space-y-8">
+              {/* Featured Collection */}
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-8 border border-amber-200 dark:border-amber-800">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
+                    <Crown className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      Royal Collection
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Exquisite handcrafted pieces for special occasions
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {sortedProducts.filter(p => p.name.toLowerCase().includes('gold') || p.name.toLowerCase().includes('diamond')).slice(0, 4).map((product: Product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Bridal Collection */}
+              <div className="bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 rounded-xl p-8 border border-rose-200 dark:border-rose-800">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-rose-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <Heart className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      Bridal Collection
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Perfect jewelry for your special day
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {sortedProducts.filter(p => p.name.toLowerCase().includes('necklace') || p.name.toLowerCase().includes('set')).slice(0, 4).map((product: Product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Contemporary Collection */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-8 border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                    <Star className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      Contemporary Collection
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Modern designs for everyday elegance
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {sortedProducts.filter(p => p.name.toLowerCase().includes('bracelet') || p.name.toLowerCase().includes('ring')).slice(0, 4).map((product: Product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Festive Collection */}
+              <div className="bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-xl p-8 border border-purple-200 dark:border-purple-800">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-500 rounded-lg flex items-center justify-center">
+                    <Sparkles className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      Festive Collection
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Celebrate traditions with timeless pieces
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {sortedProducts.filter(p => p.name.toLowerCase().includes('emerald') || p.name.toLowerCase().includes('ruby')).slice(0, 4).map((product: Product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
