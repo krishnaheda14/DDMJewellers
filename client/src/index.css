@@ -102,6 +102,14 @@
     color: var(--warm-gray);
   }
   
+  .bg-warm-gray {
+    background-color: var(--warm-gray);
+  }
+  
+  .text-cream-white {
+    color: var(--cream-white);
+  }
+  
   .bg-cream-white {
     background-color: var(--cream-white);
   }
@@ -113,11 +121,89 @@
   .bg-rose-gold {
     background-color: var(--rose-gold);
   }
+  
+  /* Responsive container utilities */
+  .container-fluid {
+    @apply w-full max-w-none px-3 sm:px-4 md:px-6 lg:px-8;
+  }
+  
+  .responsive-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6;
+  }
+  
+  .responsive-text {
+    @apply text-sm sm:text-base md:text-lg;
+  }
+  
+  .responsive-heading {
+    @apply text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl;
+  }
+  
+  .responsive-card {
+    @apply p-3 sm:p-4 md:p-6 lg:p-8;
+  }
+  
+  /* Mobile-first button sizes */
+  .btn-responsive {
+    @apply px-3 py-2 text-sm sm:px-4 sm:py-2 md:px-6 md:py-3 md:text-base;
+  }
+  
+  /* Safe area for mobile devices */
+  .safe-area {
+    @apply pb-safe-bottom pl-safe-left pr-safe-right;
+  }
+  
+  /* Responsive spacing */
+  .space-responsive {
+    @apply space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8;
+  }
+  
+  /* Mobile navigation */
+  .mobile-nav {
+    @apply fixed inset-x-0 top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gold/20;
+  }
+  
+  /* Responsive typography */
+  .heading-xl {
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl;
+  }
+  
+  .heading-lg {
+    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl;
+  }
+  
+  .heading-md {
+    @apply text-base sm:text-lg md:text-xl lg:text-2xl;
+  }
+  
+  /* Responsive images */
+  .responsive-img {
+    @apply w-full h-auto object-cover;
+  }
+  
+  /* Mobile-first flex utilities */
+  .flex-responsive {
+    @apply flex flex-col sm:flex-row;
+  }
+  
+  /* Responsive padding and margins */
+  .p-responsive {
+    @apply p-3 sm:p-4 md:p-6 lg:p-8;
+  }
+  
+  .m-responsive {
+    @apply m-3 sm:m-4 md:m-6 lg:m-8;
+  }
+  
+  /* Touch-friendly interactive elements */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
 }
 
 /* Custom scrollbar for webkit browsers */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -126,56 +212,103 @@
 
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--muted-foreground));
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary));
 }
 
-/* Smooth transitions for interactive elements */
-.transition-luxury {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Custom animations */
+/* Loading animations */
 @keyframes shimmer {
   0% {
-    background-position: -200px 0;
+    background-position: -468px 0;
   }
   100% {
-    background-position: calc(200px + 100%) 0;
+    background-position: 468px 0;
   }
 }
 
 .shimmer {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.4),
-    transparent
-  );
-  background-size: 200px 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.5s ease-in-out infinite;
+  background: linear-gradient(to right, #eff6ff 8%, #dbeafe 18%, #eff6ff 33%);
+  background-size: 800px 104px;
 }
 
-/* Image hover effects */
-.image-hover-scale {
-  transition: transform 0.3s ease-in-out;
+/* Mobile-specific styles */
+@media (max-width: 640px) {
+  .container {
+    @apply px-3;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Ensure touch targets are large enough */
+  button, a, input, select, textarea {
+    @apply min-h-[44px];
+  }
+  
+  /* Improve readability on small screens */
+  body {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
 }
 
-.image-hover-scale:hover {
-  transform: scale(1.05);
+/* Tablet-specific styles */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-grid {
+    @apply grid-cols-2 lg:grid-cols-3;
+  }
 }
 
-.image-hover-zoom {
-  overflow: hidden;
+/* Desktop-specific styles */
+@media (min-width: 1025px) {
+  .desktop-grid {
+    @apply grid-cols-4;
+  }
+  
+  /* Hover effects only on devices that support hover */
+  .hover-effect:hover {
+    @apply transform scale-105 shadow-lg transition-all duration-300;
+  }
 }
 
-.image-hover-zoom img {
-  transition: transform 0.3s ease-in-out;
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
 }
 
-.image-hover-zoom:hover img {
-  transform: scale(1.1);
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border: hsl(0, 0%, 0%);
+    --ring: hsl(0, 0%, 0%);
+  }
+}
+
+/* Focus visible styles for keyboard navigation */
+.focus-visible:focus-visible {
+  @apply outline-2 outline-offset-2;
+  outline-color: var(--luxury-gold);
 }

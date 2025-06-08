@@ -50,24 +50,24 @@ export default function Header() {
   return (
     <>
       <header className="bg-gradient-to-r from-white via-amber-50/30 to-white shadow-lg backdrop-blur-sm sticky top-0 z-50 border-b border-gold/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Top Bar */}
-          <div className="border-b border-gradient-to-r from-transparent via-gold/30 to-transparent py-2">
-            <div className="flex justify-between items-center text-sm text-warm-gray">
-              <div className="flex items-center space-x-4">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+          {/* Top Bar - Hidden on mobile for space optimization */}
+          <div className="hidden sm:block border-b border-gradient-to-r from-transparent via-gold/30 to-transparent py-2">
+            <div className="flex justify-between items-center text-xs sm:text-sm text-warm-gray">
+              <div className="flex items-center space-x-2 sm:space-x-4">
                 <span className="relative group">
-                  <span className="relative z-10">Free Shipping on Orders Above ₹25,000</span>
+                  <span className="relative z-10 truncate">Free Shipping on Orders Above ₹25,000</span>
                   <div className="absolute inset-0 bg-gold/10 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-sm"></div>
                 </span>
                 <span className="hidden md:inline text-gold/50">|</span>
-                <span className="hidden md:inline hover:text-gold transition-colors duration-200">Call: +91 98765 43210</span>
+                <span className="hidden lg:inline hover:text-gold transition-colors duration-200">Call: +91 98765 43210</span>
               </div>
-              <div className="flex items-center space-x-4">
-                <a href="#" className="relative group hover:text-gold transition-all duration-300 transform hover:scale-105">
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                <a href="#" className="relative group hover:text-gold transition-all duration-300 transform hover:scale-105 hidden sm:block">
                   <span className="relative z-10">Track Order</span>
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold group-hover:w-full transition-all duration-300"></div>
                 </a>
-                <a href="#" className="relative group hover:text-gold transition-all duration-300 transform hover:scale-105">
+                <a href="#" className="relative group hover:text-gold transition-all duration-300 transform hover:scale-105 hidden md:block">
                   <span className="relative z-10">Store Locator</span>
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold group-hover:w-full transition-all duration-300"></div>
                 </a>
