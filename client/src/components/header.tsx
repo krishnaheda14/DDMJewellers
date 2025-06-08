@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import CartSidebar from "./cart-sidebar";
-import { Search, ShoppingBag, User, Menu, X, Heart } from "lucide-react";
+import { Search, ShoppingBag, User, Menu, X, Heart, Home } from "lucide-react";
 import type { CartItem, Product } from "@shared/schema";
 
 interface CartItemWithProduct extends CartItem {
@@ -36,6 +36,7 @@ export default function Header() {
   };
 
   const navigationItems = [
+    { name: "Home", href: "/", icon: Home },
     { name: "Collections", href: "/products" },
     { name: "Gullak", href: "/gullak" },
     { name: "Custom Design", href: "/custom-jewelry" },
@@ -68,7 +69,7 @@ export default function Header() {
           <div className="flex items-center justify-between py-4">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <button onClick={() => navigate("/")} className="text-left">
+              <button onClick={() => navigate("/")} className="text-left hover:opacity-80 transition-opacity">
                 <h1 className="text-2xl font-bold text-deep-navy">
                   <span className="text-gold">DDM</span> Jewellers
                 </h1>
