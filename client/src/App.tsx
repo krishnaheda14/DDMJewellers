@@ -27,6 +27,7 @@ import CorporateBenefits from "@/pages/corporate-benefits";
 import CorporateAdmin from "@/pages/corporate-admin";
 import Shop from "@/pages/shop";
 import TempLogin from "@/pages/temp-login";
+import LiveMarketRates from "@/pages/live-market-rates";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -65,6 +66,7 @@ function Router() {
           <Route path="/corporate-registration" component={CorporateRegistration} />
           <Route path="/corporate-benefits" component={CorporateBenefits} />
           <Route path="/corporate-admin" component={CorporateAdmin} />
+          <Route path="/live-market-rates" component={LiveMarketRates} />
         </>
       )}
       <Route path="/temp-login" component={TempLogin} />
