@@ -209,13 +209,19 @@ export const gullakAccounts = pgTable("gullak_accounts", {
   userId: varchar("user_id").notNull().references(() => users.id),
   name: varchar("name").notNull(), // e.g., "My First Gold Savings"
   metalType: varchar("metal_type").notNull().default("gold"), // gold, silver
-  dailyAmount: varchar("daily_amount").notNull(), // Amount in rupees
-  targetMetalWeight: varchar("target_metal_weight").notNull(), // In grams (renamed from targetGoldWeight)
+  paymentAmount: varchar("payment_amount").notNull(), // Amount per payment cycle
+  paymentFrequency: varchar("payment_frequency").notNull().default("daily"), // daily, weekly, monthly
+  targetMetalWeight: varchar("target_metal_weight").notNull(), // In grams
   targetAmount: varchar("target_amount").notNull(), // Total target amount in rupees
   currentBalance: varchar("current_balance").default("0"), // Current saved amount
   status: varchar("status").default("active"), // active, paused, completed, cancelled
   autoPayEnabled: boolean("auto_pay_enabled").default(true),
   nextPaymentDate: timestamp("next_payment_date"),
+  lastPaymentDate: timestamp("last_payment_date"),
+  paymentDayOfWeek: integer("payment_day_of_week"), // 0=Sunday, 1=Monday, etc. for weekly
+  paymentDayOfMonth: integer("payment_day_of_month"), // 1-28 for monthly
+  totalPayments: integer("total_payments").default(0),
+  missedPayments: integer("missed_payments").default(0),
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

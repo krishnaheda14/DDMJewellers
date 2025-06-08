@@ -41,9 +41,12 @@ export default function CurrencyConverter() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // Fetch live exchange rates
-  const { data: exchangeRates, isLoading: ratesLoading, refetch: refetchRates } = useQuery<ExchangeRate>({
+  const { data: exchangeRates, isLoading: ratesLoading, refetch: refetchRates } = useQuery({
     queryKey: ["/api/currency/rates", fromCurrency],
-    queryFn: () => apiRequest("GET", `/api/currency/rates?base=${fromCurrency}&currencies=USD,EUR,GBP,AED,INR`),
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/currency/rates?base=${fromCurrency}&currencies=USD,EUR,GBP,AED,INR`);
+      return response as ExchangeRate;
+    },
     refetchInterval: 60000, // Refresh every minute
     staleTime: 30000, // Consider stale after 30 seconds
   });

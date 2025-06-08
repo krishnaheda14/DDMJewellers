@@ -101,6 +101,26 @@ export interface IStorage {
   // User role operations
   updateUserRole(userId: string, role: string): Promise<User>;
   getWholesalers(approved?: boolean): Promise<User[]>;
+
+  // Gullak operations
+  getGullakAccounts(userId?: string): Promise<GullakAccount[]>;
+  getGullakAccount(id: number): Promise<GullakAccount | undefined>;
+  createGullakAccount(account: InsertGullakAccount): Promise<GullakAccount>;
+  updateGullakAccount(id: number, account: Partial<InsertGullakAccount>): Promise<GullakAccount>;
+  deleteGullakAccount(id: number): Promise<boolean>;
+  
+  // Gullak transactions
+  getGullakTransactions(gullakAccountId: number, limit?: number): Promise<GullakTransaction[]>;
+  createGullakTransaction(transaction: InsertGullakTransaction): Promise<GullakTransaction>;
+  
+  // Gullak orders
+  getGullakOrders(userId?: string): Promise<GullakOrder[]>;
+  createGullakOrder(order: InsertGullakOrder): Promise<GullakOrder>;
+  updateGullakOrderStatus(id: number, status: string): Promise<GullakOrder>;
+  
+  // Gold rates
+  createGoldRate(rate: InsertGoldRate): Promise<GoldRate>;
+  getCurrentGoldRates(): Promise<GoldRate | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -597,6 +617,78 @@ export class DatabaseStorage implements IStorage {
       currency: "INR",
       lastUpdated: new Date()
     };
+  }
+
+  // Gullak operations
+  async getGullakAccounts(userId?: string): Promise<GullakAccount[]> {
+    if (userId) {
+      return await db.select().from(gullakAccounts).where(eq(gullakAccounts.userId, userId));
+    }
+    return await db.select().from(gullakAccounts);
+  }
+
+  async getGullakAccount(id: number): Promise<GullakAccount | undefined> {
+    const [account] = await db.select().from(gullakAccounts).where(eq(gullakAccounts.id, id));
+    return account;
+  }
+
+  async createGullakAccount(account: InsertGullakAccount): Promise<GullakAccount> {
+    const [newAccount] = await db.insert(gullakAccounts).values(account).returning();
+    return newAccount;
+  }
+
+  async updateGullakAccount(id: number, account: Partial<InsertGullakAccount>): Promise<GullakAccount> {
+    const [updatedAccount] = await db
+      .update(gullakAccounts)
+      .set({ ...account, updatedAt: new Date() })
+      .where(eq(gullakAccounts.id, id))
+      .returning();
+    return updatedAccount;
+  }
+
+  async deleteGullakAccount(id: number): Promise<boolean> {
+    const result = await db.delete(gullakAccounts).where(eq(gullakAccounts.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getGullakTransactions(gullakAccountId: number, limit: number = 50): Promise<GullakTransaction[]> {
+    return await db
+      .select()
+      .from(gullakTransactions)
+      .where(eq(gullakTransactions.gullakAccountId, gullakAccountId))
+      .orderBy(desc(gullakTransactions.createdAt))
+      .limit(limit);
+  }
+
+  async createGullakTransaction(transaction: InsertGullakTransaction): Promise<GullakTransaction> {
+    const [newTransaction] = await db.insert(gullakTransactions).values(transaction).returning();
+    return newTransaction;
+  }
+
+  async getGullakOrders(userId?: string): Promise<GullakOrder[]> {
+    if (userId) {
+      return await db.select().from(gullakOrders).where(eq(gullakOrders.userId, userId));
+    }
+    return await db.select().from(gullakOrders);
+  }
+
+  async createGullakOrder(order: InsertGullakOrder): Promise<GullakOrder> {
+    const [newOrder] = await db.insert(gullakOrders).values(order).returning();
+    return newOrder;
+  }
+
+  async updateGullakOrderStatus(id: number, status: string): Promise<GullakOrder> {
+    const [updatedOrder] = await db
+      .update(gullakOrders)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(gullakOrders.id, id))
+      .returning();
+    return updatedOrder;
+  }
+
+  async createGoldRate(rate: InsertGoldRate): Promise<GoldRate> {
+    const [newRate] = await db.insert(goldRates).values(rate).returning();
+    return newRate;
   }
 }
 
