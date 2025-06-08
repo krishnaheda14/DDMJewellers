@@ -1,0 +1,88 @@
+I want to add a Jewelry Exchange feature to my website, allowing customers to exchange old hallmarked jewelry when purchasing new products.
+
+Here is the complete flow I need:
+
+Exchange Option for Customer:
+
+On the shopping cart or checkout page, add an option: "Exchange Old Jewelry".
+
+If selected, the customer must be able to:
+
+Upload a photo of their old hallmarked jewelry.
+
+Upload a copy of the original bill of the jewelry.
+
+Admin Review and Valuation:
+
+The uploaded files and request should go to the Admin dashboard.
+
+Admin should be able to:
+
+View the photo and bill.
+
+Manually assign an exchange value to the old jewelry.
+
+Approve or reject the exchange request.
+
+Edit exchange value if needed.
+
+Billing Adjustment:
+
+If the exchange is approved, the assigned exchange value should be automatically deducted from the order total.
+
+The customer should be able to see the updated final payable amount before completing the purchase.
+
+Status Tracking:
+
+In the customer’s account, add a section to show the status of the exchange request:
+
+Pending
+
+Approved (with value displayed)
+
+Rejected (with reason if possible)
+
+Notifications:
+
+When the Admin approves or rejects the exchange:
+
+The customer should receive an automatic email and/or SMS notification.
+
+The message should clearly state:
+
+If approved → the assigned exchange value.
+
+If rejected → the rejection reason.
+
+Example message for Approved:
+"Your jewelry exchange request has been approved! Exchange value assigned: ₹X, which has been applied to your order. Please proceed to complete your purchase."
+
+Example message for Rejected:
+"Your jewelry exchange request has been reviewed and unfortunately cannot be accepted at this time. Reason: [reason]. Please contact support if you have questions."
+
+Additional Requirements:
+
+The exchange process should be seamless and not interrupt the customer’s purchase flow.
+
+The Admin should have full visibility and control over exchange requests from the dashboard.
+
+Marketing Text & Naming:
+
+Please present this feature with a friendly name and marketing text on the website. Suggested names include:
+
+Gold Upgrade Program
+
+Old for New Exchange
+
+Jewelry Buyback & Exchange
+
+Ghar Ki Gullak Offer
+
+Exchange & Save
+
+Hallmarked Exchange Offer
+
+SunaarJi Exchange Vault
+
+Suggested marketing text to display:
+"Turn Your Old Jewelry Into New Designs! Upload your old jewelry photo and bill during checkout, and our experts will evaluate it. Once approved, your exchange value will be applied to your order instantly. It's easy, transparent, and rewarding!"

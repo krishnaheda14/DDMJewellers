@@ -436,6 +436,64 @@ export const gullakOrdersRelations = relations(gullakOrders, ({ one }) => ({
   }),
 }));
 
+// Jewelry Exchange tables
+export const jewelryExchangeRequests = pgTable("jewelry_exchange_requests", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  orderId: integer("order_id").references(() => orders.id),
+  jewelryPhotoUrl: varchar("jewelry_photo_url").notNull(),
+  billPhotoUrl: varchar("bill_photo_url").notNull(),
+  description: text("description"),
+  estimatedValue: decimal("estimated_value", { precision: 10, scale: 2 }),
+  adminAssignedValue: decimal("admin_assigned_value", { precision: 10, scale: 2 }),
+  status: varchar("status", { enum: ["pending", "approved", "rejected"] }).default("pending").notNull(),
+  adminNotes: text("admin_notes"),
+  rejectionReason: text("rejection_reason"),
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Exchange notifications table
+export const exchangeNotifications = pgTable("exchange_notifications", {
+  id: serial("id").primaryKey(),
+  exchangeRequestId: integer("exchange_request_id").notNull().references(() => jewelryExchangeRequests.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: varchar("type", { enum: ["email", "sms", "both"] }).default("email").notNull(),
+  status: varchar("status", { enum: ["pending", "sent", "failed"] }).default("pending").notNull(),
+  sentAt: timestamp("sent_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Exchange Relations
+export const jewelryExchangeRequestsRelations = relations(jewelryExchangeRequests, ({ one, many }) => ({
+  user: one(users, {
+    fields: [jewelryExchangeRequests.userId],
+    references: [users.id],
+  }),
+  order: one(orders, {
+    fields: [jewelryExchangeRequests.orderId],
+    references: [orders.id],
+  }),
+  reviewer: one(users, {
+    fields: [jewelryExchangeRequests.reviewedBy],
+    references: [users.id],
+  }),
+  notifications: many(exchangeNotifications),
+}));
+
+export const exchangeNotificationsRelations = relations(exchangeNotifications, ({ one }) => ({
+  exchangeRequest: one(jewelryExchangeRequests, {
+    fields: [exchangeNotifications.exchangeRequestId],
+    references: [jewelryExchangeRequests.id],
+  }),
+  user: one(users, {
+    fields: [exchangeNotifications.userId],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
@@ -529,6 +587,19 @@ export const insertCareReminderSchema = createInsertSchema(careReminders).omit({
   createdAt: true,
   updatedAt: true,
   reminderSent: true,
+});
+
+export const insertJewelryExchangeRequestSchema = createInsertSchema(jewelryExchangeRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  reviewedAt: true,
+});
+
+export const insertExchangeNotificationSchema = createInsertSchema(exchangeNotifications).omit({
+  id: true,
+  createdAt: true,
+  sentAt: true,
 });
 
 // Loyalty Program Tables
