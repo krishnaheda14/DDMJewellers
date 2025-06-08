@@ -49,27 +49,27 @@ export default function Home() {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative h-screen overflow-hidden bg-gradient-to-r from-black/40 to-transparent">
+      <section className="relative h-screen min-h-[600px] overflow-hidden bg-gradient-to-r from-black/40 to-transparent">
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: "url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&h=1080')"
           }}
         />
-        <div className="relative z-10 flex items-center justify-center h-full">
-          <div className="text-center px-4 sm:px-6 lg:px-8 max-w-4xl">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+        <div className="relative z-10 flex items-center justify-center h-full safe-area">
+          <div className="text-center container-fluid max-w-5xl">
+            <h1 className="heading-xl font-bold text-white mb-4 sm:mb-6 leading-tight">
               Exquisite
               <br />
               <span className="text-gold">Jewelry Collections</span>
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
+            <p className="responsive-text text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
               Discover timeless elegance with our handcrafted jewelry pieces designed to celebrate life's precious moments
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
               <Button 
                 size="lg" 
-                className="bg-gold hover:bg-gold/90 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105"
+                className="btn-responsive bg-gold hover:bg-gold/90 text-white rounded-full font-semibold transition-all transform hover:scale-105 touch-target"
                 onClick={() => navigate("/products")}
               >
                 Explore Collections
@@ -77,7 +77,7 @@ export default function Home() {
               <Button 
                 size="lg"
                 variant="outline" 
-                className="border-2 border-white text-white hover:bg-white hover:text-deep-navy px-8 py-4 rounded-full font-semibold text-lg transition-all"
+                className="btn-responsive border-2 border-white text-white hover:bg-white hover:text-deep-navy rounded-full font-semibold transition-all touch-target"
                 onClick={() => navigate("/products?featured=true")}
               >
                 Featured Products
@@ -89,29 +89,29 @@ export default function Home() {
 
       {/* Live Gold Rates */}
       {goldRates && (
-        <section className="py-16 bg-gradient-to-r from-gold/10 via-cream-bg to-gold/10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <TrendingUp className="h-8 w-8 text-gold" />
-                <h2 className="text-3xl font-bold text-deep-navy">Live Gold Rates</h2>
-                <Coins className="h-8 w-8 text-gold" />
+        <section className="p-responsive bg-gradient-to-r from-gold/10 via-cream-bg to-gold/10">
+          <div className="container-fluid">
+            <div className="text-center mb-8 sm:mb-12">
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-gold" />
+                <h2 className="heading-lg font-bold text-deep-navy">Live Gold Rates</h2>
+                <Coins className="h-6 w-6 sm:h-8 sm:w-8 text-gold" />
               </div>
-              <p className="text-warm-gray text-lg">Current market prices for gold and silver investments</p>
+              <p className="text-warm-gray responsive-text">Current market prices for gold and silver investments</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-8">
-              <Card className="border-2 border-gold/20 hover:border-gold/40 transition-colors">
-                <CardContent className="p-6 text-center">
-                  <div className="bg-gold/10 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-gold font-bold text-xl">24K</span>
+            <div className="responsive-grid max-w-6xl mx-auto mb-6 sm:mb-8">
+              <Card className="border-2 border-gold/20 hover:border-gold/40 transition-colors hover-effect">
+                <CardContent className="responsive-card text-center">
+                  <div className="bg-gold/10 rounded-full p-3 sm:p-4 w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                    <span className="text-gold font-bold text-lg sm:text-xl">24K</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-deep-navy mb-2">24 Karat Gold</h3>
-                  <p className="text-3xl font-bold text-gold mb-1">
+                  <h3 className="responsive-text font-semibold text-deep-navy mb-2">24 Karat Gold</h3>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold mb-1">
                     ₹{new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate24k))}
                   </p>
-                  <p className="text-sm text-warm-gray">per gram</p>
-                  <Badge variant="secondary" className="mt-3 bg-green-100 text-green-800">
+                  <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
+                  <Badge variant="secondary" className="mt-2 sm:mt-3 bg-green-100 text-green-800 text-xs">
                     99.9% Pure
                   </Badge>
                 </CardContent>

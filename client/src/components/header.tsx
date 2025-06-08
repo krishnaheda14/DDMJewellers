@@ -76,17 +76,17 @@ export default function Header() {
           </div>
 
           {/* Main Navigation */}
-          <div className="flex items-center justify-between py-4">
+          <div className="flex items-center justify-between py-3 sm:py-4">
             {/* Logo */}
             <div className="flex-shrink-0">
               <button onClick={() => navigate("/")} className="text-left group relative transform hover:scale-105 transition-all duration-300">
                 <div className="absolute inset-0 bg-gradient-to-r from-gold/5 to-amber-100/20 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300"></div>
-                <div className="relative z-10 p-2">
-                  <h1 className="text-2xl font-bold text-deep-navy">
+                <div className="relative z-10 p-1 sm:p-2">
+                  <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-deep-navy">
                     <span className="text-gold drop-shadow-sm bg-gradient-to-r from-gold to-amber-600 bg-clip-text text-transparent">DDM</span> 
                     <span className="ml-1 bg-gradient-to-r from-deep-navy to-slate-700 bg-clip-text text-transparent">Jewellers</span>
                   </h1>
-                  <p className="text-xs text-warm-gray -mt-1 group-hover:text-gold/70 transition-colors duration-300">Since 1985</p>
+                  <p className="text-xs text-warm-gray -mt-1 group-hover:text-gold/70 transition-colors duration-300 hidden sm:block">Since 1985</p>
                 </div>
                 <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-gold to-amber-500 group-hover:w-full transition-all duration-500"></div>
               </button>
@@ -118,16 +118,16 @@ export default function Header() {
             </nav>
 
             {/* Search and Actions */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               {/* Search */}
-              <form onSubmit={handleSearch} className="relative hidden md:block group">
+              <form onSubmit={handleSearch} className="relative hidden lg:block group">
                 <div className="relative overflow-hidden rounded-lg">
                   <Input
                     type="text"
                     placeholder="Search jewelry..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-64 pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white focus:bg-white group-hover:shadow-md"
+                    className="w-48 xl:w-64 pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gold focus:border-gold transition-all duration-300 bg-white/80 backdrop-blur-sm hover:bg-white focus:bg-white group-hover:shadow-md"
                   />
                   <Search className="absolute left-3 top-3 h-4 w-4 text-warm-gray group-hover:text-gold transition-colors duration-300" />
                   <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-amber-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-lg"></div>
@@ -138,10 +138,10 @@ export default function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="md:hidden relative group p-2 text-warm-gray hover:text-gold transition-all duration-300 rounded-lg hover:bg-gold/10 hover:shadow-md transform hover:scale-105"
+                className="lg:hidden relative group touch-target text-warm-gray hover:text-gold transition-all duration-300 rounded-lg hover:bg-gold/10 hover:shadow-md transform hover:scale-105"
                 onClick={() => navigate("/products")}
               >
-                <Search className="h-5 w-5 transform group-hover:scale-110 transition-transform duration-300" />
+                <Search className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-transform duration-300" />
                 <div className="absolute inset-0 bg-gradient-to-r from-gold/10 to-amber-100/20 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300"></div>
               </Button>
 
@@ -151,9 +151,9 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="relative group p-2 text-warm-gray hover:text-gold transition-all duration-300 rounded-lg hover:bg-gold/10 hover:shadow-md transform hover:scale-105"
+                    className="relative group touch-target text-warm-gray hover:text-gold transition-all duration-300 rounded-lg hover:bg-gold/10 hover:shadow-md transform hover:scale-105"
                   >
-                    <Heart className="h-5 w-5 transform group-hover:scale-110 transition-all duration-300 group-hover:fill-red-400 group-hover:text-red-400" />
+                    <Heart className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-all duration-300 group-hover:fill-red-400 group-hover:text-red-400" />
                     <div className="absolute inset-0 bg-gradient-to-r from-pink-100/20 via-red-50/30 to-gold/10 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300"></div>
                     <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-400 rounded-full scale-0 group-hover:scale-100 transition-transform duration-500 delay-100"></div>
                   </Button>
@@ -173,10 +173,10 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="relative group p-2 text-warm-gray hover:text-gold transition-all duration-300 rounded-lg hover:bg-gold/10 hover:shadow-md transform hover:scale-105"
+                    className="relative group touch-target text-warm-gray hover:text-gold transition-all duration-300 rounded-lg hover:bg-gold/10 hover:shadow-md transform hover:scale-105"
                     onClick={() => setIsCartOpen(true)}
                   >
-                    <ShoppingBag className="h-5 w-5 transform group-hover:scale-110 transition-all duration-300 group-hover:rotate-3" />
+                    <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-all duration-300 group-hover:rotate-3" />
                     <div className="absolute inset-0 bg-gradient-to-r from-gold/10 via-amber-50/50 to-gold/10 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300"></div>
                     {cartItemCount > 0 && (
                       <Badge className="absolute -top-1 -right-1 bg-gradient-to-r from-gold to-amber-500 text-white text-xs min-w-[1.25rem] h-5 flex items-center justify-center rounded-full shadow-lg animate-pulse">
