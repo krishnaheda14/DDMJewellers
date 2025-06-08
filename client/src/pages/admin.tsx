@@ -37,7 +37,7 @@ import {
   Crown,
   Briefcase
 } from "lucide-react";
-import type { Product, Category, Order } from "@shared/schema";
+import type { Product, Category, Order, User } from "@shared/schema";
 
 export default function Admin() {
   const { user, isLoading: authLoading } = useAuth();
@@ -48,7 +48,7 @@ export default function Admin() {
   const [exchangeFilter, setExchangeFilter] = useState("all");
 
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'admin')) {
+    if (!authLoading && (!user || (user as any)?.role !== 'admin')) {
       toast({
         title: "Access Denied",
         description: "You don't have admin privileges.",
@@ -62,32 +62,32 @@ export default function Admin() {
 
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    enabled: user?.role === 'admin',
+    enabled: (user as any)?.role === 'admin',
   });
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
-    enabled: user?.role === 'admin',
+    enabled: (user as any)?.role === 'admin',
   });
 
   const { data: orders = [] } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
-    enabled: user?.role === 'admin',
+    enabled: (user as any)?.role === 'admin',
   });
 
-  const { data: users = [] } = useQuery({
+  const { data: users = [] } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
-    enabled: user?.role === 'admin',
+    enabled: (user as any)?.role === 'admin',
   });
 
-  const { data: exchangeRequests = [] } = useQuery({
+  const { data: exchangeRequests = [] } = useQuery<any[]>({
     queryKey: ["/api/admin/exchange-requests"],
-    enabled: user?.role === 'admin',
+    enabled: (user as any)?.role === 'admin',
   });
 
-  const { data: corporateRequests = [] } = useQuery({
+  const { data: corporateRequests = [] } = useQuery<any[]>({
     queryKey: ["/api/admin/corporate-requests"],
-    enabled: user?.role === 'admin',
+    enabled: (user as any)?.role === 'admin',
   });
 
   if (authLoading) {
@@ -410,6 +410,104 @@ export default function Admin() {
     </div>
   );
 
+  const ProductsView = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Products Management</h2>
+        <Button>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Product
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>All Products</CardTitle>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-64"
+              />
+              <Select defaultValue="all">
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Filter by category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map(category => (
+                    <SelectItem key={category.id} value={category.slug}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-2">Product</th>
+                  <th className="text-left p-2">Category</th>
+                  <th className="text-left p-2">Price</th>
+                  <th className="text-left p-2">Stock</th>
+                  <th className="text-left p-2">Status</th>
+                  <th className="text-left p-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products
+                  .filter(product => 
+                    searchTerm === "" || 
+                    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map((product) => (
+                  <tr key={product.id} className="border-b">
+                    <td className="p-2">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-200 rounded"></div>
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          <p className="text-sm text-muted-foreground">ID: {product.id}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-2">{product.categoryId}</td>
+                    <td className="p-2">₹{parseFloat(product.price).toLocaleString('en-IN')}</td>
+                    <td className="p-2">{product.stockQuantity || 'N/A'}</td>
+                    <td className="p-2">
+                      <Badge variant={product.featured ? "default" : "outline"}>
+                        {product.featured ? "Featured" : "Regular"}
+                      </Badge>
+                    </td>
+                    <td className="p-2">
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   const ExchangesView = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -453,52 +551,404 @@ export default function Admin() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {exchangeRequests
-              .filter((req: any) => exchangeFilter === "all" || req.status === exchangeFilter)
-              .map((request: any, index) => (
-              <div key={index} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-semibold">Request #{request.id}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {request.jewelryType} - {request.weight}g - {request.purity}
-                    </p>
+            {exchangeRequests.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No exchange requests found</p>
+              </div>
+            ) : (
+              exchangeRequests
+                .filter((req: any) => exchangeFilter === "all" || req.status === exchangeFilter)
+                .map((request: any, index: number) => (
+                <div key={request.id || index} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-semibold">Request #{request.id || index + 1}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {request.jewelryType || 'N/A'} - {request.weight || 'N/A'}g - {request.purity || 'N/A'}
+                      </p>
+                    </div>
+                    <Badge variant={request.status === "pending" ? "outline" : "default"}>
+                      {request.status || 'pending'}
+                    </Badge>
                   </div>
-                  <Badge variant={request.status === "pending" ? "outline" : "default"}>
-                    {request.status}
-                  </Badge>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm font-medium">Estimated Value</p>
+                      <p className="text-lg">₹{request.estimatedValue?.toLocaleString('en-IN') || 'Pending'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Submitted</p>
+                      <p>{request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                  </div>
+                  {(!request.status || request.status === "pending") && (
+                    <div className="flex gap-2">
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                        <Check className="h-4 w-4 mr-2" />
+                        Approve
+                      </Button>
+                      <Button size="sm" variant="destructive">
+                        <X className="h-4 w-4 mr-2" />
+                        Reject
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <p className="text-sm font-medium">Estimated Value</p>
-                    <p className="text-lg">₹{request.estimatedValue?.toLocaleString('en-IN') || 'Pending'}</p>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const CorporateView = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Corporate Tie-ups</h2>
+        <Button>
+          <Download className="h-4 w-4 mr-2" />
+          Export Corporate Data
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Active Partners</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{activeCorporate}</div>
+            <p className="text-xs text-muted-foreground">Approved companies</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingCorporate}</div>
+            <p className="text-xs text-muted-foreground">Awaiting review</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{corporateRequests.length}</div>
+            <p className="text-xs text-muted-foreground">All time</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Corporate Requests</CardTitle>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Search companies..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-64"
+              />
+              <Select defaultValue="all">
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {corporateRequests.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No corporate requests found</p>
+              </div>
+            ) : (
+              corporateRequests.map((request: any, index: number) => (
+                <div key={request.id || index} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-semibold">{request.companyName || 'Company Name'}</h3>
+                      <p className="text-sm text-muted-foreground">{request.industry || 'Industry not specified'}</p>
+                      <p className="text-sm text-muted-foreground">{request.employeeCount || 'N/A'} employees</p>
+                    </div>
+                    <Badge variant={request.status === "pending" ? "outline" : "default"}>
+                      {request.status || 'pending'}
+                    </Badge>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">Submitted</p>
-                    <p>{new Date(request.createdAt).toLocaleDateString()}</p>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm font-medium">Contact Person</p>
+                      <p>{request.contactPersonName || 'N/A'}</p>
+                      <p className="text-sm text-muted-foreground">{request.contactEmail || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Submitted</p>
+                      <p>{request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'N/A'}</p>
+                    </div>
                   </div>
+                  {(!request.status || request.status === "pending") && (
+                    <div className="flex gap-2">
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                        <Check className="h-4 w-4 mr-2" />
+                        Approve
+                      </Button>
+                      <Button size="sm" variant="destructive">
+                        <X className="h-4 w-4 mr-2" />
+                        Reject
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Set Offers
+                      </Button>
+                    </div>
+                  )}
+                  {request.status === "approved" && (
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Manage Offers
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Users className="h-4 w-4 mr-2" />
+                        View Employees
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                {request.status === "pending" && (
-                  <div className="flex gap-2">
-                    <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                      <Check className="h-4 w-4 mr-2" />
-                      Approve
-                    </Button>
-                    <Button size="sm" variant="destructive">
-                      <X className="h-4 w-4 mr-2" />
-                      Reject
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Details
-                    </Button>
-                  </div>
-                )}
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const ChatbotView = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Chatbot Analytics</h2>
+        <Button>
+          <Download className="h-4 w-4 mr-2" />
+          Export Analytics
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Total Conversations</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">1,247</div>
+            <p className="text-xs text-muted-foreground">+12% this month</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">342</div>
+            <p className="text-xs text-muted-foreground">Last 30 days</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Avg Session Time</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">4.2m</div>
+            <p className="text-xs text-muted-foreground">+8% improvement</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Satisfaction Rate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">94%</div>
+            <p className="text-xs text-muted-foreground">Positive feedback</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Popular Queries</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[
+              { query: "Product recommendations", count: 234, trend: "+15%" },
+              { query: "Jewelry care tips", count: 189, trend: "+8%" },
+              { query: "Exchange process", count: 156, trend: "+22%" },
+              { query: "Custom jewelry design", count: 142, trend: "+5%" },
+              { query: "Gold rates inquiry", count: 128, trend: "+18%" }
+            ].map((item, index) => (
+              <div key={index} className="flex justify-between items-center py-2 border-b">
+                <div>
+                  <p className="font-medium">{item.query}</p>
+                  <p className="text-sm text-muted-foreground">{item.count} queries</p>
+                </div>
+                <Badge variant="outline" className="text-green-600">
+                  {item.trend}
+                </Badge>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+
+  const SettingsView = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Settings</h2>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>System Configuration</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Site Name</label>
+              <Input defaultValue="DDM Jewellers" />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Admin Email</label>
+              <Input defaultValue="admin@ddmjewellers.com" />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Currency</label>
+              <Select defaultValue="INR">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INR">Indian Rupee (₹)</SelectItem>
+                  <SelectItem value="USD">US Dollar ($)</SelectItem>
+                  <SelectItem value="EUR">Euro (€)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button>Save Configuration</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>User Management</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Default User Role</label>
+              <Select defaultValue="customer">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="customer">Customer</SelectItem>
+                  <SelectItem value="wholesaler">Wholesaler</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Auto-approve Wholesalers</label>
+              <Select defaultValue="manual">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="manual">Manual Review</SelectItem>
+                  <SelectItem value="auto">Auto Approve</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button>Update Settings</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Activity Logs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[
+                { action: "Product updated", user: "Admin", time: "2 hours ago" },
+                { action: "User role changed", user: "Admin", time: "4 hours ago" },
+                { action: "Order status updated", user: "Admin", time: "6 hours ago" },
+                { action: "Exchange request approved", user: "Admin", time: "1 day ago" }
+              ].map((log, index) => (
+                <div key={index} className="flex justify-between items-center py-2 border-b">
+                  <div>
+                    <p className="font-medium">{log.action}</p>
+                    <p className="text-sm text-muted-foreground">by {log.user}</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{log.time}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Security</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Two-Factor Authentication</p>
+                <p className="text-sm text-muted-foreground">Enhanced security for admin accounts</p>
+              </div>
+              <Button variant="outline">Configure</Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Session Timeout</p>
+                <p className="text-sm text-muted-foreground">Auto-logout after inactivity</p>
+              </div>
+              <Select defaultValue="60">
+                <SelectTrigger className="w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30m</SelectItem>
+                  <SelectItem value="60">1h</SelectItem>
+                  <SelectItem value="120">2h</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 
@@ -510,8 +960,16 @@ export default function Admin() {
         return <OrdersView />;
       case "users":
         return <UsersView />;
+      case "products":
+        return <ProductsView />;
       case "exchanges":
         return <ExchangesView />;
+      case "corporate":
+        return <CorporateView />;
+      case "chatbot":
+        return <ChatbotView />;
+      case "settings":
+        return <SettingsView />;
       default:
         return <DashboardView />;
     }
