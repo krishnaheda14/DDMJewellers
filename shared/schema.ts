@@ -265,6 +265,64 @@ export const gullakOrders = pgTable("gullak_orders", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Jewelry care tutorials
+export const careTutorials = pgTable("care_tutorials", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  jewelryType: varchar("jewelry_type", { enum: ["rings", "necklaces", "earrings", "bracelets", "watches", "general"] }).notNull(),
+  metalType: varchar("metal_type", { enum: ["gold", "silver", "platinum", "diamond", "gemstone", "pearl", "all"] }).notNull().default("all"),
+  videoUrl: varchar("video_url"),
+  thumbnailUrl: varchar("thumbnail_url"),
+  duration: integer("duration"), // in seconds
+  difficulty: varchar("difficulty", { enum: ["beginner", "intermediate", "advanced"] }).notNull().default("beginner"),
+  steps: jsonb("steps"), // Array of step objects with text, images, tips
+  materials: jsonb("materials"), // Array of required materials/tools
+  tips: jsonb("tips"), // Array of expert tips
+  warnings: jsonb("warnings"), // Array of important warnings
+  frequency: varchar("frequency"), // How often to perform this care
+  category: varchar("category", { enum: ["cleaning", "storage", "maintenance", "repair", "prevention"] }).notNull(),
+  views: integer("views").notNull().default(0),
+  likes: integer("likes").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  isFeatured: boolean("is_featured").notNull().default(false),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User tutorial progress
+export const tutorialProgress = pgTable("tutorial_progress", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  tutorialId: integer("tutorial_id").notNull().references(() => careTutorials.id),
+  isCompleted: boolean("is_completed").notNull().default(false),
+  currentStep: integer("current_step").notNull().default(0),
+  completedSteps: jsonb("completed_steps"), // Array of completed step indices
+  notes: text("notes"), // User's personal notes
+  rating: integer("rating"), // 1-5 star rating
+  timeSpent: integer("time_spent").notNull().default(0), // in seconds
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Care reminders
+export const careReminders = pgTable("care_reminders", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  jewelryType: varchar("jewelry_type").notNull(),
+  metalType: varchar("metal_type"),
+  careType: varchar("care_type", { enum: ["cleaning", "inspection", "storage_check", "professional_service"] }).notNull(),
+  frequency: varchar("frequency", { enum: ["weekly", "monthly", "quarterly", "biannually", "annually"] }).notNull(),
+  lastPerformed: timestamp("last_performed"),
+  nextDue: timestamp("next_due").notNull(),
+  isEnabled: boolean("is_enabled").notNull().default(true),
+  reminderSent: boolean("reminder_sent").notNull().default(false),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, {
@@ -450,6 +508,27 @@ export const insertGullakOrderSchema = createInsertSchema(gullakOrders).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertCareTutorialSchema = createInsertSchema(careTutorials).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  views: true,
+  likes: true,
+});
+
+export const insertTutorialProgressSchema = createInsertSchema(tutorialProgress).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCareReminderSchema = createInsertSchema(careReminders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  reminderSent: true,
 });
 
 // Loyalty Program Tables
@@ -684,6 +763,15 @@ export type LoyaltyProfile = typeof loyaltyProfiles.$inferSelect;
 export type InsertLoyaltyProfile = z.infer<typeof insertLoyaltyProfileSchema>;
 export type LoyaltyChallenge = typeof loyaltyChallenges.$inferSelect;
 export type InsertLoyaltyChallenge = z.infer<typeof insertLoyaltyChallengeSchema>;
+
+export type CareTutorial = typeof careTutorials.$inferSelect;
+export type InsertCareTutorial = z.infer<typeof insertCareTutorialSchema>;
+
+export type TutorialProgress = typeof tutorialProgress.$inferSelect;
+export type InsertTutorialProgress = z.infer<typeof insertTutorialProgressSchema>;
+
+export type CareReminder = typeof careReminders.$inferSelect;
+export type InsertCareReminder = z.infer<typeof insertCareReminderSchema>;
 export type UserChallenge = typeof userChallenges.$inferSelect;
 export type InsertUserChallenge = z.infer<typeof insertUserChallengeSchema>;
 export type LoyaltyReward = typeof loyaltyRewards.$inferSelect;

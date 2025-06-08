@@ -40,6 +40,7 @@ export default function Header() {
     { name: "Collections", href: "/products" },
     { name: "Gullak", href: "/gullak" },
     { name: "Shingaar Guru", href: "/shingaar-guru", icon: Sparkles },
+    { name: "Jewelry Care", href: "/jewelry-care" },
     { name: "Custom Design", href: "/custom-jewelry" },
     { name: "Virtual Try-On", href: "/ai-tryon" },
     { name: "Rings", href: "/products?search=ring" },
