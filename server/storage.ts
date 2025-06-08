@@ -143,7 +143,7 @@ export class DatabaseStorage implements IStorage {
   async updateCategory(id: number, category: Partial<InsertCategory>): Promise<Category> {
     const [updatedCategory] = await db
       .update(categories)
-      .set({ ...category, updatedAt: new Date() })
+      .set(category)
       .where(eq(categories.id, id))
       .returning();
     return updatedCategory;
@@ -585,6 +585,18 @@ export class DatabaseStorage implements IStorage {
     }
     
     return await query;
+  }
+
+  async getCurrentGoldRates(): Promise<any> {
+    // Return default gold rates since we don't have external API
+    return {
+      id: 1,
+      rate24k: "7200",
+      rate22k: "6600",
+      rate18k: "5400",
+      currency: "INR",
+      lastUpdated: new Date()
+    };
   }
 }
 
