@@ -117,49 +117,49 @@ export default function Home() {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-gold/20 hover:border-gold/40 transition-colors">
-                <CardContent className="p-6 text-center">
-                  <div className="bg-gold/10 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-gold font-bold text-xl">22K</span>
+              <Card className="border-2 border-gold/20 hover:border-gold/40 transition-colors hover-effect">
+                <CardContent className="responsive-card text-center">
+                  <div className="bg-gold/10 rounded-full p-3 sm:p-4 w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                    <span className="text-gold font-bold text-lg sm:text-xl">22K</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-deep-navy mb-2">22 Karat Gold</h3>
-                  <p className="text-3xl font-bold text-gold mb-1">
+                  <h3 className="responsive-text font-semibold text-deep-navy mb-2">22 Karat Gold</h3>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold mb-1">
                     ₹{new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate22k))}
                   </p>
-                  <p className="text-sm text-warm-gray">per gram</p>
-                  <Badge variant="secondary" className="mt-3 bg-blue-100 text-blue-800">
+                  <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
+                  <Badge variant="secondary" className="mt-2 sm:mt-3 bg-blue-100 text-blue-800 text-xs">
                     91.7% Pure
                   </Badge>
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-gold/20 hover:border-gold/40 transition-colors">
-                <CardContent className="p-6 text-center">
-                  <div className="bg-gold/10 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-gold font-bold text-xl">18K</span>
+              <Card className="border-2 border-gold/20 hover:border-gold/40 transition-colors hover-effect">
+                <CardContent className="responsive-card text-center">
+                  <div className="bg-gold/10 rounded-full p-3 sm:p-4 w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                    <span className="text-gold font-bold text-lg sm:text-xl">18K</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-deep-navy mb-2">18 Karat Gold</h3>
-                  <p className="text-3xl font-bold text-gold mb-1">
+                  <h3 className="responsive-text font-semibold text-deep-navy mb-2">18 Karat Gold</h3>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold mb-1">
                     ₹{new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate18k))}
                   </p>
-                  <p className="text-sm text-warm-gray">per gram</p>
-                  <Badge variant="secondary" className="mt-3 bg-purple-100 text-purple-800">
+                  <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
+                  <Badge variant="secondary" className="mt-2 sm:mt-3 bg-purple-100 text-purple-800 text-xs">
                     75.0% Pure
                   </Badge>
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-gray-300/40 hover:border-gray-400/60 transition-colors">
-                <CardContent className="p-6 text-center">
-                  <div className="bg-gray-100 rounded-full p-4 w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-gray-600 font-bold text-lg">Ag</span>
+              <Card className="border-2 border-gray-300/40 hover:border-gray-400/60 transition-colors hover-effect">
+                <CardContent className="responsive-card text-center">
+                  <div className="bg-gray-100 rounded-full p-3 sm:p-4 w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
+                    <span className="text-gray-600 font-bold text-lg sm:text-xl">Ag</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-deep-navy mb-2">Pure Silver</h3>
-                  <p className="text-3xl font-bold text-gray-600 mb-1">
+                  <h3 className="responsive-text font-semibold text-deep-navy mb-2">Pure Silver</h3>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-600 mb-1">
                     ₹{goldRates.silverRate ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.silverRate)) : '85'}
                   </p>
-                  <p className="text-sm text-warm-gray">per gram</p>
-                  <Badge variant="secondary" className="mt-3 bg-gray-100 text-gray-800">
+                  <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
+                  <Badge variant="secondary" className="mt-2 sm:mt-3 bg-gray-100 text-gray-800 text-xs">
                     99.9% Pure
                   </Badge>
                 </CardContent>
@@ -167,31 +167,31 @@ export default function Home() {
             </div>
 
             <div className="text-center">
-              <p className="text-sm text-warm-gray mb-4">
+              <p className="text-xs sm:text-sm text-warm-gray mb-3 sm:mb-4">
                 Last updated: {new Date().toLocaleString('en-IN', { 
                   dateStyle: 'medium', 
                   timeStyle: 'short' 
                 })}
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
                 <Button 
                   onClick={() => navigate("/gullak")}
-                  className="bg-gold hover:bg-gold/90 text-white"
+                  className="btn-responsive bg-gold hover:bg-gold/90 text-white touch-target"
                 >
-                  <Coins className="h-4 w-4 mr-2" />
+                  <Coins className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Start Gold Savings with Gullak
                 </Button>
                 <Button 
                   variant="outline"
                   onClick={() => navigate("/products?search=gold")}
-                  className="border-gold text-gold hover:bg-gold hover:text-white"
+                  className="btn-responsive border-gold text-gold hover:bg-gold hover:text-white touch-target"
                 >
                   Browse Gold Jewelry
                 </Button>
                 <Button 
                   variant="outline"
                   onClick={() => navigate("/products?search=silver")}
-                  className="border-gray-500 text-gray-600 hover:bg-gray-500 hover:text-white"
+                  className="btn-responsive border-gray-500 text-gray-600 hover:bg-gray-500 hover:text-white touch-target"
                 >
                   Browse Silver Jewelry
                 </Button>
@@ -202,20 +202,20 @@ export default function Home() {
       )}
 
       {/* Featured Categories */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-deep-navy mb-4">Featured Categories</h2>
-            <p className="text-xl text-warm-gray max-w-2xl mx-auto">
+      <section className="p-responsive bg-white">
+        <div className="container-fluid">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <h2 className="heading-lg font-bold text-deep-navy mb-3 sm:mb-4">Featured Categories</h2>
+            <p className="responsive-text text-warm-gray max-w-2xl mx-auto">
               Explore our carefully curated collections of fine jewelry
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="responsive-grid gap-4 sm:gap-6 lg:gap-8">
             {categories.slice(0, 4).map((category) => (
               <Card 
                 key={category.id} 
-                className="group cursor-pointer hover:shadow-lg transition-all duration-300"
+                className="group cursor-pointer hover:shadow-lg transition-all duration-300 hover-effect touch-target"
                 onClick={() => navigate(`/products?categoryId=${category.id}`)}
               >
                 <CardContent className="p-0">
@@ -227,11 +227,11 @@ export default function Home() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-2xl font-semibold text-deep-navy mb-2 group-hover:text-gold transition-colors">
+                  <div className="responsive-card">
+                    <h3 className="responsive-text font-semibold text-deep-navy mb-2 group-hover:text-gold transition-colors">
                       {category.name}
                     </h3>
-                    <p className="text-warm-gray">
+                    <p className="text-sm sm:text-base text-warm-gray">
                       {category.description || "Discover our beautiful collection"}
                     </p>
                   </div>
@@ -243,56 +243,56 @@ export default function Home() {
       </section>
 
       {/* New Features Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-deep-navy mb-4">Experience Innovation</h2>
-            <p className="text-xl text-warm-gray max-w-2xl mx-auto">
+      <section className="p-responsive bg-white">
+        <div className="container-fluid">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <h2 className="heading-lg font-bold text-deep-navy mb-3 sm:mb-4">Experience Innovation</h2>
+            <p className="responsive-text text-warm-gray max-w-2xl mx-auto">
               Revolutionary features that transform how you discover and design jewelry
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
             {/* Custom Jewelry Design */}
-            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg">
+            <Card className="overflow-hidden group hover:shadow-2xl transition-all duration-300 border-0 shadow-lg hover-effect">
               <div className="relative">
                 <div 
-                  className="h-64 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
+                  className="h-48 sm:h-56 lg:h-64 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
                   style={{
                     backgroundImage: "url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400')"
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute top-4 right-4">
-                  <Badge className="bg-gold text-white">NEW</Badge>
+                <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
+                  <Badge className="bg-gold text-white text-xs">NEW</Badge>
                 </div>
               </div>
-              <CardContent className="p-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-3 bg-gold/10 rounded-full">
-                    <Palette className="h-6 w-6 text-gold" />
+              <CardContent className="responsive-card">
+                <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                  <div className="p-2 sm:p-3 bg-gold/10 rounded-full">
+                    <Palette className="h-4 w-4 sm:h-6 sm:w-6 text-gold" />
                   </div>
-                  <h3 className="text-2xl font-bold text-deep-navy">Custom Jewelry Design</h3>
+                  <h3 className="responsive-text font-bold text-deep-navy">Custom Jewelry Design</h3>
                 </div>
-                <p className="text-warm-gray mb-6 leading-relaxed">
+                <p className="text-warm-gray mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
                   Upload your design ideas, sketches, or inspiration photos. Our master craftsmen will bring your unique vision to life with expert precision and artistry.
                 </p>
-                <ul className="space-y-2 mb-6 text-sm text-warm-gray">
+                <ul className="space-y-2 mb-4 sm:mb-6 text-xs sm:text-sm text-warm-gray">
                   <li className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-gold" />
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-gold" />
                     Upload design sketches or photos
                   </li>
                   <li className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-gold" />
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-gold" />
                     Expert consultation and feedback
                   </li>
                   <li className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-gold" />
+                    <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-gold" />
                     Custom quotes and timeline
                   </li>
                 </ul>
                 <Button 
-                  className="w-full bg-gold hover:bg-gold/90 text-white"
+                  className="w-full btn-responsive bg-gold hover:bg-gold/90 text-white touch-target"
                   onClick={() => navigate("/custom-jewelry")}
                 >
                   Start Custom Design
