@@ -5,6 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import ProductForm from "@/components/admin/product-form";
 import CategoryForm from "@/components/admin/category-form";
+import TutorialManagement from "@/components/admin/tutorial-management";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
