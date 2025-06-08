@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Upload, CheckCircle, XCircle, Clock, Eye, FileText } from "lucide-react";
+import { Calendar, Upload, CheckCircle, XCircle, Clock, Eye, FileText, Home, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 
 interface ExchangeRequest {

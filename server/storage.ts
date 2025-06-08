@@ -1340,108 +1340,63 @@ export class DatabaseStorage implements IStorage {
     status?: string;
     limit?: number;
     offset?: number;
-  }): Promise<(JewelryExchangeRequest & { user: User; order?: Order; reviewer?: User })[]> {
-    let query = db
-      .select({
-        id: jewelryExchangeRequests.id,
-        userId: jewelryExchangeRequests.userId,
-        orderId: jewelryExchangeRequests.orderId,
-        jewelryPhotoUrl: jewelryExchangeRequests.jewelryPhotoUrl,
-        billPhotoUrl: jewelryExchangeRequests.billPhotoUrl,
-        description: jewelryExchangeRequests.description,
-        estimatedValue: jewelryExchangeRequests.estimatedValue,
-        adminAssignedValue: jewelryExchangeRequests.adminAssignedValue,
-        status: jewelryExchangeRequests.status,
-        adminNotes: jewelryExchangeRequests.adminNotes,
-        rejectionReason: jewelryExchangeRequests.rejectionReason,
-        reviewedBy: jewelryExchangeRequests.reviewedBy,
-        reviewedAt: jewelryExchangeRequests.reviewedAt,
-        createdAt: jewelryExchangeRequests.createdAt,
-        updatedAt: jewelryExchangeRequests.updatedAt,
-        user: {
-          id: users.id,
-          email: users.email,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          profileImageUrl: users.profileImageUrl,
-          role: users.role,
-          businessName: users.businessName,
-          businessAddress: users.businessAddress,
-          phoneNumber: users.phoneNumber,
-          isApproved: users.isApproved,
-          createdAt: users.createdAt,
-          updatedAt: users.updatedAt,
-        },
-        order: {
-          id: orders.id,
-          userId: orders.userId,
-          status: orders.status,
-          totalAmount: orders.totalAmount,
-          shippingAddress: orders.shippingAddress,
-          billingAddress: orders.billingAddress,
-          paymentMethod: orders.paymentMethod,
-          createdAt: orders.createdAt,
-          updatedAt: orders.updatedAt,
-        },
-        reviewer: {
-          id: sql`reviewer.id`,
-          email: sql`reviewer.email`,
-          firstName: sql`reviewer.first_name`,
-          lastName: sql`reviewer.last_name`,
-          profileImageUrl: sql`reviewer.profile_image_url`,
-          role: sql`reviewer.role`,
-          businessName: sql`reviewer.business_name`,
-          businessAddress: sql`reviewer.business_address`,
-          phoneNumber: sql`reviewer.phone_number`,
-          isApproved: sql`reviewer.is_approved`,
-          createdAt: sql`reviewer.created_at`,
-          updatedAt: sql`reviewer.updated_at`,
-        },
-      })
-      .from(jewelryExchangeRequests)
-      .leftJoin(users, eq(jewelryExchangeRequests.userId, users.id))
-      .leftJoin(orders, eq(jewelryExchangeRequests.orderId, orders.id))
-      .leftJoin(sql`users AS reviewer`, sql`jewelry_exchange_requests.reviewed_by = reviewer.id`)
-      .orderBy(desc(jewelryExchangeRequests.createdAt));
-
-    if (filters?.userId) {
-      query = query.where(eq(jewelryExchangeRequests.userId, filters.userId));
+  }): Promise<any[]> {
+    // Build base query
+    let baseQuery = db.select().from(jewelryExchangeRequests);
+    
+    // Apply filters
+    if (filters?.userId && filters?.status) {
+      baseQuery = baseQuery.where(
+        and(
+          eq(jewelryExchangeRequests.userId, filters.userId),
+          eq(jewelryExchangeRequests.status, filters.status)
+        )
+      );
+    } else if (filters?.userId) {
+      baseQuery = baseQuery.where(eq(jewelryExchangeRequests.userId, filters.userId));
+    } else if (filters?.status) {
+      baseQuery = baseQuery.where(eq(jewelryExchangeRequests.status, filters.status));
     }
 
-    if (filters?.status) {
-      query = query.where(eq(jewelryExchangeRequests.status, filters.status));
-    }
+    // Apply ordering
+    baseQuery = baseQuery.orderBy(desc(jewelryExchangeRequests.createdAt));
 
+    // Apply pagination
     if (filters?.limit) {
-      query = query.limit(filters.limit);
+      baseQuery = baseQuery.limit(filters.limit);
     }
 
     if (filters?.offset) {
-      query = query.offset(filters.offset);
+      baseQuery = baseQuery.offset(filters.offset);
     }
 
-    const results = await query;
+    const results = await baseQuery;
     
-    return results.map(result => ({
-      id: result.id,
-      userId: result.userId,
-      orderId: result.orderId,
-      jewelryPhotoUrl: result.jewelryPhotoUrl,
-      billPhotoUrl: result.billPhotoUrl,
-      description: result.description,
-      estimatedValue: result.estimatedValue,
-      adminAssignedValue: result.adminAssignedValue,
-      status: result.status,
-      adminNotes: result.adminNotes,
-      rejectionReason: result.rejectionReason,
-      reviewedBy: result.reviewedBy,
-      reviewedAt: result.reviewedAt,
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
-      user: result.user,
-      order: result.order,
-      reviewer: result.reviewer,
-    }));
+    // Fetch related user data for each request
+    const enrichedResults = await Promise.all(
+      results.map(async (request) => {
+        const user = await this.getUser(request.userId);
+        let order = null;
+        let reviewer = null;
+        
+        if (request.orderId) {
+          order = await this.getOrder(request.orderId);
+        }
+        
+        if (request.reviewedBy) {
+          reviewer = await this.getUser(request.reviewedBy);
+        }
+        
+        return {
+          ...request,
+          user: user || { id: request.userId, firstName: null, lastName: null, email: null },
+          order,
+          reviewer,
+        };
+      })
+    );
+    
+    return enrichedResults;
   }
 
   async getExchangeRequest(id: number): Promise<(JewelryExchangeRequest & { user: User; order?: Order; reviewer?: User }) | undefined> {
