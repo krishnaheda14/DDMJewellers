@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Calculator, Target, Calendar } from "lucide-react";
+import { ArrowLeft, Calculator, Target, Calendar, Home } from "lucide-react";
 import { PageTransition } from "@/components/loading/page-transition";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -151,12 +151,20 @@ export default function CreateGullak() {
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Link href="/gullak">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Gullak
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/">
+              <Button variant="outline" size="sm" className="text-navy hover:text-gold">
+                <Home className="h-4 w-4 mr-2" />
+                Home
+              </Button>
+            </Link>
+            <Link href="/gullak">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Gullak
+              </Button>
+            </Link>
+          </div>
           <div>
             <h1 className="text-3xl font-bold text-navy">Create New Gullak</h1>
             <p className="text-gray-600">Start your gold savings journey</p>
