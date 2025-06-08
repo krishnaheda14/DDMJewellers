@@ -125,13 +125,14 @@ export default function Cart() {
 
   const submitExchangeMutation = useMutation({
     mutationFn: async (exchangeData: any) => {
-      return apiRequest("POST", "/api/jewelry-exchange", exchangeData);
+      const response = await apiRequest("POST", "/api/jewelry-exchange", exchangeData);
+      return response.json();
     },
     onSuccess: (data) => {
       setExchangeData(prev => ({ 
         ...prev, 
         appraisalId: data.id,
-        estimatedValue: data.estimatedValue || 0
+        estimatedValue: data.estimatedValue || 5000 // Default estimated value
       }));
       toast({
         title: "Exchange request submitted",
