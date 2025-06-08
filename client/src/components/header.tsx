@@ -83,8 +83,9 @@ export default function Header() {
                 <button
                   key={item.name}
                   onClick={() => navigate(item.href)}
-                  className="text-deep-navy hover:text-gold font-medium transition-colors"
+                  className="text-deep-navy hover:text-gold font-medium transition-colors flex items-center gap-1"
                 >
+                  {item.icon && <item.icon className="h-4 w-4" />}
                   {item.name}
                 </button>
               ))}
@@ -219,8 +220,9 @@ export default function Header() {
                         navigate(item.href);
                         setIsMenuOpen(false);
                       }}
-                      className="text-left text-deep-navy hover:text-gold font-medium transition-colors py-2"
+                      className="text-left text-deep-navy hover:text-gold font-medium transition-colors py-2 flex items-center gap-2"
                     >
+                      {item.icon && <item.icon className="h-4 w-4" />}
                       {item.name}
                     </button>
                   ))}

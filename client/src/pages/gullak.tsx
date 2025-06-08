@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Coins, TrendingUp, Calendar, Target, Pause, Play, Settings } from "lucide-react";
+import { Plus, Coins, TrendingUp, Calendar, Target, Pause, Play, Settings, Home, ArrowLeft } from "lucide-react";
 import { PageTransition } from "@/components/loading/page-transition";
 import { Link } from "wouter";
 import { formatCurrency, calculateProgress } from "@/lib/gullak-utils";
@@ -127,9 +127,17 @@ export default function Gullak() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-navy mb-2">Gullak - Gold Savings</h1>
-            <p className="text-gray-600">Save daily, own gold monthly</p>
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="outline" size="sm" className="text-navy hover:text-gold">
+                <Home className="h-4 w-4 mr-2" />
+                Home
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-navy mb-2">Gullak - Gold Savings</h1>
+              <p className="text-gray-600">Save daily, own gold monthly</p>
+            </div>
           </div>
           <Link href="/gullak/create">
             <Button className="bg-gold hover:bg-gold/90">
