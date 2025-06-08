@@ -203,6 +203,66 @@ export const wishlists = pgTable("wishlists", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Gullak (Gold Savings) Tables
+export const gullakAccounts = pgTable("gullak_accounts", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  name: varchar("name").notNull(), // e.g., "My First Gold Savings"
+  dailyAmount: varchar("daily_amount").notNull(), // Amount in rupees
+  targetGoldWeight: varchar("target_gold_weight").notNull(), // In grams
+  targetAmount: varchar("target_amount").notNull(), // Total target amount in rupees
+  currentBalance: varchar("current_balance").default("0"), // Current saved amount
+  status: varchar("status").default("active"), // active, paused, completed, cancelled
+  autoPayEnabled: boolean("auto_pay_enabled").default(true),
+  nextPaymentDate: timestamp("next_payment_date"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const gullakTransactions = pgTable("gullak_transactions", {
+  id: serial("id").primaryKey(),
+  gullakAccountId: integer("gullak_account_id").notNull().references(() => gullakAccounts.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  amount: varchar("amount").notNull(),
+  type: varchar("type").notNull(), // deposit, withdrawal, auto_pay, interest
+  goldRate: varchar("gold_rate"), // Gold rate at time of transaction
+  goldValue: varchar("gold_value"), // Gold weight equivalent
+  description: text("description"),
+  status: varchar("status").default("completed"), // pending, completed, failed
+  transactionDate: timestamp("transaction_date").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const goldRates = pgTable("gold_rates", {
+  id: serial("id").primaryKey(),
+  rate24k: varchar("rate_24k").notNull(), // Per gram rate for 24k gold
+  rate22k: varchar("rate_22k").notNull(), // Per gram rate for 22k gold
+  rate18k: varchar("rate_18k").notNull(), // Per gram rate for 18k gold
+  currency: varchar("currency").default("INR"),
+  source: varchar("source"), // API source or manual
+  effectiveDate: timestamp("effective_date").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const gullakOrders = pgTable("gullak_orders", {
+  id: serial("id").primaryKey(),
+  gullakAccountId: integer("gullak_account_id").notNull().references(() => gullakAccounts.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  goldWeight: varchar("gold_weight").notNull(), // Weight of gold ordered
+  goldPurity: varchar("gold_purity").default("24k"), // 24k, 22k, 18k
+  coinType: varchar("coin_type").notNull(), // coin, bar, jewelry
+  amountUsed: varchar("amount_used").notNull(), // Amount deducted from Gullak
+  deliveryAddress: text("delivery_address").notNull(),
+  status: varchar("status").default("pending"), // pending, processing, shipped, delivered, cancelled
+  orderDate: timestamp("order_date").defaultNow(),
+  expectedDelivery: timestamp("expected_delivery"),
+  trackingNumber: varchar("tracking_number"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, {
@@ -252,6 +312,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   wishlists: many(wishlists),
   cartItems: many(cartItems),
   orders: many(orders),
+  gullakAccounts: many(gullakAccounts),
+  gullakTransactions: many(gullakTransactions),
+  gullakOrders: many(gullakOrders),
 }));
 
 export const wholesalerDesignsRelations = relations(wholesalerDesigns, ({ one, many }) => ({
@@ -278,6 +341,38 @@ export const wishlistsRelations = relations(wishlists, ({ one }) => ({
   design: one(wholesalerDesigns, {
     fields: [wishlists.designId],
     references: [wholesalerDesigns.id],
+  }),
+}));
+
+// Gullak Relations
+export const gullakAccountsRelations = relations(gullakAccounts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [gullakAccounts.userId],
+    references: [users.id],
+  }),
+  transactions: many(gullakTransactions),
+  orders: many(gullakOrders),
+}));
+
+export const gullakTransactionsRelations = relations(gullakTransactions, ({ one }) => ({
+  gullakAccount: one(gullakAccounts, {
+    fields: [gullakTransactions.gullakAccountId],
+    references: [gullakAccounts.id],
+  }),
+  user: one(users, {
+    fields: [gullakTransactions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const gullakOrdersRelations = relations(gullakOrders, ({ one }) => ({
+  gullakAccount: one(gullakAccounts, {
+    fields: [gullakOrders.gullakAccountId],
+    references: [gullakAccounts.id],
+  }),
+  user: one(users, {
+    fields: [gullakOrders.userId],
+    references: [users.id],
   }),
 }));
 
@@ -333,6 +428,28 @@ export const insertWishlistSchema = createInsertSchema(wishlists).omit({
   createdAt: true,
 });
 
+export const insertGullakAccountSchema = createInsertSchema(gullakAccounts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertGullakTransactionSchema = createInsertSchema(gullakTransactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertGoldRateSchema = createInsertSchema(goldRates).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertGullakOrderSchema = createInsertSchema(gullakOrders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -354,3 +471,11 @@ export type WholesalerDesign = typeof wholesalerDesigns.$inferSelect;
 export type InsertWholesalerDesign = z.infer<typeof insertWholesalerDesignSchema>;
 export type Wishlist = typeof wishlists.$inferSelect;
 export type InsertWishlist = z.infer<typeof insertWishlistSchema>;
+export type GullakAccount = typeof gullakAccounts.$inferSelect;
+export type InsertGullakAccount = z.infer<typeof insertGullakAccountSchema>;
+export type GullakTransaction = typeof gullakTransactions.$inferSelect;
+export type InsertGullakTransaction = z.infer<typeof insertGullakTransactionSchema>;
+export type GoldRate = typeof goldRates.$inferSelect;
+export type InsertGoldRate = z.infer<typeof insertGoldRateSchema>;
+export type GullakOrder = typeof gullakOrders.$inferSelect;
+export type InsertGullakOrder = z.infer<typeof insertGullakOrderSchema>;

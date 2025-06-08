@@ -101,6 +101,29 @@ export interface IStorage {
   // User role operations
   updateUserRole(userId: string, role: string): Promise<User>;
   getWholesalers(approved?: boolean): Promise<User[]>;
+
+  // Gullak operations
+  createGullakAccount(account: InsertGullakAccount): Promise<GullakAccount>;
+  getGullakAccounts(userId: string): Promise<GullakAccount[]>;
+  getGullakAccount(id: number): Promise<GullakAccount | undefined>;
+  updateGullakAccount(id: number, account: Partial<InsertGullakAccount>): Promise<GullakAccount>;
+  deleteGullakAccount(id: number): Promise<boolean>;
+  
+  // Gullak transactions
+  createGullakTransaction(transaction: InsertGullakTransaction): Promise<GullakTransaction>;
+  getGullakTransactions(gullakAccountId: number): Promise<GullakTransaction[]>;
+  getUserGullakTransactions(userId: string): Promise<GullakTransaction[]>;
+  
+  // Gold rates
+  getCurrentGoldRates(): Promise<GoldRate | undefined>;
+  createGoldRate(rate: InsertGoldRate): Promise<GoldRate>;
+  getGoldRateHistory(limit?: number): Promise<GoldRate[]>;
+  
+  // Gullak orders
+  createGullakOrder(order: InsertGullakOrder): Promise<GullakOrder>;
+  getGullakOrders(userId?: string): Promise<GullakOrder[]>;
+  getGullakOrder(id: number): Promise<GullakOrder | undefined>;
+  updateGullakOrderStatus(id: number, status: string): Promise<GullakOrder>;
 }
 
 export class DatabaseStorage implements IStorage {
