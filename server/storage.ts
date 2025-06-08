@@ -65,11 +65,6 @@ import {
   type InsertLoyaltyReward,
   type UserRedemption,
   type InsertUserRedemption,
-  type InsertGullakTransaction,
-  type GoldRate,
-  type InsertGoldRate,
-  type GullakOrder,
-  type InsertGullakOrder,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, like, desc, asc, sql } from "drizzle-orm";

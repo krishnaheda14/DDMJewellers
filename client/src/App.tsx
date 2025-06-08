@@ -17,6 +17,7 @@ import CustomJewelry from "@/pages/custom-jewelry";
 import AITryOn from "@/pages/ai-tryon";
 import Gullak from "@/pages/gullak";
 import CreateGullak from "@/pages/gullak-create";
+import Loyalty from "@/pages/loyalty";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -39,6 +40,7 @@ function Router() {
           <Route path="/ai-tryon" component={AITryOn} />
           <Route path="/gullak" component={Gullak} />
           <Route path="/gullak/create" component={CreateGullak} />
+          <Route path="/loyalty" component={Loyalty} />
         </>
       )}
       <Route component={NotFound} />
