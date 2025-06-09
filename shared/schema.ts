@@ -119,9 +119,18 @@ export const products = pgTable("products", {
   
   // Common fields
   material: varchar("material", { length: 100 }),
-  weight: varchar("weight", { length: 50 }),
+  weight: decimal("weight", { precision: 8, scale: 3 }), // Weight in grams for billing
   dimensions: varchar("dimensions", { length: 100 }),
   stock: integer("stock").default(0),
+  
+  // Billing and pricing fields
+  makingCharges: decimal("making_charges", { precision: 10, scale: 2 }).default("0"), // Fixed making charges for gold
+  gemstonesCost: decimal("gemstones_cost", { precision: 10, scale: 2 }).default("0"), // Fixed gemstone cost
+  diamondsCost: decimal("diamonds_cost", { precision: 10, scale: 2 }).default("0"), // Fixed diamond cost
+  
+  // Silver billing mode selection
+  silverBillingMode: varchar("silver_billing_mode", { enum: ["live_rate", "fixed_rate"] }).default("live_rate"),
+  fixedRatePerGram: decimal("fixed_rate_per_gram", { precision: 10, scale: 2 }), // For silver fixed rate mode
   
   // Imitation jewellery specific fields
   plating: varchar("plating", { length: 100 }), // Gold Plated, Silver Plated, Rose Gold, etc.
@@ -201,7 +210,17 @@ export const orderItems = pgTable("order_items", {
   orderId: integer("order_id").notNull().references(() => orders.id),
   productId: integer("product_id").notNull().references(() => products.id),
   quantity: integer("quantity").notNull(),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(), // Final calculated price
+  
+  // Detailed billing breakdown
+  weightInGrams: decimal("weight_in_grams", { precision: 8, scale: 3 }),
+  ratePerGram: decimal("rate_per_gram", { precision: 10, scale: 2 }),
+  metalCost: decimal("metal_cost", { precision: 10, scale: 2 }).default("0"), // Weight × Rate
+  makingCharges: decimal("making_charges", { precision: 10, scale: 2 }).default("0"),
+  gemstonesCost: decimal("gemstones_cost", { precision: 10, scale: 2 }).default("0"),
+  diamondsCost: decimal("diamonds_cost", { precision: 10, scale: 2 }).default("0"),
+  gstAmount: decimal("gst_amount", { precision: 10, scale: 2 }).default("0"), // 3% GST
+  
   customizations: jsonb("customizations").$type<{
     metal?: string;
     gemstone?: string;
