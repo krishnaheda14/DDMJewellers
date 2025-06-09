@@ -527,8 +527,6 @@ export async function setupAuth(app: Express): Promise<void> {
     }
   });
 
-
-
   app.get('/api/user', isAuthenticated, async (req: Request, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ message: 'Not authenticated' });
