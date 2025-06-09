@@ -63,6 +63,7 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  getUsers(options?: { page?: number; limit?: number; role?: string }): Promise<User[]>;
   
   // Enhanced authentication operations
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -399,6 +400,25 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  async getUsers(options?: { page?: number; limit?: number; role?: string }): Promise<User[]> {
+    let query = db.select().from(users);
+    
+    if (options?.role) {
+      query = query.where(eq(users.role, options.role));
+    }
+    
+    if (options?.limit) {
+      query = query.limit(options.limit);
+    }
+    
+    if (options?.page && options?.limit) {
+      const offset = (options.page - 1) * options.limit;
+      query = query.offset(offset);
+    }
+    
+    return await query.orderBy(desc(users.createdAt));
   }
 
   async getCorporatePartners(): Promise<any[]> {
