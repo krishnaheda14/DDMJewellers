@@ -89,7 +89,18 @@ export function isAuthenticated(req: Request, res: Response, next: NextFunction)
     return res.status(401).json({ message: 'Session expired' });
   }
 
-  req.user = sessionUser;
+  // Set user in request with proper typing
+  req.user = {
+    id: sessionUser.id,
+    email: sessionUser.email,
+    firstName: sessionUser.firstName,
+    lastName: sessionUser.lastName,
+    role: sessionUser.role,
+    isEmailVerified: sessionUser.isEmailVerified,
+    isApproved: sessionUser.isApproved,
+    sessionToken: sessionUser.sessionToken,
+    sessionExpiresAt: sessionUser.sessionExpiresAt,
+  };
   next();
 }
 
@@ -156,10 +167,10 @@ export async function setupAuth(app: Express): Promise<void> {
     resave: false,
     saveUninitialized: false,
     cookie: { 
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to false for development
       maxAge: SESSION_DURATION,
       httpOnly: true,
-      sameSite: 'strict'
+      sameSite: 'lax' // Change to lax for better cross-origin support
     }
   }));
 

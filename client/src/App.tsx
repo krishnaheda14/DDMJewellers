@@ -63,16 +63,16 @@ function Router() {
       
       {/* Authentication-based routes */}
       <Route path="/" component={isAuthenticated ? Home : Landing} />
-      <Route path="/cart" component={isAuthenticated ? Cart : Landing} />
-      <Route path="/admin" component={isAuthenticated ? Admin : Landing} />
-      <Route path="/admin/dashboard" component={isAuthenticated ? AdminDashboard : Landing} />
-      <Route path="/customer/dashboard" component={isAuthenticated ? CustomerDashboard : Landing} />
-      <Route path="/wholesaler/dashboard" component={isAuthenticated ? WholesalerDashboard : Landing} />
-      <Route path="/gullak" component={isAuthenticated ? Gullak : Landing} />
-      <Route path="/gullak/create" component={isAuthenticated ? CreateGullakEnhanced : Landing} />
-      <Route path="/loyalty" component={isAuthenticated ? Loyalty : Landing} />
-      <Route path="/jewelry-exchange" component={isAuthenticated ? JewelryExchange : Landing} />
-      <Route path="/corporate-admin" component={isAuthenticated ? CorporateAdmin : Landing} />
+      <Route path="/cart" component={isAuthenticated ? Cart : AuthPage} />
+      <Route path="/admin" component={isAuthenticated ? Admin : AuthPage} />
+      <Route path="/admin/dashboard" component={isAuthenticated ? AdminDashboard : AuthPage} />
+      <Route path="/customer/dashboard" component={isAuthenticated ? CustomerDashboard : AuthPage} />
+      <Route path="/wholesaler/dashboard" component={isAuthenticated ? WholesalerDashboard : AuthPage} />
+      <Route path="/gullak" component={isAuthenticated ? Gullak : AuthPage} />
+      <Route path="/gullak/create" component={isAuthenticated ? CreateGullakEnhanced : AuthPage} />
+      <Route path="/loyalty" component={isAuthenticated ? Loyalty : AuthPage} />
+      <Route path="/jewelry-exchange" component={isAuthenticated ? JewelryExchange : AuthPage} />
+      <Route path="/corporate-admin" component={isAuthenticated ? CorporateAdmin : AuthPage} />
       
       <Route component={NotFound} />
     </Switch>
