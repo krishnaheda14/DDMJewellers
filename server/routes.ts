@@ -17,6 +17,10 @@ import {
   insertChatConversationSchema,
   insertWholesalerDesignSchema,
   insertWishlistSchema,
+  insertOfflineSaleSchema,
+  insertStockItemSchema,
+  insertStockMovementSchema,
+  insertDayBookEntrySchema,
 } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -3091,6 +3095,297 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     } catch (error) {
       console.error("Error fetching product pricing:", error);
       res.status(500).json({ message: "Failed to fetch product pricing" });
+    }
+  });
+
+  // ============================================================================
+  // OFFLINE SALES MANAGEMENT API ROUTES
+  // ============================================================================
+
+  // Get all offline sales with filtering
+  app.get('/api/admin/offline-sales', isAuthenticated, async (req, res) => {
+    try {
+      const { dateFrom, dateTo, category, paymentMode, limit, offset } = req.query;
+      
+      const filters: any = {};
+      if (dateFrom) filters.dateFrom = new Date(dateFrom as string);
+      if (dateTo) filters.dateTo = new Date(dateTo as string);
+      if (category) filters.category = category as string;
+      if (paymentMode) filters.paymentMode = paymentMode as string;
+      if (limit) filters.limit = parseInt(limit as string);
+      if (offset) filters.offset = parseInt(offset as string);
+
+      const sales = await storage.getOfflineSales(filters);
+      res.json(sales);
+    } catch (error) {
+      console.error('Error fetching offline sales:', error);
+      res.status(500).json({ message: 'Failed to fetch offline sales' });
+    }
+  });
+
+  // Create new offline sale
+  app.post('/api/admin/offline-sales', isAuthenticated, async (req, res) => {
+    try {
+      const saleData = insertOfflineSaleSchema.parse({
+        ...req.body,
+        createdBy: req.user?.id,
+        saleDate: new Date(req.body.saleDate)
+      });
+
+      const sale = await storage.createOfflineSale(saleData);
+      res.status(201).json(sale);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Error creating offline sale:', error);
+      res.status(500).json({ message: 'Failed to create offline sale' });
+    }
+  });
+
+  // Update offline sale
+  app.put('/api/admin/offline-sales/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const sale = await storage.updateOfflineSale(id, updates);
+      res.json(sale);
+    } catch (error) {
+      console.error('Error updating offline sale:', error);
+      res.status(500).json({ message: 'Failed to update offline sale' });
+    }
+  });
+
+  // Delete offline sale
+  app.delete('/api/admin/offline-sales/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteOfflineSale(id);
+      res.json({ success: deleted });
+    } catch (error) {
+      console.error('Error deleting offline sale:', error);
+      res.status(500).json({ message: 'Failed to delete offline sale' });
+    }
+  });
+
+  // ============================================================================
+  // STOCK MANAGEMENT API ROUTES
+  // ============================================================================
+
+  // Get all stock items with filtering
+  app.get('/api/admin/stock-items', isAuthenticated, async (req, res) => {
+    try {
+      const { category, lowStock, search, limit, offset } = req.query;
+      
+      const filters: any = {};
+      if (category) filters.category = category as string;
+      if (lowStock === 'true') filters.lowStock = true;
+      if (search) filters.search = search as string;
+      if (limit) filters.limit = parseInt(limit as string);
+      if (offset) filters.offset = parseInt(offset as string);
+
+      const items = await storage.getStockItems(filters);
+      res.json(items);
+    } catch (error) {
+      console.error('Error fetching stock items:', error);
+      res.status(500).json({ message: 'Failed to fetch stock items' });
+    }
+  });
+
+  // Create new stock item
+  app.post('/api/admin/stock-items', isAuthenticated, async (req, res) => {
+    try {
+      const itemData = insertStockItemSchema.parse(req.body);
+      const item = await storage.createStockItem(itemData);
+      res.status(201).json(item);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Error creating stock item:', error);
+      res.status(500).json({ message: 'Failed to create stock item' });
+    }
+  });
+
+  // Update stock item
+  app.put('/api/admin/stock-items/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const item = await storage.updateStockItem(id, updates);
+      res.json(item);
+    } catch (error) {
+      console.error('Error updating stock item:', error);
+      res.status(500).json({ message: 'Failed to update stock item' });
+    }
+  });
+
+  // Get stock movements for an item
+  app.get('/api/admin/stock-movements/:stockItemId?', isAuthenticated, async (req, res) => {
+    try {
+      const stockItemId = req.params.stockItemId ? parseInt(req.params.stockItemId) : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      
+      const movements = await storage.getStockMovements(stockItemId, limit);
+      res.json(movements);
+    } catch (error) {
+      console.error('Error fetching stock movements:', error);
+      res.status(500).json({ message: 'Failed to fetch stock movements' });
+    }
+  });
+
+  // Create stock movement (adjust stock)
+  app.post('/api/admin/stock-movements', isAuthenticated, async (req, res) => {
+    try {
+      const movementData = insertStockMovementSchema.parse({
+        ...req.body,
+        performedBy: req.user?.id
+      });
+
+      const movement = await storage.createStockMovement(movementData);
+      res.status(201).json(movement);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error('Error creating stock movement:', error);
+      res.status(500).json({ message: 'Failed to create stock movement' });
+    }
+  });
+
+  // ============================================================================
+  // DAY BOOK API ROUTES
+  // ============================================================================
+
+  // Get day book entries
+  app.get('/api/admin/day-book', isAuthenticated, async (req, res) => {
+    try {
+      const { dateFrom, dateTo } = req.query;
+      
+      const dateFromParsed = dateFrom ? new Date(dateFrom as string) : undefined;
+      const dateToParsed = dateTo ? new Date(dateTo as string) : undefined;
+
+      const entries = await storage.getDayBookEntries(dateFromParsed, dateToParsed);
+      res.json(entries);
+    } catch (error) {
+      console.error('Error fetching day book entries:', error);
+      res.status(500).json({ message: 'Failed to fetch day book entries' });
+    }
+  });
+
+  // Calculate and get day book data for a specific date
+  app.get('/api/admin/day-book/:date', isAuthenticated, async (req, res) => {
+    try {
+      const businessDate = new Date(req.params.date);
+      
+      // First try to get existing entry
+      let entry = await storage.getDayBookEntry(businessDate);
+      
+      // If no entry exists, calculate and create one
+      if (!entry) {
+        const calculatedData = await storage.calculateDayBookData(businessDate);
+        entry = await storage.createDayBookEntry({
+          ...calculatedData,
+          createdBy: req.user?.id
+        } as any);
+      }
+
+      res.json(entry);
+    } catch (error) {
+      console.error('Error fetching day book entry:', error);
+      res.status(500).json({ message: 'Failed to fetch day book entry' });
+    }
+  });
+
+  // Update day book entry
+  app.put('/api/admin/day-book/:id', isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const entry = await storage.updateDayBookEntry(id, updates);
+      res.json(entry);
+    } catch (error) {
+      console.error('Error updating day book entry:', error);
+      res.status(500).json({ message: 'Failed to update day book entry' });
+    }
+  });
+
+  // ============================================================================
+  // SALES REPORTS API ROUTES
+  // ============================================================================
+
+  // Get comprehensive sales report
+  app.get('/api/admin/sales-report', isAuthenticated, async (req, res) => {
+    try {
+      const { dateFrom, dateTo, salesType, category, paymentMode } = req.query;
+      
+      if (!dateFrom || !dateTo) {
+        return res.status(400).json({ message: 'Date range is required' });
+      }
+
+      const filters = {
+        dateFrom: new Date(dateFrom as string),
+        dateTo: new Date(dateTo as string),
+        salesType: salesType as 'online' | 'offline' | 'both' | undefined,
+        category: category as string | undefined,
+        paymentMode: paymentMode as string | undefined
+      };
+
+      const report = await storage.getSalesReport(filters);
+      res.json(report);
+    } catch (error) {
+      console.error('Error generating sales report:', error);
+      res.status(500).json({ message: 'Failed to generate sales report' });
+    }
+  });
+
+  // Export sales report as CSV
+  app.get('/api/admin/sales-report/export', isAuthenticated, async (req, res) => {
+    try {
+      const { dateFrom, dateTo, salesType, category, paymentMode, format = 'csv' } = req.query;
+      
+      if (!dateFrom || !dateTo) {
+        return res.status(400).json({ message: 'Date range is required' });
+      }
+
+      const filters = {
+        dateFrom: new Date(dateFrom as string),
+        dateTo: new Date(dateTo as string),
+        salesType: salesType as 'online' | 'offline' | 'both' | undefined,
+        category: category as string | undefined,
+        paymentMode: paymentMode as string | undefined
+      };
+
+      const report = await storage.getSalesReport(filters);
+      
+      if (format === 'csv') {
+        // Generate CSV
+        const csvHeaders = 'Date,Type,Customer,Product,Category,Payment Mode,Amount\n';
+        const csvRows = report.salesData.map(sale => {
+          const date = sale.saleDate || sale.createdAt;
+          const customer = sale.customerName || sale.userId || 'Online Customer';
+          const product = sale.productName || 'Online Order';
+          const category = sale.productCategory || 'online';
+          const paymentMode = sale.paymentMode || 'card';
+          const amount = sale.totalAmount || sale.total;
+          
+          return `${date},${sale.type},${customer},${product},${category},${paymentMode},${amount}`;
+        }).join('\n');
+        
+        const csvContent = csvHeaders + csvRows;
+        
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="sales-report-${dateFrom}-${dateTo}.csv"`);
+        res.send(csvContent);
+      } else {
+        res.json(report);
+      }
+    } catch (error) {
+      console.error('Error exporting sales report:', error);
+      res.status(500).json({ message: 'Failed to export sales report' });
     }
   });
 

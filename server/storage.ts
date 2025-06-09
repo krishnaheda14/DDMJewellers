@@ -42,6 +42,18 @@ import {
   type InsertPasswordResetToken,
   type UserActivityLog,
   type InsertUserActivityLog,
+  offlineSales,
+  stockItems,
+  stockMovements,
+  dayBookEntries,
+  type OfflineSale,
+  type InsertOfflineSale,
+  type StockItem,
+  type InsertStockItem,
+  type StockMovement,
+  type InsertStockMovement,
+  type DayBookEntry,
+  type InsertDayBookEntry,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, like, desc, asc, sql } from "drizzle-orm";
@@ -1285,6 +1297,377 @@ export class DatabaseStorage implements IStorage {
       console.log("Corporate registrations table not available");
       return [];
     }
+  }
+
+  // Offline Sales operations
+  async getOfflineSales(filters?: {
+    dateFrom?: Date;
+    dateTo?: Date;
+    category?: string;
+    paymentMode?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<OfflineSale[]> {
+    let query = db.select().from(offlineSales);
+    const conditions = [];
+
+    if (filters?.dateFrom) {
+      conditions.push(sql`${offlineSales.saleDate} >= ${filters.dateFrom}`);
+    }
+    if (filters?.dateTo) {
+      conditions.push(sql`${offlineSales.saleDate} <= ${filters.dateTo}`);
+    }
+    if (filters?.category) {
+      conditions.push(eq(offlineSales.productCategory, filters.category));
+    }
+    if (filters?.paymentMode) {
+      conditions.push(eq(offlineSales.paymentMode, filters.paymentMode));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    query = query.orderBy(desc(offlineSales.saleDate));
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+    if (filters?.offset) {
+      query = query.offset(filters.offset);
+    }
+
+    return await query;
+  }
+
+  async getOfflineSale(id: number): Promise<OfflineSale | undefined> {
+    const [sale] = await db.select().from(offlineSales).where(eq(offlineSales.id, id));
+    return sale;
+  }
+
+  async createOfflineSale(sale: InsertOfflineSale): Promise<OfflineSale> {
+    const [newSale] = await db.insert(offlineSales).values(sale).returning();
+    
+    // Auto-update stock if this relates to a stock item
+    if (sale.productName && sale.weightGrams) {
+      try {
+        await this.updateStockForSale(sale.productName, parseFloat(sale.weightGrams.toString()), sale.createdBy);
+      } catch (error) {
+        console.log("Stock update failed for offline sale:", error);
+      }
+    }
+    
+    return newSale;
+  }
+
+  async updateOfflineSale(id: number, sale: Partial<InsertOfflineSale>): Promise<OfflineSale> {
+    const [updatedSale] = await db
+      .update(offlineSales)
+      .set({ ...sale, updatedAt: new Date() })
+      .where(eq(offlineSales.id, id))
+      .returning();
+    return updatedSale;
+  }
+
+  async deleteOfflineSale(id: number): Promise<boolean> {
+    const result = await db.delete(offlineSales).where(eq(offlineSales.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Stock Management operations
+  async getStockItems(filters?: {
+    category?: string;
+    lowStock?: boolean;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<StockItem[]> {
+    let query = db.select().from(stockItems);
+    const conditions = [];
+
+    if (filters?.category) {
+      conditions.push(eq(stockItems.category, filters.category));
+    }
+    if (filters?.lowStock) {
+      conditions.push(sql`${stockItems.currentQuantity} <= ${stockItems.reorderLevel}`);
+    }
+    if (filters?.search) {
+      conditions.push(ilike(stockItems.productName, `%${filters.search}%`));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    query = query.orderBy(asc(stockItems.productName));
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+    if (filters?.offset) {
+      query = query.offset(filters.offset);
+    }
+
+    return await query;
+  }
+
+  async getStockItem(id: number): Promise<StockItem | undefined> {
+    const [item] = await db.select().from(stockItems).where(eq(stockItems.id, id));
+    return item;
+  }
+
+  async createStockItem(item: InsertStockItem): Promise<StockItem> {
+    const [newItem] = await db.insert(stockItems).values(item).returning();
+    return newItem;
+  }
+
+  async updateStockItem(id: number, item: Partial<InsertStockItem>): Promise<StockItem> {
+    const [updatedItem] = await db
+      .update(stockItems)
+      .set({ ...item, updatedAt: new Date() })
+      .where(eq(stockItems.id, id))
+      .returning();
+    return updatedItem;
+  }
+
+  async deleteStockItem(id: number): Promise<boolean> {
+    const result = await db.delete(stockItems).where(eq(stockItems.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Stock Movement operations
+  async getStockMovements(stockItemId?: number, limit: number = 50): Promise<StockMovement[]> {
+    let query = db.select().from(stockMovements);
+    
+    if (stockItemId) {
+      query = query.where(eq(stockMovements.stockItemId, stockItemId));
+    }
+    
+    query = query.orderBy(desc(stockMovements.createdAt)).limit(limit);
+    return await query;
+  }
+
+  async createStockMovement(movement: InsertStockMovement): Promise<StockMovement> {
+    const [newMovement] = await db.insert(stockMovements).values(movement).returning();
+    
+    // Update stock item quantity
+    const quantityChange = movement.movementType === 'in' ? movement.quantity : -movement.quantity;
+    await db
+      .update(stockItems)
+      .set({ 
+        currentQuantity: sql`${stockItems.currentQuantity} + ${quantityChange}`,
+        updatedAt: new Date()
+      })
+      .where(eq(stockItems.id, movement.stockItemId));
+    
+    return newMovement;
+  }
+
+  async updateStockQuantity(stockItemId: number, quantityChange: number, reason: string, performedBy: string): Promise<void> {
+    // Create stock movement record
+    await this.createStockMovement({
+      stockItemId,
+      movementType: quantityChange > 0 ? 'in' : 'out',
+      reason: reason as any,
+      quantity: Math.abs(quantityChange),
+      performedBy,
+      notes: `Automatic stock adjustment: ${reason}`
+    });
+  }
+
+  // Helper method for automatic stock updates on sales
+  private async updateStockForSale(productName: string, quantity: number, performedBy: string): Promise<void> {
+    // Find matching stock item
+    const [stockItem] = await db
+      .select()
+      .from(stockItems)
+      .where(ilike(stockItems.productName, `%${productName}%`))
+      .limit(1);
+
+    if (stockItem) {
+      await this.updateStockQuantity(stockItem.id, -quantity, 'sale', performedBy);
+    }
+  }
+
+  // Day Book operations
+  async getDayBookEntries(dateFrom?: Date, dateTo?: Date): Promise<DayBookEntry[]> {
+    let query = db.select().from(dayBookEntries);
+    const conditions = [];
+
+    if (dateFrom) {
+      conditions.push(sql`${dayBookEntries.businessDate} >= ${dateFrom}`);
+    }
+    if (dateTo) {
+      conditions.push(sql`${dayBookEntries.businessDate} <= ${dateTo}`);
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    return await query.orderBy(desc(dayBookEntries.businessDate));
+  }
+
+  async getDayBookEntry(businessDate: Date): Promise<DayBookEntry | undefined> {
+    const [entry] = await db
+      .select()
+      .from(dayBookEntries)
+      .where(sql`DATE(${dayBookEntries.businessDate}) = DATE(${businessDate})`);
+    return entry;
+  }
+
+  async createDayBookEntry(entry: InsertDayBookEntry): Promise<DayBookEntry> {
+    const [newEntry] = await db.insert(dayBookEntries).values(entry).returning();
+    return newEntry;
+  }
+
+  async updateDayBookEntry(id: number, entry: Partial<InsertDayBookEntry>): Promise<DayBookEntry> {
+    const [updatedEntry] = await db
+      .update(dayBookEntries)
+      .set({ ...entry, updatedAt: new Date() })
+      .where(eq(dayBookEntries.id, id))
+      .returning();
+    return updatedEntry;
+  }
+
+  async calculateDayBookData(businessDate: Date): Promise<Partial<DayBookEntry>> {
+    const startOfDay = new Date(businessDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(businessDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // Calculate offline sales
+    const offlineSalesData = await db
+      .select({
+        totalSales: sql<number>`COALESCE(SUM(${offlineSales.totalAmount}), 0)`,
+        totalOrders: sql<number>`COUNT(*)`,
+        cashPayments: sql<number>`COALESCE(SUM(CASE WHEN ${offlineSales.paymentMode} = 'cash' THEN ${offlineSales.totalAmount} ELSE 0 END), 0)`,
+        cardPayments: sql<number>`COALESCE(SUM(CASE WHEN ${offlineSales.paymentMode} = 'card' THEN ${offlineSales.totalAmount} ELSE 0 END), 0)`,
+        upiPayments: sql<number>`COALESCE(SUM(CASE WHEN ${offlineSales.paymentMode} = 'upi' THEN ${offlineSales.totalAmount} ELSE 0 END), 0)`,
+        bankTransferPayments: sql<number>`COALESCE(SUM(CASE WHEN ${offlineSales.paymentMode} = 'bank_transfer' THEN ${offlineSales.totalAmount} ELSE 0 END), 0)`
+      })
+      .from(offlineSales)
+      .where(and(
+        sql`${offlineSales.saleDate} >= ${startOfDay}`,
+        sql`${offlineSales.saleDate} <= ${endOfDay}`
+      ));
+
+    // Calculate online sales
+    const onlineSalesData = await db
+      .select({
+        totalSales: sql<number>`COALESCE(SUM(${orders.totalAmount}), 0)`,
+        totalOrders: sql<number>`COUNT(*)`
+      })
+      .from(orders)
+      .where(and(
+        sql`${orders.createdAt} >= ${startOfDay}`,
+        sql`${orders.createdAt} <= ${endOfDay}`,
+        eq(orders.status, 'completed')
+      ));
+
+    const offlineData = offlineSalesData[0] || {};
+    const onlineData = onlineSalesData[0] || {};
+
+    const totalOnlineSales = parseFloat(onlineData.totalSales?.toString() || '0');
+    const totalOfflineSales = parseFloat(offlineData.totalSales?.toString() || '0');
+    const grossRevenue = totalOnlineSales + totalOfflineSales;
+
+    return {
+      businessDate,
+      totalOnlineSales: totalOnlineSales.toString(),
+      totalOfflineSales: totalOfflineSales.toString(),
+      totalOnlineOrders: onlineData.totalOrders || 0,
+      totalOfflineOrders: offlineData.totalOrders || 0,
+      cashPayments: offlineData.cashPayments?.toString() || '0',
+      cardPayments: offlineData.cardPayments?.toString() || '0',
+      upiPayments: offlineData.upiPayments?.toString() || '0',
+      bankTransferPayments: offlineData.bankTransferPayments?.toString() || '0',
+      grossRevenue: grossRevenue.toString(),
+      netRevenue: grossRevenue.toString(), // Simplified for now
+      returns: '0',
+      discounts: '0',
+      adjustments: '0'
+    };
+  }
+
+  // Reporting operations
+  async getSalesReport(filters: {
+    dateFrom: Date;
+    dateTo: Date;
+    salesType?: 'online' | 'offline' | 'both';
+    category?: string;
+    paymentMode?: string;
+  }): Promise<{
+    totalSales: number;
+    totalOrders: number;
+    paymentBreakdown: Record<string, number>;
+    categoryBreakdown: Record<string, number>;
+    salesData: any[];
+  }> {
+    const result = {
+      totalSales: 0,
+      totalOrders: 0,
+      paymentBreakdown: {},
+      categoryBreakdown: {},
+      salesData: []
+    };
+
+    // Get offline sales data
+    if (filters.salesType !== 'online') {
+      const offlineSales = await this.getOfflineSales({
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
+        category: filters.category,
+        paymentMode: filters.paymentMode
+      });
+
+      result.salesData.push(...offlineSales.map(sale => ({
+        ...sale,
+        type: 'offline'
+      })));
+
+      result.totalSales += offlineSales.reduce((sum, sale) => sum + parseFloat(sale.totalAmount.toString()), 0);
+      result.totalOrders += offlineSales.length;
+
+      // Payment mode breakdown
+      offlineSales.forEach(sale => {
+        const mode = sale.paymentMode;
+        result.paymentBreakdown[mode] = (result.paymentBreakdown[mode] || 0) + parseFloat(sale.totalAmount.toString());
+      });
+
+      // Category breakdown
+      offlineSales.forEach(sale => {
+        const category = sale.productCategory;
+        result.categoryBreakdown[category] = (result.categoryBreakdown[category] || 0) + parseFloat(sale.totalAmount.toString());
+      });
+    }
+
+    // Get online sales data
+    if (filters.salesType !== 'offline') {
+      const onlineOrders = await this.getOrders();
+      const filteredOrders = onlineOrders.filter(order => {
+        const orderDate = new Date(order.createdAt);
+        return orderDate >= filters.dateFrom && 
+               orderDate <= filters.dateTo && 
+               order.status === 'completed';
+      });
+
+      result.salesData.push(...filteredOrders.map(order => ({
+        ...order,
+        type: 'online'
+      })));
+
+      result.totalSales += filteredOrders.reduce((sum, order) => sum + parseFloat(order.totalAmount.toString()), 0);
+      result.totalOrders += filteredOrders.length;
+
+      // For online orders, assume card payment mode and general category
+      filteredOrders.forEach(order => {
+        result.paymentBreakdown['card'] = (result.paymentBreakdown['card'] || 0) + parseFloat(order.totalAmount.toString());
+        result.categoryBreakdown['online'] = (result.categoryBreakdown['online'] || 0) + parseFloat(order.totalAmount.toString());
+      });
+    }
+
+    return result;
   }
 }
 
