@@ -21,6 +21,7 @@ import Loyalty from "@/pages/loyalty";
 import ShingaarGuru from "@/pages/shingaar-guru";
 import JewelryCare from "@/pages/jewelry-care";
 import JewelryExchange from "@/pages/jewelry-exchange";
+import ImitationJewelry from "@/pages/imitation-jewelry";
 import CurrencyConverter from "@/pages/currency-converter";
 import CorporateRegistration from "@/pages/corporate-registration";
 import CorporateBenefits from "@/pages/corporate-benefits";
@@ -58,6 +59,7 @@ function Router() {
       <Route path="/live-market-rates" component={LiveMarketRates} />
       <Route path="/currency-converter" component={CurrencyConverter} />
       <Route path="/jewelry-care" component={JewelryCare} />
+      <Route path="/imitation-jewelry" component={ImitationJewelry} />
       <Route path="/ai-tryon" component={AITryOn} />
       <Route path="/custom-jewelry" component={CustomJewelry} />
       <Route path="/shingaar-guru" component={ShingaarGuru} />
