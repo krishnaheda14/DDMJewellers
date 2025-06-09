@@ -43,27 +43,27 @@ export default function EnhancedAdminDashboard() {
     queryKey: ["/api/admin/stats"],
   });
 
-  const { data: users, isLoading: usersLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/users"],
   });
 
-  const { data: orders, isLoading: ordersLoading } = useQuery({
+  const { data: orders = [], isLoading: ordersLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/orders"],
   });
 
-  const { data: corporateData, isLoading: corporateLoading } = useQuery({
+  const { data: corporateData = [], isLoading: corporateLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/corporate"],
   });
 
-  const { data: gullakData, isLoading: gullakLoading } = useQuery({
+  const { data: gullakData = [], isLoading: gullakLoading } = useQuery<any[]>({
     queryKey: ["/api/admin/gullak"],
   });
 
-  const { data: chatbotData, isLoading: chatbotLoading } = useQuery({
+  const { data: chatbotData = { recentConversations: [], topQueries: [], analytics: { totalSessions: 0, avgResponseTime: 0, satisfactionRate: 0 } }, isLoading: chatbotLoading } = useQuery<any>({
     queryKey: ["/api/admin/chatbot"],
   });
 
-  const { data: exchangeRequests } = useQuery({
+  const { data: exchangeRequests = [] } = useQuery<any[]>({
     queryKey: ["/api/admin/exchange-requests"],
   });
 
@@ -279,7 +279,7 @@ export default function EnhancedAdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <ExchangeIcon className="h-5 w-5 text-green-500" />
+                  <ArrowRightLeft className="h-5 w-5 text-green-500" />
                   <span>Exchange Requests</span>
                 </CardTitle>
               </CardHeader>
@@ -572,7 +572,7 @@ export default function EnhancedAdminDashboard() {
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <ExchangeIcon className="h-5 w-5 text-green-500" />
+                  <ArrowRightLeft className="h-5 w-5 text-green-500" />
                   <span>Pending Exchange Requests</span>
                 </CardTitle>
                 <CardDescription>Review and approve jewelry exchange requests</CardDescription>

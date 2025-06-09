@@ -66,7 +66,7 @@ function Router() {
       <Route path="/" component={isAuthenticated ? Home : Landing} />
       <Route path="/cart" component={isAuthenticated ? Cart : AuthPage} />
       <Route path="/admin" component={isAuthenticated ? Admin : AuthPage} />
-      <Route path="/admin/dashboard" component={isAuthenticated ? AdminDashboard : AuthPage} />
+      <Route path="/admin/dashboard" component={isAuthenticated ? EnhancedAdminDashboard : AuthPage} />
       <Route path="/customer/dashboard" component={isAuthenticated ? CustomerDashboard : AuthPage} />
       <Route path="/wholesaler/dashboard" component={isAuthenticated ? WholesalerDashboard : AuthPage} />
       <Route path="/gullak" component={isAuthenticated ? Gullak : AuthPage} />
