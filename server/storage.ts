@@ -415,13 +415,27 @@ export class DatabaseStorage implements IStorage {
     categoryId?: number;
     search?: string;
     featured?: boolean;
+    productType?: "real" | "imitation" | "both";
     limit?: number;
     offset?: number;
   }): Promise<Product[]> {
     let query = db.select().from(products);
+    const conditions = [];
 
     if (filters?.categoryId) {
-      query = query.where(eq(products.categoryId, filters.categoryId)) as any;
+      conditions.push(eq(products.categoryId, filters.categoryId));
+    }
+
+    if (filters?.productType && filters.productType !== "both") {
+      conditions.push(eq(products.productType, filters.productType));
+    }
+
+    if (filters?.featured) {
+      conditions.push(eq(products.featured, true));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
     }
 
     if (filters?.search) {

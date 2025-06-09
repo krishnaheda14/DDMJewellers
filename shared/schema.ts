@@ -88,17 +88,22 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
 
 // Categories table
 
-// Product categories
+// Product categories with enhanced support for real and imitation jewellery
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
   slug: varchar("slug", { length: 100 }).notNull().unique(),
   description: text("description"),
   imageUrl: varchar("image_url"),
+  parentId: integer("parent_id").references(() => categories.id), // For subcategories
+  productType: varchar("product_type", { enum: ["real", "imitation", "both"] }).default("both"), // Category type
+  sortOrder: integer("sort_order").default(0),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Products
+// Products with enhanced support for both real and imitation jewellery
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 200 }).notNull(),
@@ -108,12 +113,31 @@ export const products = pgTable("products", {
   categoryId: integer("category_id").references(() => categories.id),
   imageUrl: varchar("image_url"),
   images: jsonb("images").$type<string[]>().default([]),
+  
+  // Product type classification
+  productType: varchar("product_type", { enum: ["real", "imitation"] }).notNull().default("real"),
+  
+  // Common fields
   material: varchar("material", { length: 100 }),
   weight: varchar("weight", { length: 50 }),
   dimensions: varchar("dimensions", { length: 100 }),
+  stock: integer("stock").default(0),
+  
+  // Imitation jewellery specific fields
+  plating: varchar("plating", { length: 100 }), // Gold Plated, Silver Plated, Rose Gold, etc.
+  baseMaterial: varchar("base_material", { length: 100 }), // Alloy, Copper, Brass, etc.
+  
+  // Real jewellery specific fields
+  purity: varchar("purity", { length: 50 }), // 24k, 22k, 18k for gold
+  certificationNumber: varchar("certification_number"),
+  
+  // Status fields
   inStock: boolean("in_stock").default(true),
+  isActive: boolean("is_active").default(true),
   featured: boolean("featured").default(false),
   customizable: boolean("customizable").default(false),
+  
+  // Customization options
   customizationOptions: jsonb("customization_options").$type<{
     metals?: string[];
     gemstones?: string[];
@@ -126,6 +150,12 @@ export const products = pgTable("products", {
       [key: string]: number;
     };
   }>(),
+  
+  // Admin fields
+  createdBy: varchar("created_by").references(() => users.id),
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
