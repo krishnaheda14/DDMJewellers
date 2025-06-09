@@ -9,9 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Users, Package, ShoppingCart, Star, Building2, Coins, MessageSquare, 
-  MicIcon, Shield, TrendingUp, RefreshCw, Settings, Eye, CheckCircle, 
+  Mic, Shield, TrendingUp, TrendingDown, RefreshCw, Settings, Eye, CheckCircle, 
   XCircle, UserCheck, UserX, Crown, AlertTriangle, Phone, Mail, Calendar,
-  Clock, Truck, Circle, ArrowRightLeft
+  Clock, Truck, Circle, ArrowRightLeft, Heart, MessageCircle, PiggyBank,
+  DollarSign, Database, Download
 } from "lucide-react";
 
 interface AdminStats {
@@ -1067,7 +1068,7 @@ export default function EnhancedAdminDashboard() {
                     <p className="text-sm font-medium text-muted-foreground">Total Partners</p>
                     <p className="text-2xl font-bold">{corporateData?.length || 0}</p>
                   </div>
-                  <Building className="h-8 w-8 text-blue-600" />
+                  <Building2 className="h-8 w-8 text-blue-600" />
                 </div>
               </CardContent>
             </Card>
