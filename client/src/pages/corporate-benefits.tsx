@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Building2, Users, Gift, Wrench, Star, CheckCircle, Shield, Clock, Tag, Home, ArrowLeft } from "lucide-react";
+import PageNavigation from "@/components/page-navigation";
 import { z } from "zod";
 
 const verifyCodeSchema = z.object({
@@ -123,26 +124,8 @@ export default function CorporateBenefits() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 py-12">
+      <PageNavigation />
       <div className="max-w-4xl mx-auto px-4">
-        {/* Navigation Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Button 
-            variant="outline" 
-            onClick={() => window.location.href = "/"}
-            className="flex items-center gap-2 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
-          </Button>
-          <Button 
-            variant="ghost" 
-            onClick={() => window.location.href = "/"}
-            className="flex items-center gap-2 text-amber-600 hover:text-amber-700"
-          >
-            <Home className="h-4 w-4" />
-            DDM Jewellers
-          </Button>
-        </div>
 
         {/* Header */}
         <div className="text-center mb-12">

@@ -4,13 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Heart, Package, Star, Gem, Clock, Gift, User } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import PageNavigation from "@/components/page-navigation";
+import { useLocation } from "wouter";
 
 export default function CustomerDashboard() {
   const { user, isLoading, isCustomer } = useAuth();
 
+  const [, setLocation] = useLocation();
+  
   // Redirect if not customer
   if (!isLoading && (!user || !isCustomer)) {
-    return <Navigate to="/auth" />;
+    setLocation("/auth");
+    return null;
   }
 
   const { data: customerStats } = useQuery({

@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import PageNavigation from "@/components/page-navigation";
 import { 
   Users, Package, ShoppingCart, Star, Building2, Building, Coins, MessageSquare, 
   Mic, Shield, TrendingUp, TrendingDown, RefreshCw, Settings, Eye, CheckCircle, 

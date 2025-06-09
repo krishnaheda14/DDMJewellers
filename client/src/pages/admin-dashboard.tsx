@@ -4,13 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Users, Package, ShoppingCart, TrendingUp, Settings, UserCheck, FileText, Crown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import PageNavigation from "@/components/page-navigation";
+import { useLocation } from "wouter";
 
 export default function AdminDashboard() {
   const { user, isLoading, isAdmin } = useAuth();
 
+  const [, setLocation] = useLocation();
+  
   // Redirect if not admin
   if (!isLoading && (!user || !isAdmin)) {
-    return <Navigate to="/auth" />;
+    setLocation("/auth");
+    return null;
   }
 
   const { data: adminStats } = useQuery({

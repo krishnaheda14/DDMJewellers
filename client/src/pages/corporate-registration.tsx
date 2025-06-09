@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Building2, Users, Gift, Wrench, Star, CheckCircle, Home, ArrowLeft } from "lucide-react";
 import { insertCorporateRegistrationSchema } from "@shared/schema";
+import PageNavigation from "@/components/page-navigation";
 import { z } from "zod";
 
 const formSchema = insertCorporateRegistrationSchema.extend({
@@ -117,6 +118,7 @@ export default function CorporateRegistration() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 py-12">
+      <PageNavigation />
       <div className="max-w-4xl mx-auto px-4">
         {/* Navigation Header */}
         <div className="flex items-center justify-between mb-8">

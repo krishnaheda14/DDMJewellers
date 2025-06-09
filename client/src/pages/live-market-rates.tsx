@@ -108,6 +108,7 @@ export default function LiveMarketRates() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <PageNavigation />
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
