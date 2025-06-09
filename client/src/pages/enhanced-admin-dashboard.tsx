@@ -1053,59 +1053,473 @@ export default function EnhancedAdminDashboard() {
           )}
         </TabsContent>
 
-        {/* Other tabs continue with corporate, gullak, chatbot, rates, and security management */}
-        <TabsContent value="rates" className="space-y-6">
+        <TabsContent value="corporate" className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Live Rates Management</h2>
-            <div className="flex space-x-2">
-              <Button variant="outline">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Rates
-              </Button>
-              <Button>Update API Settings</Button>
-            </div>
+            <h2 className="text-2xl font-bold">Corporate Partnerships</h2>
+            <Button>New Partnership</Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-yellow-500" />
-                  <span>Gold 24K</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">₹6,800/g</div>
-                <p className="text-sm text-green-600">+₹45 (0.66%)</p>
-                <p className="text-xs text-muted-foreground">Last updated: 2 mins ago</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-gray-400" />
-                  <span>Silver</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">₹82.5/g</div>
-                <p className="text-sm text-red-600">-₹1.2 (1.43%)</p>
-                <p className="text-xs text-muted-foreground">Last updated: 2 mins ago</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>API Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Connected</span>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Partners</p>
+                    <p className="text-2xl font-bold">{corporateData?.length || 0}</p>
+                  </div>
+                  <Building className="h-8 w-8 text-blue-600" />
                 </div>
-                <p className="text-xs text-muted-foreground">Last sync: 2 minutes ago</p>
-                <p className="text-xs text-muted-foreground">Next update: 3 minutes</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Active Partnerships</p>
+                    <p className="text-2xl font-bold">{corporateData?.filter((c: any) => c.status === 'active').length || 0}</p>
+                  </div>
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Pending Approvals</p>
+                    <p className="text-2xl font-bold">{corporateData?.filter((c: any) => c.status === 'pending').length || 0}</p>
+                  </div>
+                  <Clock className="h-8 w-8 text-yellow-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Corporate Partners</CardTitle>
+              <CardDescription>Manage corporate partnerships and benefits</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Industry</TableHead>
+                    <TableHead>Employees</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {corporateData?.slice(0, 5).map((company: any) => (
+                    <TableRow key={company.id}>
+                      <TableCell>{company.companyName}</TableCell>
+                      <TableCell>{company.industry}</TableCell>
+                      <TableCell>{company.employeeCount}</TableCell>
+                      <TableCell>
+                        <Badge variant={company.status === 'active' ? 'default' : 'secondary'}>
+                          {company.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="sm">View</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="gullak" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Gullak Management</h2>
+            <Button>Generate Report</Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Accounts</p>
+                    <p className="text-2xl font-bold">{gullakData?.length || 0}</p>
+                  </div>
+                  <PiggyBank className="h-8 w-8 text-amber-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Savings</p>
+                    <p className="text-2xl font-bold">₹{stats?.totalGullakSavings?.toLocaleString() || 0}</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Active Accounts</p>
+                    <p className="text-2xl font-bold">{gullakData?.filter((g: any) => g.isActive).length || 0}</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Auto-pay Enabled</p>
+                    <p className="text-2xl font-bold">{gullakData?.filter((g: any) => g.autopayEnabled).length || 0}</p>
+                  </div>
+                  <RefreshCw className="h-8 w-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Gullak Accounts</CardTitle>
+              <CardDescription>Monitor customer savings and goals</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Goal</TableHead>
+                    <TableHead>Current Amount</TableHead>
+                    <TableHead>Target Amount</TableHead>
+                    <TableHead>Progress</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gullakData?.slice(0, 5).map((account: any) => (
+                    <TableRow key={account.id}>
+                      <TableCell>{account.userName}</TableCell>
+                      <TableCell>{account.goalDescription}</TableCell>
+                      <TableCell>₹{account.currentAmount?.toLocaleString()}</TableCell>
+                      <TableCell>₹{account.targetAmount?.toLocaleString()}</TableCell>
+                      <TableCell>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full" 
+                            style={{ width: `${Math.min(100, (account.currentAmount / account.targetAmount) * 100)}%` }}
+                          ></div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={account.isActive ? 'default' : 'secondary'}>
+                          {account.isActive ? 'Active' : 'Paused'}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="chatbot" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Sunaarji Chatbot Analytics</h2>
+            <Button>Download Report</Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Sessions</p>
+                    <p className="text-2xl font-bold">{chatbotData?.analytics?.totalSessions || 0}</p>
+                  </div>
+                  <MessageCircle className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Avg Response Time</p>
+                    <p className="text-2xl font-bold">{chatbotData?.analytics?.avgResponseTime || 0}ms</p>
+                  </div>
+                  <Clock className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Satisfaction Rate</p>
+                    <p className="text-2xl font-bold">{chatbotData?.analytics?.satisfactionRate || 0}%</p>
+                  </div>
+                  <Heart className="h-8 w-8 text-red-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Voice Sessions</p>
+                    <p className="text-2xl font-bold">{stats?.voiceChatSessions || 0}</p>
+                  </div>
+                  <Mic className="h-8 w-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Conversations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {chatbotData?.recentConversations?.slice(0, 5).map((conv: any, idx: number) => (
+                    <div key={idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <MessageCircle className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{conv.userQuery?.slice(0, 50)}...</p>
+                        <p className="text-xs text-muted-foreground">{new Date(conv.createdAt).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Queries</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {chatbotData?.topQueries?.slice(0, 5).map((query: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <span className="text-sm">{query.query}</span>
+                      <Badge variant="outline">{query.count}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="rates" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Live Market Rates</h2>
+            <Button>Update Rates</Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Gold 24K (per 10g)</p>
+                    <p className="text-2xl font-bold">₹68,000</p>
+                    <p className="text-xs text-green-600">+2.5% today</p>
+                  </div>
+                  <div className="h-8 w-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <TrendingUp className="h-4 w-4 text-yellow-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Silver (per kg)</p>
+                    <p className="text-2xl font-bold">₹82,500</p>
+                    <p className="text-xs text-red-600">-1.2% today</p>
+                  </div>
+                  <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    <TrendingDown className="h-4 w-4 text-gray-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Last Updated</p>
+                    <p className="text-2xl font-bold">Just now</p>
+                    <p className="text-xs text-blue-600">Auto-refresh: ON</p>
+                  </div>
+                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <RefreshCw className="h-4 w-4 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Rate Management</CardTitle>
+              <CardDescription>Monitor and control precious metal prices</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Auto-refresh Rates</h4>
+                    <p className="text-sm text-muted-foreground">Update rates every 5 minutes</p>
+                  </div>
+                  <Button variant="outline">Enable</Button>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Rate Alerts</h4>
+                    <p className="text-sm text-muted-foreground">Notify on significant price changes</p>
+                  </div>
+                  <Button variant="outline">Configure</Button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Manual Override</h4>
+                    <p className="text-sm text-muted-foreground">Set custom rates temporarily</p>
+                  </div>
+                  <Button variant="outline">Override</Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="security" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Security & Admin Controls</h2>
+            <Button variant="destructive">Emergency Lock</Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Failed Login Attempts</p>
+                    <p className="text-2xl font-bold">12</p>
+                    <p className="text-xs text-red-600">Last 24 hours</p>
+                  </div>
+                  <Shield className="h-8 w-8 text-red-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Active Sessions</p>
+                    <p className="text-2xl font-bold">157</p>
+                    <p className="text-xs text-green-600">Current users</p>
+                  </div>
+                  <Users className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Security Score</p>
+                    <p className="text-2xl font-bold">98%</p>
+                    <p className="text-xs text-green-600">Excellent</p>
+                  </div>
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Admin Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button variant="outline" className="w-full justify-start">
+                  <Settings className="h-4 w-4 mr-2" />
+                  System Configuration
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <Database className="h-4 w-4 mr-2" />
+                  Database Backup
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Data
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Security Audit
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Security Events</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-lg">
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                    <div>
+                      <p className="text-sm font-medium">Multiple failed login attempts</p>
+                      <p className="text-xs text-muted-foreground">2 minutes ago</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <div>
+                      <p className="text-sm font-medium">Security patch applied</p>
+                      <p className="text-xs text-muted-foreground">1 hour ago</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+                    <Shield className="h-4 w-4 text-blue-600" />
+                    <div>
+                      <p className="text-sm font-medium">Admin logged in</p>
+                      <p className="text-xs text-muted-foreground">3 hours ago</p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
