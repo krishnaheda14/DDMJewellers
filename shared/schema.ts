@@ -211,6 +211,26 @@ export const marketRates = pgTable("market_rates", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Corporate registrations storage
+export const corporateRegistrations = pgTable("corporate_registrations", {
+  id: serial("id").primaryKey(),
+  companyName: varchar("company_name", { length: 255 }).notNull(),
+  registrationNumber: varchar("registration_number", { length: 100 }),
+  gstin: varchar("gstin", { length: 15 }),
+  companyAddress: text("company_address"),
+  contactPersonName: varchar("contact_person_name", { length: 100 }).notNull(),
+  contactPersonPhone: varchar("contact_person_phone", { length: 20 }),
+  contactPersonEmail: varchar("contact_person_email", { length: 255 }).notNull(),
+  companyEmail: varchar("company_email", { length: 255 }),
+  approximateEmployees: integer("approximate_employees").default(0),
+  purposeOfTieup: text("purpose_of_tieup"),
+  status: varchar("status", { enum: ["pending", "approved", "rejected"] }).default("pending"),
+  approvedBy: varchar("approved_by"),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -261,6 +281,56 @@ export const insertUserMemorySchema = createInsertSchema(userMemory).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertCorporateRegistrationSchema = createInsertSchema(corporateRegistrations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  status: true,
+  approvedBy: true,
+  approvedAt: true,
+});
+
+// Authentication schemas
+export const customerSignupSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+  phone: z.string().optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+export const wholesalerSignupSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+  phone: z.string().optional(),
+  businessName: z.string().min(1, "Business name is required"),
+  businessAddress: z.string().optional(),
+  businessPhone: z.string().optional(),
+  gstNumber: z.string().optional(),
+  yearsInBusiness: z.number().min(0, "Years in business must be positive"),
+  averageOrderValue: z.string().optional(),
+  references: z.string().optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+export const signinSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email address"),
 });
 
 // Types

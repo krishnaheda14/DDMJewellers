@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import { createServer } from "http";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startAutopayScheduler } from "./gullak-autopay";
@@ -53,7 +54,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  // Register routes but don't start server yet
+  await registerRoutes(app);
+  
+  // Create the HTTP server
+  const server = createServer(app);
   
   // Start Gullak autopay scheduler
   // startAutopayScheduler(); // Temporarily disabled due to schema issues
@@ -84,11 +89,7 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
   });
 })();
