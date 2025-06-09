@@ -87,20 +87,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     apiKey: process.env.ANTHROPIC_API_KEY,
   });
 
-  // Auth middleware
+  // Auth middleware - use enhanced authentication system
   await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
 
   // User signup endpoint
   app.post('/api/auth/signup', async (req, res) => {
