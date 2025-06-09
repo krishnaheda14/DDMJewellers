@@ -1292,12 +1292,21 @@ export const wholesalerSignupSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+  businessPhone: z.string().optional(),
   password: z.string().min(8, "Password must be at least 8 characters")
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
+  confirmPassword: z.string(),
   businessName: z.string().min(2, "Business name is required"),
   businessAddress: z.string().min(10, "Business address is required"),
+  gstNumber: z.string().optional(),
+  yearsInBusiness: z.number().min(1, "Years in business must be at least 1"),
+  averageOrderValue: z.string().optional(),
+  references: z.string().optional(),
   businessRegistrationProof: z.string().optional(), // File path after upload
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 export const signinSchema = z.object({
