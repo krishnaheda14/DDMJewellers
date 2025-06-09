@@ -21,12 +21,21 @@ import {
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
+import { seedImitationJewelry } from "./seed-imitation-jewelry";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create uploads directory if it doesn't exist
   const uploadsDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  // Initialize imitation jewelry categories and products
+  try {
+    await seedImitationJewelry();
+    console.log("Imitation jewelry database initialized successfully");
+  } catch (error) {
+    console.error("Failed to initialize imitation jewelry data:", error);
   }
 
   // Configure multer for file uploads
