@@ -2989,6 +2989,110 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Calculate product pricing with detailed breakdown
+  app.post("/api/calculate-pricing", async (req, res) => {
+    try {
+      const {
+        productType,
+        material,
+        weight,
+        makingCharges = 0,
+        gemstonesCost = 0,
+        diamondsCost = 0,
+        silverBillingMode = "live_rate",
+        fixedRatePerGram = 0,
+        quantity = 1
+      } = req.body;
+
+      if (!productType || !material || !weight) {
+        return res.status(400).json({ 
+          message: "Product type, material, and weight are required" 
+        });
+      }
+
+      const pricingData = {
+        productType,
+        material,
+        weight: parseFloat(weight),
+        makingCharges: parseFloat(makingCharges),
+        gemstonesCost: parseFloat(gemstonesCost),
+        diamondsCost: parseFloat(diamondsCost),
+        silverBillingMode,
+        fixedRatePerGram: parseFloat(fixedRatePerGram)
+      };
+
+      const breakdown = await PricingCalculator.calculateCartItemPrice(
+        pricingData,
+        parseInt(quantity)
+      );
+
+      const formattedBreakdown = PricingCalculator.formatPricingBreakdown(breakdown);
+
+      res.json({
+        breakdown,
+        formatted: formattedBreakdown,
+        billingMode: silverBillingMode,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error calculating pricing:", error);
+      res.status(500).json({ message: "Failed to calculate pricing" });
+    }
+  });
+
+  // Get product with live pricing
+  app.get("/api/products/:id/pricing", async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const product = await storage.getProduct(productId);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      // Calculate live pricing for real jewelry
+      if (product.productType === "real" && product.weight) {
+        const pricingData = {
+          productType: product.productType,
+          material: product.material || "",
+          weight: parseFloat(product.weight.toString()),
+          makingCharges: parseFloat(product.makingCharges?.toString() || "0"),
+          gemstonesCost: parseFloat(product.gemstonesCost?.toString() || "0"),
+          diamondsCost: parseFloat(product.diamondsCost?.toString() || "0"),
+          silverBillingMode: product.silverBillingMode,
+          fixedRatePerGram: parseFloat(product.fixedRatePerGram?.toString() || "0")
+        };
+
+        const breakdown = await PricingCalculator.calculatePrice(pricingData);
+        const formattedBreakdown = PricingCalculator.formatPricingBreakdown(breakdown);
+
+        res.json({
+          product,
+          pricing: {
+            breakdown,
+            formatted: formattedBreakdown,
+            isLivePricing: true,
+            lastUpdated: new Date().toISOString()
+          }
+        });
+      } else {
+        // For imitation jewelry, return fixed price
+        res.json({
+          product,
+          pricing: {
+            breakdown: null,
+            formatted: null,
+            isLivePricing: false,
+            fixedPrice: parseFloat(product.price?.toString() || "0")
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching product pricing:", error);
+      res.status(500).json({ message: "Failed to fetch product pricing" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

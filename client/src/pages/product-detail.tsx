@@ -4,13 +4,14 @@ import { useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import JewelryCustomizer from "@/components/jewelry-customizer";
+import { PricingBreakdownComponent } from "@/components/pricing-breakdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Heart, ShoppingCart, Star, Shield, Truck, RotateCcw, ArrowLeft, Home } from "lucide-react";
+import { Heart, ShoppingCart, Star, Shield, Truck, RotateCcw, ArrowLeft, Home, Calculator } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import type { Product } from "@shared/schema";
 
