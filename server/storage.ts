@@ -136,6 +136,60 @@ export interface IStorage {
   updateUserRole(userId: string, role: string): Promise<User>;
   getWholesalers(approved?: boolean): Promise<User[]>;
 
+  // Offline Sales operations
+  getOfflineSales(filters?: {
+    dateFrom?: Date;
+    dateTo?: Date;
+    category?: string;
+    paymentMode?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<OfflineSale[]>;
+  getOfflineSale(id: number): Promise<OfflineSale | undefined>;
+  createOfflineSale(sale: InsertOfflineSale): Promise<OfflineSale>;
+  updateOfflineSale(id: number, sale: Partial<InsertOfflineSale>): Promise<OfflineSale>;
+  deleteOfflineSale(id: number): Promise<boolean>;
+
+  // Stock Management operations
+  getStockItems(filters?: {
+    category?: string;
+    lowStock?: boolean;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<StockItem[]>;
+  getStockItem(id: number): Promise<StockItem | undefined>;
+  createStockItem(item: InsertStockItem): Promise<StockItem>;
+  updateStockItem(id: number, item: Partial<InsertStockItem>): Promise<StockItem>;
+  deleteStockItem(id: number): Promise<boolean>;
+  
+  // Stock Movement operations
+  getStockMovements(stockItemId?: number, limit?: number): Promise<StockMovement[]>;
+  createStockMovement(movement: InsertStockMovement): Promise<StockMovement>;
+  updateStockQuantity(stockItemId: number, quantityChange: number, reason: string, performedBy: string): Promise<void>;
+
+  // Day Book operations
+  getDayBookEntries(dateFrom?: Date, dateTo?: Date): Promise<DayBookEntry[]>;
+  getDayBookEntry(businessDate: Date): Promise<DayBookEntry | undefined>;
+  createDayBookEntry(entry: InsertDayBookEntry): Promise<DayBookEntry>;
+  updateDayBookEntry(id: number, entry: Partial<InsertDayBookEntry>): Promise<DayBookEntry>;
+  calculateDayBookData(businessDate: Date): Promise<Partial<DayBookEntry>>;
+
+  // Reporting operations
+  getSalesReport(filters: {
+    dateFrom: Date;
+    dateTo: Date;
+    salesType?: 'online' | 'offline' | 'both';
+    category?: string;
+    paymentMode?: string;
+  }): Promise<{
+    totalSales: number;
+    totalOrders: number;
+    paymentBreakdown: Record<string, number>;
+    categoryBreakdown: Record<string, number>;
+    salesData: any[];
+  }>;
+
   // Gullak operations
   getGullakAccounts(userId?: string): Promise<GullakAccount[]>;
   getGullakAccount(id: number): Promise<GullakAccount | undefined>;

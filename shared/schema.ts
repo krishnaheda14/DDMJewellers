@@ -425,6 +425,97 @@ export const careReminders = pgTable("care_reminders", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Offline Sales table
+export const offlineSales = pgTable("offline_sales", {
+  id: serial("id").primaryKey(),
+  customerName: varchar("customer_name"),
+  mobileNumber: varchar("mobile_number"),
+  productName: varchar("product_name").notNull(),
+  productCategory: varchar("product_category", { 
+    enum: ["gold", "silver", "imitation", "others"] 
+  }).notNull(),
+  weightGrams: decimal("weight_grams", { precision: 10, scale: 3 }),
+  ratePerGram: decimal("rate_per_gram", { precision: 10, scale: 2 }),
+  makingCharges: decimal("making_charges", { precision: 10, scale: 2 }).default("0"),
+  gemstonesCost: decimal("gemstones_cost", { precision: 10, scale: 2 }).default("0"),
+  diamondsCost: decimal("diamonds_cost", { precision: 10, scale: 2 }).default("0"),
+  gstPercentage: decimal("gst_percentage", { precision: 5, scale: 2 }).default("3"),
+  gstAmount: decimal("gst_amount", { precision: 10, scale: 2 }).default("0"),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  paymentMode: varchar("payment_mode", { 
+    enum: ["cash", "card", "upi", "bank_transfer"] 
+  }).notNull(),
+  billNumber: varchar("bill_number").notNull(),
+  saleDate: timestamp("sale_date").notNull(),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Stock Management table
+export const stockItems = pgTable("stock_items", {
+  id: serial("id").primaryKey(),
+  productName: varchar("product_name").notNull(),
+  category: varchar("category", { 
+    enum: ["gold", "silver", "imitation", "others"] 
+  }).notNull(),
+  description: text("description"),
+  currentQuantity: integer("current_quantity").notNull().default(0),
+  unitType: varchar("unit_type", { enum: ["pieces", "grams", "sets"] }).notNull().default("pieces"),
+  costPrice: decimal("cost_price", { precision: 10, scale: 2 }),
+  sellingPrice: decimal("selling_price", { precision: 10, scale: 2 }),
+  reorderLevel: integer("reorder_level").default(10),
+  location: varchar("location"),
+  supplier: varchar("supplier"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Stock Movements table (In/Out tracking)
+export const stockMovements = pgTable("stock_movements", {
+  id: serial("id").primaryKey(),
+  stockItemId: integer("stock_item_id").notNull().references(() => stockItems.id),
+  movementType: varchar("movement_type", { 
+    enum: ["in", "out"] 
+  }).notNull(),
+  reason: varchar("reason", { 
+    enum: ["purchase", "manufacturing", "sale", "adjustment", "return", "damage"] 
+  }).notNull(),
+  quantity: integer("quantity").notNull(),
+  unitCost: decimal("unit_cost", { precision: 10, scale: 2 }),
+  totalValue: decimal("total_value", { precision: 10, scale: 2 }),
+  referenceType: varchar("reference_type", { 
+    enum: ["online_order", "offline_sale", "purchase", "adjustment"] 
+  }),
+  referenceId: integer("reference_id"), // ID of the related order/sale
+  notes: text("notes"),
+  performedBy: varchar("performed_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Daily Business Summary (Day Book)
+export const dayBookEntries = pgTable("day_book_entries", {
+  id: serial("id").primaryKey(),
+  businessDate: timestamp("business_date").notNull(),
+  totalOnlineSales: decimal("total_online_sales", { precision: 12, scale: 2 }).default("0"),
+  totalOfflineSales: decimal("total_offline_sales", { precision: 12, scale: 2 }).default("0"),
+  totalOnlineOrders: integer("total_online_orders").default(0),
+  totalOfflineOrders: integer("total_offline_orders").default(0),
+  cashPayments: decimal("cash_payments", { precision: 12, scale: 2 }).default("0"),
+  cardPayments: decimal("card_payments", { precision: 12, scale: 2 }).default("0"),
+  upiPayments: decimal("upi_payments", { precision: 12, scale: 2 }).default("0"),
+  bankTransferPayments: decimal("bank_transfer_payments", { precision: 12, scale: 2 }).default("0"),
+  grossRevenue: decimal("gross_revenue", { precision: 12, scale: 2 }).default("0"),
+  netRevenue: decimal("net_revenue", { precision: 12, scale: 2 }).default("0"),
+  returns: decimal("returns", { precision: 12, scale: 2 }).default("0"),
+  discounts: decimal("discounts", { precision: 12, scale: 2 }).default("0"),
+  adjustments: decimal("adjustments", { precision: 12, scale: 2 }).default("0"),
+  notes: text("notes"),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, {
@@ -596,10 +687,46 @@ export const exchangeNotificationsRelations = relations(exchangeNotifications, (
   }),
 }));
 
+// TypeScript types for new tables
+export type OfflineSale = typeof offlineSales.$inferSelect;
+export type InsertOfflineSale = typeof offlineSales.$inferInsert;
+
+export type StockItem = typeof stockItems.$inferSelect;
+export type InsertStockItem = typeof stockItems.$inferInsert;
+
+export type StockMovement = typeof stockMovements.$inferSelect;
+export type InsertStockMovement = typeof stockMovements.$inferInsert;
+
+export type DayBookEntry = typeof dayBookEntries.$inferSelect;
+export type InsertDayBookEntry = typeof dayBookEntries.$inferInsert;
+
 // Insert schemas
 export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertOfflineSaleSchema = createInsertSchema(offlineSales).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertStockItemSchema = createInsertSchema(stockItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertStockMovementSchema = createInsertSchema(stockMovements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertDayBookEntrySchema = createInsertSchema(dayBookEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertProductSchema = createInsertSchema(products).omit({
