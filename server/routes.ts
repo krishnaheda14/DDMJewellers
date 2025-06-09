@@ -256,7 +256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/categories', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -274,7 +274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/categories/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -292,7 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/categories/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -339,7 +339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/products', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -357,7 +357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/products/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -375,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/products/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user?.role === "admin") {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cart routes
   app.get('/api/cart', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const cartItems = await storage.getCartItems(userId);
       res.json(cartItems);
     } catch (error) {
@@ -403,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/cart', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const cartItemData = insertCartItemSchema.parse({
         ...req.body,
         userId,
@@ -447,7 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/cart', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       await storage.clearCart(userId);
       res.json({ message: "Cart cleared" });
     } catch (error) {
@@ -458,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Order routes
   app.get('/api/orders', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       const orders = await storage.getOrders(user?.role === "admin" ? undefined : userId);
@@ -475,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Order not found" });
       }
       
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       if (!user?.role === "admin" && order.userId !== userId) {
@@ -490,7 +490,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/orders', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { shippingAddress, orderItems } = req.body;
       
       if (!orderItems || !Array.isArray(orderItems) || orderItems.length === 0) {
@@ -540,7 +540,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/orders/:id/status', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user?.role === "admin") {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -564,7 +564,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { description, contactInfo } = req.body;
       
       const designRequest = {
@@ -598,7 +598,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No photo uploaded" });
       }
 
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { productId } = req.body;
       
       if (!productId) {
@@ -636,7 +636,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Chatbot memory routes
   app.get('/api/chatbot/memory', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const memory = await storage.getUserMemory(userId);
       res.json(memory || null);
     } catch (error) {
@@ -647,7 +647,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/chatbot/memory', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const memoryData = req.body;
       const memory = await storage.upsertUserMemory(userId, memoryData);
       res.json(memory);
@@ -659,7 +659,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/chatbot/conversation', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { sessionId, messages } = req.body;
       const conversation = await storage.saveChatConversation(userId, sessionId, messages);
       res.json(conversation);
@@ -672,7 +672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI-powered chat endpoint
   app.post('/api/chatbot/chat', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { message, userProfile } = req.body;
       
       // Get user memory
@@ -894,7 +894,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Occasion is required' });
       }
 
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const userMemory = await storage.getUserMemory(userId);
       
       // Build context from user profile
@@ -977,14 +977,14 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.post('/api/wholesaler-designs', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'wholesaler' && user?.role !== 'admin') {
         return res.status(403).json({ message: "Wholesaler or admin access required" });
       }
 
       const designData = insertWholesalerDesignSchema.parse({
         ...req.body,
-        wholesalerId: req.user.claims.sub,
+        wholesalerId: req.user.id,
       });
       const design = await storage.createWholesalerDesign(designData);
       res.status(201).json(design);
@@ -998,7 +998,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.put('/api/wholesaler-designs/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       const design = await storage.getWholesalerDesign(parseInt(req.params.id));
       
       if (!design) {
@@ -1006,7 +1006,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
       }
 
       // Only the design owner or admin can update
-      if (design.wholesalerId !== req.user.claims.sub && user?.role !== 'admin') {
+      if (design.wholesalerId !== req.user.id && user?.role !== 'admin') {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1023,12 +1023,12 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.post('/api/wholesaler-designs/:id/approve', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      const design = await storage.approveWholesalerDesign(parseInt(req.params.id), req.user.claims.sub);
+      const design = await storage.approveWholesalerDesign(parseInt(req.params.id), req.user.id);
       res.json(design);
     } catch (error) {
       res.status(500).json({ message: "Failed to approve design" });
@@ -1037,12 +1037,12 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.post('/api/wholesaler-designs/:id/reject', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      const design = await storage.rejectWholesalerDesign(parseInt(req.params.id), req.user.claims.sub);
+      const design = await storage.rejectWholesalerDesign(parseInt(req.params.id), req.user.id);
       res.json(design);
     } catch (error) {
       res.status(500).json({ message: "Failed to reject design" });
@@ -1051,7 +1051,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.delete('/api/wholesaler-designs/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       const design = await storage.getWholesalerDesign(parseInt(req.params.id));
       
       if (!design) {
@@ -1059,7 +1059,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
       }
 
       // Only the design owner or admin can delete
-      if (design.wholesalerId !== req.user.claims.sub && user?.role !== 'admin') {
+      if (design.wholesalerId !== req.user.id && user?.role !== 'admin') {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1076,7 +1076,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Wishlist Routes
   app.get('/api/wishlist', isAuthenticated, async (req: any, res) => {
     try {
-      const wishlist = await storage.getWishlist(req.user.claims.sub);
+      const wishlist = await storage.getWishlist(req.user.id);
       res.json(wishlist);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch wishlist" });
@@ -1087,7 +1087,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     try {
       const wishlistData = insertWishlistSchema.parse({
         ...req.body,
-        userId: req.user.claims.sub,
+        userId: req.user.id,
       });
       const wishlistItem = await storage.addToWishlist(wishlistData);
       res.status(201).json(wishlistItem);
@@ -1114,7 +1114,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // User Role Management Routes
   app.put('/api/users/:id/role', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -1133,7 +1133,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.get('/api/wholesalers', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -1151,7 +1151,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Shingaar Guru Routes
   app.post("/api/shingaar-guru/recommendations", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const {
         occasion,
         budget,
@@ -1362,7 +1362,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Get user's Gullak accounts
   app.get("/api/gullak/accounts", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const accounts = await storage.getGullakAccounts(userId);
       res.json(accounts);
     } catch (error) {
@@ -1374,7 +1374,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Create Gullak account
   app.post("/api/gullak/accounts", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const accountData = {
         ...req.body,
         userId,
@@ -1393,7 +1393,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   app.patch("/api/gullak/accounts/:id", isAuthenticated, async (req: any, res) => {
     try {
       const accountId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       const account = await storage.getGullakAccount(accountId);
       if (!account || account.userId !== userId) {
@@ -1412,7 +1412,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   app.get("/api/gullak/transactions/:accountId", isAuthenticated, async (req: any, res) => {
     try {
       const accountId = parseInt(req.params.accountId);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       
       const account = await storage.getGullakAccount(accountId);
       if (!account || account.userId !== userId) {
@@ -1430,7 +1430,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Create Gullak transaction
   app.post("/api/gullak/transactions", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { gullakAccountId, amount, type, description } = req.body;
       
       const account = await storage.getGullakAccount(gullakAccountId);
@@ -1470,7 +1470,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Get Gullak orders
   app.get("/api/gullak/orders", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const orders = await storage.getGullakOrders(userId);
       res.json(orders);
     } catch (error) {
@@ -1482,7 +1482,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Create Gullak order
   app.post("/api/gullak/orders", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { gullakAccountId, goldWeight, goldPurity, coinType, deliveryAddress } = req.body;
       
       const account = await storage.getGullakAccount(gullakAccountId);
@@ -1522,7 +1522,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Admin Gullak management
   app.get("/api/admin/gullak/orders", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user || user.role !== "admin") {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -1537,7 +1537,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.patch("/api/admin/gullak/orders/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user || user.role !== "admin") {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -1553,7 +1553,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.post("/api/gullak/gold-rates", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user || user.role !== "admin") {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -1569,7 +1569,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Orders - Admin exclusive execution
   app.post('/api/orders', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Only admin can execute orders" });
       }
@@ -1590,7 +1590,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.put('/api/orders/:id/status', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Only admin can update order status" });
       }
@@ -1625,7 +1625,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Get user's badge collection
   app.get('/api/loyalty/user-badges', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const userBadges = await storage.getUserBadges(userId);
       res.json(userBadges);
     } catch (error) {
@@ -1637,7 +1637,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Get user's loyalty profile
   app.get('/api/loyalty/profile', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       let profile = await storage.getLoyaltyProfile(userId);
       
       // Create profile if it doesn't exist
@@ -1665,7 +1665,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Get loyalty transactions
   app.get('/api/loyalty/transactions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const limit = req.query.limit ? parseInt(req.query.limit) : 50;
       const transactions = await storage.getLoyaltyTransactions(userId, limit);
       res.json(transactions);
@@ -1678,7 +1678,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Award points (admin only)
   app.post('/api/loyalty/award-points', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Only admin can award points" });
       }
@@ -1695,7 +1695,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Award badge (admin only)
   app.post('/api/loyalty/award-badge', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Only admin can award badges" });
       }
@@ -1712,7 +1712,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Mark badge as viewed
   app.post('/api/loyalty/mark-badge-viewed', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { badgeId } = req.body;
       const success = await storage.markBadgeAsViewed(userId, badgeId);
       res.json({ success });
@@ -1741,7 +1741,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Get user challenges
   app.get('/api/loyalty/user-challenges', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const userChallenges = await storage.getUserChallenges(userId);
       res.json(userChallenges);
     } catch (error) {
@@ -1770,7 +1770,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Redeem reward
   app.post('/api/loyalty/redeem-reward', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { rewardId } = req.body;
       const redemption = await storage.redeemReward(userId, rewardId);
       res.json(redemption);
@@ -1787,7 +1787,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Get user redemptions
   app.get('/api/loyalty/user-redemptions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const redemptions = await storage.getUserRedemptions(userId);
       res.json(redemptions);
     } catch (error) {
@@ -1799,7 +1799,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Admin: Create loyalty badge
   app.post('/api/loyalty/badges', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Only admin can create badges" });
       }
@@ -1815,7 +1815,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Admin: Update loyalty badge
   app.put('/api/loyalty/badges/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Only admin can update badges" });
       }
@@ -1868,7 +1868,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.post("/api/jewelry-care/progress", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { tutorialId, currentStep, isCompleted } = req.body;
       
       const progress = await storage.updateTutorialProgress(userId, tutorialId, {
@@ -1896,7 +1896,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.get("/api/jewelry-care/reminders", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const reminders = await storage.getCareReminders(userId);
       res.json(reminders);
     } catch (error) {
@@ -1907,7 +1907,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.post("/api/jewelry-care/reminders", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const reminderData = { ...req.body, userId };
       
       const reminder = await storage.createCareReminder(reminderData);
@@ -1921,7 +1921,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Admin tutorial management routes
   app.post("/api/admin/jewelry-care/tutorials", isAuthenticated, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -1936,7 +1936,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.put("/api/admin/jewelry-care/tutorials/:id", isAuthenticated, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -1952,7 +1952,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.delete("/api/admin/jewelry-care/tutorials/:id", isAuthenticated, async (req, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -1969,7 +1969,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   // Jewelry Exchange routes
   app.get("/api/exchange/requests", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -2002,7 +2002,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.get("/api/exchange/requests/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -2028,7 +2028,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.post("/api/exchange/requests", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -2062,7 +2062,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.patch("/api/exchange/requests/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -2093,7 +2093,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.post("/api/exchange/requests/:id/approve", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2129,7 +2129,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.post("/api/exchange/requests/:id/reject", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2164,7 +2164,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
 
   app.delete("/api/exchange/requests/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const user = await storage.getUser(req.user.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }

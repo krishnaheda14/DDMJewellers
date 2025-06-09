@@ -25,6 +25,18 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// User Activity Log table
+export const userActivityLog = pgTable("user_activity_log", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  action: varchar("action", { length: 100 }).notNull(), // "login", "logout", "purchase", "exchange_request", etc.
+  details: text("details"), // Additional details about the action
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  metadata: jsonb("metadata"), // Additional structured data
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Enhanced user storage table with authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
@@ -74,16 +86,7 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// User activity log for admin monitoring
-export const userActivityLog = pgTable("user_activity_log", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
-  action: varchar("action").notNull(), // 'signup', 'login', 'logout', 'password_reset', etc.
-  details: jsonb("details"),
-  ipAddress: varchar("ip_address"),
-  userAgent: varchar("user_agent"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// Categories table
 
 // Product categories
 export const categories = pgTable("categories", {
@@ -639,6 +642,11 @@ export const insertCareReminderSchema = createInsertSchema(careReminders).omit({
   reminderSent: true,
 });
 
+export const insertUserActivityLogSchema = createInsertSchema(userActivityLog).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertJewelryExchangeRequestSchema = createInsertSchema(jewelryExchangeRequests).omit({
   id: true,
   createdAt: true,
@@ -1093,10 +1101,6 @@ export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTo
   createdAt: true,
 });
 
-export const insertUserActivityLogSchema = createInsertSchema(userActivityLog).omit({
-  id: true,
-  createdAt: true,
-});
 
 // Enhanced user registration schemas
 export const customerSignupSchema = z.object({
