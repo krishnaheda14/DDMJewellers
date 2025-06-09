@@ -196,6 +196,7 @@ export default function EnhancedAdminDashboard() {
 
   return (
     <div className="container mx-auto p-6">
+      <PageNavigation />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">DDM Jewellers Admin Dashboard</h1>
         <div className="flex items-center space-x-2">
