@@ -12,7 +12,7 @@ import {
   Mic, Shield, TrendingUp, TrendingDown, RefreshCw, Settings, Eye, CheckCircle, 
   XCircle, UserCheck, UserX, Crown, AlertTriangle, Phone, Mail, Calendar,
   Clock, Truck, Circle, ArrowRightLeft, Heart, MessageCircle, PiggyBank,
-  DollarSign, Database, Download
+  DollarSign, Database, Download, BarChart3, BookOpen
 } from "lucide-react";
 
 interface AdminStats {
@@ -368,6 +368,59 @@ export default function EnhancedAdminDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Business Management Cards */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="h-5 w-5 text-purple-500" />
+                <span>Business Management</span>
+              </CardTitle>
+              <CardDescription>Complete offline sales tracking and inventory management</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="border-2 border-dashed border-blue-200 hover:border-blue-400 transition-colors cursor-pointer" onClick={() => window.location.href = '/admin/offline-sales'}>
+                  <CardContent className="p-4 text-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <ShoppingCart className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <h3 className="font-semibold text-blue-700 mb-2">Offline Sales</h3>
+                    <p className="text-sm text-muted-foreground mb-3">Track in-store sales with weight-based pricing and customer details</p>
+                    <Button variant="outline" size="sm" className="w-full">
+                      Manage Sales
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2 border-dashed border-green-200 hover:border-green-400 transition-colors cursor-pointer" onClick={() => window.location.href = '/admin/stock-management'}>
+                  <CardContent className="p-4 text-center">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Package className="h-6 w-6 text-green-600" />
+                    </div>
+                    <h3 className="font-semibold text-green-700 mb-2">Stock Management</h3>
+                    <p className="text-sm text-muted-foreground mb-3">Monitor inventory levels, track movements, and manage stock alerts</p>
+                    <Button variant="outline" size="sm" className="w-full">
+                      View Inventory
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-2 border-dashed border-orange-200 hover:border-orange-400 transition-colors cursor-pointer" onClick={() => window.location.href = '/admin/day-book'}>
+                  <CardContent className="p-4 text-center">
+                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <BookOpen className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <h3 className="font-semibold text-orange-700 mb-2">Day Book</h3>
+                    <p className="text-sm text-muted-foreground mb-3">Daily business reports combining online and offline operations</p>
+                    <Button variant="outline" size="sm" className="w-full">
+                      View Reports
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Recent Activity */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

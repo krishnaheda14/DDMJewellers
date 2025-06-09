@@ -33,6 +33,9 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import EnhancedAdminDashboard from "@/pages/enhanced-admin-dashboard";
 import CustomerDashboard from "@/pages/customer-dashboard";
 import WholesalerDashboard from "@/pages/wholesaler-dashboard";
+import OfflineSalesManagement from "@/pages/offline-sales-management";
+import StockManagement from "@/pages/stock-management";
+import DayBook from "@/pages/day-book";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -76,6 +79,9 @@ function Router() {
       <Route path="/loyalty" component={isAuthenticated ? Loyalty : AuthPage} />
       <Route path="/jewelry-exchange" component={isAuthenticated ? JewelryExchange : AuthPage} />
       <Route path="/corporate-admin" component={isAuthenticated ? CorporateAdmin : AuthPage} />
+      <Route path="/admin/offline-sales" component={isAuthenticated ? OfflineSalesManagement : AuthPage} />
+      <Route path="/admin/stock-management" component={isAuthenticated ? StockManagement : AuthPage} />
+      <Route path="/admin/day-book" component={isAuthenticated ? DayBook : AuthPage} />
       
       <Route component={NotFound} />
     </Switch>
