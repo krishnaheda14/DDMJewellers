@@ -143,7 +143,7 @@ export default function AuthPage() {
   // Sign In Mutation
   const signinMutation = useMutation({
     mutationFn: async (data: Signin) => {
-      const response = await apiRequest("POST", "/api/login", data);
+      const response = await apiRequest("POST", "/api/auth/signin", data);
       if (!response.ok) {
         const error = await response.text();
         throw new Error(error || "Sign in failed");

@@ -297,7 +297,7 @@ export default function Header() {
                       size="sm"
                       onClick={async () => {
                         try {
-                          await apiRequest("POST", "/api/logout");
+                          await apiRequest("POST", "/api/auth/signout");
                           queryClient.invalidateQueries({ queryKey: ["/api/user"] });
                           window.location.href = "/";
                         } catch (error) {
