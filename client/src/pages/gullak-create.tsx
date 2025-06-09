@@ -171,7 +171,7 @@ export default function CreateGullak() {
       <PageTransition>
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold mb-4">Please log in to create Gullak</h1>
-          <Link href="/api/login">
+          <Link href="/auth">
             <Button>Log In</Button>
           </Link>
         </div>

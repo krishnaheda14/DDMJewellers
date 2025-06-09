@@ -78,7 +78,7 @@ export default function AITryOn() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/auth";
         }, 1000);
         return;
       }

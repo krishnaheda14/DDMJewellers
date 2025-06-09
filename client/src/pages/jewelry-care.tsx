@@ -87,7 +87,7 @@ export default function JewelryCare() {
           description: "Please log in to track your progress.",
           variant: "destructive",
         });
-        setTimeout(() => window.location.href = "/api/login", 1500);
+        setTimeout(() => window.location.href = "/auth", 1500);
         return;
       }
       toast({

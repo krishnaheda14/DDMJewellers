@@ -134,7 +134,7 @@ export default function ShingaarGuru() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/auth";
         }, 1500);
         return;
       }
@@ -178,7 +178,7 @@ export default function ShingaarGuru() {
             <p className="text-muted-foreground mb-6">
               Get personalized jewelry recommendations for every occasion. Please log in to access this feature.
             </p>
-            <Button onClick={() => window.location.href = "/api/login"} className="bg-gold hover:bg-gold/90">
+            <Button onClick={() => window.location.href = "/auth"} className="bg-gold hover:bg-gold/90">
               Sign In to Continue
             </Button>
           </div>

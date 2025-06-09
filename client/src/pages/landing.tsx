@@ -16,7 +16,7 @@ export default function Landing() {
             </div>
             <div className="flex gap-2">
               <Button 
-                onClick={() => window.location.href = "/api/login"}
+                onClick={() => window.location.href = "/auth"}
                 variant="outline"
                 className="border-gold text-gold hover:bg-gold hover:text-white"
               >
@@ -214,7 +214,7 @@ export default function Landing() {
           <Button 
             size="lg"
             className="bg-gold hover:bg-gold/90 text-white px-10 py-4 rounded-full font-semibold text-lg transition-all transform hover:scale-105"
-            onClick={() => window.location.href = "/api/login"}
+            onClick={() => window.location.href = "/auth"}
           >
             Start Shopping Now
           </Button>

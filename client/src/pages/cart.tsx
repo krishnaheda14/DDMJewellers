@@ -60,7 +60,7 @@ export default function Cart() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/auth";
       }, 1000);
     }
   }, [isAuthenticated, isLoading, toast]);
@@ -80,7 +80,7 @@ export default function Cart() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/auth";
         }, 1000);
         return;
       }
@@ -111,7 +111,7 @@ export default function Cart() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/auth";
         }, 1000);
         return;
       }
@@ -178,7 +178,7 @@ export default function Cart() {
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/auth";
         }, 1000);
         return;
       }

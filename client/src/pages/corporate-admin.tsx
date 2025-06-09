@@ -111,7 +111,7 @@ export default function CorporateAdmin() {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
-              <Button onClick={() => window.location.href = "/api/login"}>
+              <Button onClick={() => window.location.href = "/auth"}>
                 Login to Continue
               </Button>
             </CardContent>

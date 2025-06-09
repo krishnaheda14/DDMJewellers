@@ -107,7 +107,7 @@ export default function Gullak() {
       <PageTransition>
         <div className="container-narrow p-responsive text-center">
           <h1 className="heading-md m-responsive">Please log in to access Gullak</h1>
-          <Link href="/api/login">
+          <Link href="/auth">
             <Button className="btn-responsive touch-friendly">Log In</Button>
           </Link>
         </div>

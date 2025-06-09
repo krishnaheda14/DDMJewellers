@@ -40,7 +40,7 @@ export default function ProductCard({ product, variant = "grid" }: ProductCardPr
           variant: "destructive",
         });
         setTimeout(() => {
-          window.location.href = "/api/login";
+          window.location.href = "/auth";
         }, 1000);
         return;
       }

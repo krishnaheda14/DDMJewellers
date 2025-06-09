@@ -76,7 +76,7 @@ export default function Signup() {
           : "Welcome to DDM Jewellers! You can now start exploring our collections.",
       });
       // Redirect to login
-      window.location.href = "/api/login";
+      window.location.href = "/auth";
     },
     onError: (error: any) => {
       toast({
@@ -296,7 +296,7 @@ export default function Signup() {
               <Button 
                 variant="link" 
                 className="p-0 h-auto text-gold hover:text-gold/80"
-                onClick={() => window.location.href = "/api/login"}
+                onClick={() => window.location.href = "/auth"}
               >
                 Sign in here
               </Button>
