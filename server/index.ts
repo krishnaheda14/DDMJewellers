@@ -70,7 +70,12 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
-    await setupVite(app, server);
+    try {
+      await setupVite(app, server);
+    } catch (error) {
+      console.warn("Vite setup failed, serving static files instead:", error);
+      serveStatic(app);
+    }
   } else {
     serveStatic(app);
   }
