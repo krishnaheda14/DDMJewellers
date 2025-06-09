@@ -32,12 +32,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Initialize imitation jewelry categories and products
-  try {
-    await seedImitationJewelry();
-    console.log("Imitation jewelry database initialized successfully");
-  } catch (error) {
-    console.error("Failed to initialize imitation jewelry data:", error);
-  }
+  // Temporarily disabled during schema migration
+  // try {
+  //   await seedImitationJewelry();
+  //   console.log("Imitation jewelry database initialized successfully");
+  // } catch (error) {
+  //   console.error("Failed to initialize imitation jewelry data:", error);
+  // }
 
   // Configure multer for file uploads
   const storage_multer = multer.diskStorage({
