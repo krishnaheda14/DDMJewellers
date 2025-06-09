@@ -29,6 +29,7 @@ import Shop from "@/pages/shop";
 import AuthPage from "@/pages/auth-page";
 import LiveMarketRates from "@/pages/live-market-rates";
 import AdminDashboard from "@/pages/admin-dashboard";
+import EnhancedAdminDashboard from "@/pages/enhanced-admin-dashboard";
 import CustomerDashboard from "@/pages/customer-dashboard";
 import WholesalerDashboard from "@/pages/wholesaler-dashboard";
 
