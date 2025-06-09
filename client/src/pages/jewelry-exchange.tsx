@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Separator } from "@/components/ui/separator";
 import { Calendar, Upload, CheckCircle, XCircle, Clock, Eye, FileText, Home, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
+import PageNavigation from "@/components/page-navigation";
 import { Link } from "wouter";
 
 interface ExchangeRequest {
@@ -128,24 +129,8 @@ export default function JewelryExchange() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-8">
+      <PageNavigation />
       <div className="container mx-auto px-4 max-w-6xl">
-        {/* Navigation Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <Home className="w-4 h-4" />
-                Home
-              </Button>
-            </Link>
-            <Link href="/products">
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Browse Products
-              </Button>
-            </Link>
-          </div>
-        </div>
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Jewelry Exchange Program</h1>

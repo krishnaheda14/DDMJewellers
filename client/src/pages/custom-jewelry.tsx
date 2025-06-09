@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileImage, CheckCircle, Sparkles, Home, ArrowLeft } from "lucide-react";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import PageNavigation from "@/components/page-navigation";
 
 interface UploadResponse {
   message: string;
