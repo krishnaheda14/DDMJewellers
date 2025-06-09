@@ -267,6 +267,38 @@ export default function ProductDetail() {
 
               <Separator />
 
+              {/* Live Pricing Breakdown */}
+              {product.productType === "real" && product.weight && product.material && (
+                <div className="space-y-4">
+                  <PricingBreakdownComponent
+                    productType={product.productType}
+                    material={product.material}
+                    weight={parseFloat(product.weight.toString())}
+                    makingCharges={parseFloat(product.makingCharges?.toString() || "0")}
+                    gemstonesCost={parseFloat(product.gemstonesCost?.toString() || "0")}
+                    diamondsCost={parseFloat(product.diamondsCost?.toString() || "0")}
+                    silverBillingMode={product.silverBillingMode || "live_rate"}
+                    fixedRatePerGram={parseFloat(product.fixedRatePerGram?.toString() || "0")}
+                    quantity={quantity}
+                    showRefresh={true}
+                  />
+                </div>
+              )}
+
+              {product.productType === "imitation" && (
+                <div className="space-y-4">
+                  <PricingBreakdownComponent
+                    productType={product.productType}
+                    material=""
+                    weight={0}
+                    quantity={quantity}
+                    showRefresh={false}
+                  />
+                </div>
+              )}
+
+              <Separator />
+
               {/* Add to Cart */}
               <div className="space-y-4">
                 <div className="flex items-center gap-4">

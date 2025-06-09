@@ -3059,7 +3059,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
           makingCharges: parseFloat(product.makingCharges?.toString() || "0"),
           gemstonesCost: parseFloat(product.gemstonesCost?.toString() || "0"),
           diamondsCost: parseFloat(product.diamondsCost?.toString() || "0"),
-          silverBillingMode: product.silverBillingMode,
+          silverBillingMode: product.silverBillingMode || "live_rate",
           fixedRatePerGram: parseFloat(product.fixedRatePerGram?.toString() || "0")
         };
 
