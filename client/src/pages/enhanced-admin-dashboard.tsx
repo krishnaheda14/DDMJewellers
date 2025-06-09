@@ -67,6 +67,14 @@ export default function EnhancedAdminDashboard() {
     queryKey: ["/api/admin/exchange-requests"],
   });
 
+  const { data: products = [], isLoading: productsLoading } = useQuery<any[]>({
+    queryKey: ["/api/admin/products"],
+  });
+
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery<any[]>({
+    queryKey: ["/api/admin/categories"],
+  });
+
   const updateUserStatusMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
       await apiRequest("PUT", `/api/admin/users/${userId}/status`, { isActive });
@@ -128,6 +136,58 @@ export default function EnhancedAdminDashboard() {
     },
   });
 
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ productId, updates }: { productId: number; updates: any }) => {
+      await apiRequest("PUT", `/api/admin/products/${productId}`, updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      toast({ title: "Product updated successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to update product", variant: "destructive" });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      await apiRequest("DELETE", `/api/admin/products/${productId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/products"] });
+      toast({ title: "Product deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete product", variant: "destructive" });
+    },
+  });
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: async ({ categoryId, updates }: { categoryId: number; updates: any }) => {
+      await apiRequest("PUT", `/api/admin/categories/${categoryId}`, updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
+      toast({ title: "Category updated successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to update category", variant: "destructive" });
+    },
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (categoryId: number) => {
+      await apiRequest("DELETE", `/api/admin/categories/${categoryId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
+      toast({ title: "Category deleted successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete category", variant: "destructive" });
+    },
+  });
+
   if (isLoading) {
     return <div className="flex items-center justify-center h-64">Loading comprehensive dashboard...</div>;
   }
@@ -145,10 +205,12 @@ export default function EnhancedAdminDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-10">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="products">Products</TabsTrigger>
+          <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="corporate">Corporate</TabsTrigger>
           <TabsTrigger value="gullak">Gullak</TabsTrigger>
           <TabsTrigger value="chatbot">Chatbot</TabsTrigger>
@@ -708,6 +770,278 @@ export default function EnhancedAdminDashboard() {
                               <option value="completed">Completed</option>
                               <option value="cancelled">Cancelled</option>
                             </select>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="products" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Product Management</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline">Export Products</Button>
+              <Button>Add New Product</Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Products</p>
+                    <p className="text-2xl font-bold">{products?.length || 0}</p>
+                  </div>
+                  <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Package className="h-4 w-4 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Active Products</p>
+                    <p className="text-2xl font-bold">{products?.filter((p: any) => p.isActive !== false).length || 0}</p>
+                  </div>
+                  <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Featured Products</p>
+                    <p className="text-2xl font-bold">{products?.filter((p: any) => p.isFeatured).length || 0}</p>
+                  </div>
+                  <div className="h-8 w-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <Star className="h-4 w-4 text-yellow-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Out of Stock</p>
+                    <p className="text-2xl font-bold">{products?.filter((p: any) => p.stock === 0).length || 0}</p>
+                  </div>
+                  <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center">
+                    <XCircle className="h-4 w-4 text-red-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {!productsLoading && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Product Management</CardTitle>
+                <CardDescription>View and manage all jewelry products</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Product</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Stock</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products?.slice(0, 10).map((product: any) => (
+                      <TableRow key={product.id}>
+                        <TableCell>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gray-100 rounded-md"></div>
+                            <div>
+                              <p className="font-medium">{product.name}</p>
+                              <p className="text-sm text-muted-foreground">{product.description?.slice(0, 50)}...</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{product.categoryName || 'Uncategorized'}</TableCell>
+                        <TableCell>₹{product.price?.toLocaleString()}</TableCell>
+                        <TableCell>{product.stock || 0}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            {product.isActive !== false ? (
+                              <Badge variant="outline" className="bg-green-50 text-green-700">Active</Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-red-50 text-red-700">Inactive</Badge>
+                            )}
+                            {product.isFeatured && (
+                              <Badge variant="outline" className="bg-yellow-50 text-yellow-700">Featured</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => updateProductMutation.mutate({ 
+                                productId: product.id, 
+                                updates: { isActive: !product.isActive }
+                              })}
+                              disabled={updateProductMutation.isPending}
+                            >
+                              {product.isActive ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => deleteProductMutation.mutate(product.id)}
+                              disabled={deleteProductMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="categories" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Category Management</h2>
+            <div className="flex space-x-2">
+              <Button variant="outline">Export Categories</Button>
+              <Button>Add New Category</Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Package className="h-5 w-5" />
+                  <span>Total Categories</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{categories?.length || 0}</div>
+                <p className="text-sm text-muted-foreground">Active category groups</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Star className="h-5 w-5" />
+                  <span>Popular Categories</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{categories?.filter((c: any) => c.productCount > 5).length || 0}</div>
+                <p className="text-sm text-muted-foreground">With 5+ products</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  <span>Empty Categories</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{categories?.filter((c: any) => (c.productCount || 0) === 0).length || 0}</div>
+                <p className="text-sm text-muted-foreground">Need attention</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {!categoriesLoading && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Category Management</CardTitle>
+                <CardDescription>Organize your jewelry product categories</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Products</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {categories?.map((category: any) => (
+                      <TableRow key={category.id}>
+                        <TableCell>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-600 rounded-md flex items-center justify-center text-white text-sm font-medium">
+                              {category.name?.charAt(0)?.toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-medium">{category.name}</p>
+                              <p className="text-sm text-muted-foreground">{category.slug}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{category.description || 'No description'}</TableCell>
+                        <TableCell>{category.productCount || 0} products</TableCell>
+                        <TableCell>
+                          <Badge variant={category.isActive !== false ? 'default' : 'secondary'}>
+                            {category.isActive !== false ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(category.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => updateCategoryMutation.mutate({ 
+                                categoryId: category.id, 
+                                updates: { isActive: !category.isActive }
+                              })}
+                              disabled={updateCategoryMutation.isPending}
+                            >
+                              {category.isActive ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => deleteCategoryMutation.mutate(category.id)}
+                              disabled={deleteCategoryMutation.isPending}
+                            >
+                              <XCircle className="h-4 w-4 text-red-600" />
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>

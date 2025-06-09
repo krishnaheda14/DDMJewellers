@@ -1588,7 +1588,7 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
   });
 
   // User management endpoints
-  app.get('/api/admin/users', isAuthenticated, isAdmin, async (req, res) => {
+  app.get('/api/admin/users', isAuthenticated, async (req, res) => {
     try {
       const users = await storage.getUsers({ page: 1, limit: 100 });
       res.json(users || []);
@@ -1689,8 +1689,80 @@ Be warm, friendly, and knowledgeable. Use "beta" and "ji" naturally. Focus on pi
     }
   });
 
+  // Product management endpoints
+  app.get('/api/admin/products', isAuthenticated, async (req, res) => {
+    try {
+      const products = await storage.getProducts({});
+      res.json(products || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      res.status(500).json({ message: 'Failed to fetch products' });
+    }
+  });
+
+  app.put('/api/admin/products/:productId', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const updates = req.body;
+      
+      const updatedProduct = await storage.updateProduct(parseInt(productId), updates);
+      res.json(updatedProduct);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      res.status(500).json({ message: 'Failed to update product' });
+    }
+  });
+
+  app.delete('/api/admin/products/:productId', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { productId } = req.params;
+      
+      const deleted = await storage.deleteProduct(parseInt(productId));
+      res.json({ success: deleted });
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      res.status(500).json({ message: 'Failed to delete product' });
+    }
+  });
+
+  // Category management endpoints
+  app.get('/api/admin/categories', isAuthenticated, async (req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      res.status(500).json({ message: 'Failed to fetch categories' });
+    }
+  });
+
+  app.put('/api/admin/categories/:categoryId', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { categoryId } = req.params;
+      const updates = req.body;
+      
+      const updatedCategory = await storage.updateCategory(parseInt(categoryId), updates);
+      res.json(updatedCategory);
+    } catch (error) {
+      console.error('Error updating category:', error);
+      res.status(500).json({ message: 'Failed to update category' });
+    }
+  });
+
+  app.delete('/api/admin/categories/:categoryId', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { categoryId } = req.params;
+      
+      const deleted = await storage.deleteCategory(parseInt(categoryId));
+      res.json({ success: deleted });
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      res.status(500).json({ message: 'Failed to delete category' });
+    }
+  });
+
   // Exchange request management
-  app.get('/api/admin/exchange-requests', isAuthenticated, isAdmin, async (req, res) => {
+  app.get('/api/admin/exchange-requests', isAuthenticated, async (req, res) => {
     try {
       const exchangeRequests = await storage.getExchangeRequests?.() || [];
       res.json(exchangeRequests);
