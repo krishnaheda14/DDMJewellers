@@ -49,18 +49,6 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// User Activity Log table
-export const userActivityLog = pgTable("user_activity_log", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  action: varchar("action", { length: 100 }).notNull(),
-  details: text("details"),
-  ipAddress: varchar("ip_address"),
-  userAgent: text("user_agent"),
-  metadata: jsonb("metadata"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
 // Email verification tokens
 export const emailVerificationTokens = pgTable("email_verification_tokens", {
   id: serial("id").primaryKey(),

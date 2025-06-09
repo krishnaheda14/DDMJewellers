@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { 
-  Users, Package, ShoppingCart, Star, Building2, Coins, MessageSquare, 
+  Users, Package, ShoppingCart, Star, Building2, Building, Coins, MessageSquare, 
   Mic, Shield, TrendingUp, TrendingDown, RefreshCw, Settings, Eye, CheckCircle, 
   XCircle, UserCheck, UserX, Crown, AlertTriangle, Phone, Mail, Calendar,
   Clock, Truck, Circle, ArrowRightLeft, Heart, MessageCircle, PiggyBank,

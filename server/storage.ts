@@ -5,17 +5,11 @@ import {
   cartItems,
   orders,
   orderItems,
-  userMemories,
+  userMemory,
   chatConversations,
   wholesalerDesigns,
-  wishlists,
-  gullakAccounts,
-  gullakTransactions,
-  gullakOrders,
-  goldRates,
-  emailVerificationTokens,
-  passwordResetTokens,
-  userActivityLog,
+  wishlist,
+  marketRates,
   type User,
   type UpsertUser,
   type Category,
@@ -31,29 +25,11 @@ import {
   type UserMemory,
   type InsertUserMemory,
   type ChatConversation,
-  type InsertChatConversation,
   type WholesalerDesign,
   type InsertWholesalerDesign,
   type Wishlist,
   type InsertWishlist,
-  type EmailVerificationToken,
-  type InsertEmailVerificationToken,
-  type PasswordResetToken,
-  type InsertPasswordResetToken,
-  type UserActivityLog,
-  type InsertUserActivityLog,
-  offlineSales,
-  stockItems,
-  stockMovements,
-  dayBookEntries,
-  type OfflineSale,
-  type InsertOfflineSale,
-  type StockItem,
-  type InsertStockItem,
-  type StockMovement,
-  type InsertStockMovement,
-  type DayBookEntry,
-  type InsertDayBookEntry,
+  type MarketRate,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, like, desc, asc, sql } from "drizzle-orm";
@@ -63,28 +39,6 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  getUsers(options?: { page?: number; limit?: number; role?: string }): Promise<User[]>;
-  
-  // Enhanced authentication operations
-  getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: Partial<User>): Promise<User>;
-  updateUserPassword(userId: string, passwordHash: string): Promise<void>;
-  updateUserSession(userId: string, sessionToken: string | null, sessionExpiresAt: Date | null): Promise<void>;
-  verifyUserEmail(userId: string): Promise<void>;
-  
-  // Email verification tokens
-  createEmailVerificationToken(token: InsertEmailVerificationToken): Promise<EmailVerificationToken>;
-  getEmailVerificationToken(token: string): Promise<EmailVerificationToken | undefined>;
-  deleteEmailVerificationToken(id: number): Promise<void>;
-  deleteEmailVerificationTokensByUserId(userId: string): Promise<void>;
-  
-  // Password reset tokens
-  createPasswordResetToken(token: InsertPasswordResetToken): Promise<PasswordResetToken>;
-  getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
-  markPasswordResetTokenUsed(id: number): Promise<void>;
-  
-  // User activity logging
-  createUserActivityLog(log: InsertUserActivityLog): Promise<UserActivityLog>;
 
   // Category operations
   getCategories(): Promise<Category[]>;
@@ -149,111 +103,9 @@ export interface IStorage {
   updateUserRole(userId: string, role: string): Promise<User>;
   getWholesalers(approved?: boolean): Promise<User[]>;
 
-  // Offline Sales operations
-  getOfflineSales(filters?: {
-    dateFrom?: Date;
-    dateTo?: Date;
-    category?: string;
-    paymentMode?: string;
-    limit?: number;
-    offset?: number;
-  }): Promise<OfflineSale[]>;
-  getOfflineSale(id: number): Promise<OfflineSale | undefined>;
-  createOfflineSale(sale: InsertOfflineSale): Promise<OfflineSale>;
-  updateOfflineSale(id: number, sale: Partial<InsertOfflineSale>): Promise<OfflineSale>;
-  deleteOfflineSale(id: number): Promise<boolean>;
-
-  // Stock Management operations
-  getStockItems(filters?: {
-    category?: string;
-    lowStock?: boolean;
-    search?: string;
-    limit?: number;
-    offset?: number;
-  }): Promise<StockItem[]>;
-  getStockItem(id: number): Promise<StockItem | undefined>;
-  createStockItem(item: InsertStockItem): Promise<StockItem>;
-  updateStockItem(id: number, item: Partial<InsertStockItem>): Promise<StockItem>;
-  deleteStockItem(id: number): Promise<boolean>;
-  
-  // Stock Movement operations
-  getStockMovements(stockItemId?: number, limit?: number): Promise<StockMovement[]>;
-  createStockMovement(movement: InsertStockMovement): Promise<StockMovement>;
-  updateStockQuantity(stockItemId: number, quantityChange: number, reason: string, performedBy: string): Promise<void>;
-
-  // Day Book operations
-  getDayBookEntries(dateFrom?: Date, dateTo?: Date): Promise<DayBookEntry[]>;
-  getDayBookEntry(businessDate: Date): Promise<DayBookEntry | undefined>;
-  createDayBookEntry(entry: InsertDayBookEntry): Promise<DayBookEntry>;
-  updateDayBookEntry(id: number, entry: Partial<InsertDayBookEntry>): Promise<DayBookEntry>;
-  calculateDayBookData(businessDate: Date): Promise<Partial<DayBookEntry>>;
-
-  // Reporting operations
-  getSalesReport(filters: {
-    dateFrom: Date;
-    dateTo: Date;
-    salesType?: 'online' | 'offline' | 'both';
-    category?: string;
-    paymentMode?: string;
-  }): Promise<{
-    totalSales: number;
-    totalOrders: number;
-    paymentBreakdown: Record<string, number>;
-    categoryBreakdown: Record<string, number>;
-    salesData: any[];
-  }>;
-
-  // Gullak operations
-  getGullakAccounts(userId?: string): Promise<GullakAccount[]>;
-  getGullakAccount(id: number): Promise<GullakAccount | undefined>;
-  createGullakAccount(account: InsertGullakAccount): Promise<GullakAccount>;
-  updateGullakAccount(id: number, account: Partial<InsertGullakAccount>): Promise<GullakAccount>;
-  deleteGullakAccount(id: number): Promise<boolean>;
-  
-  // Gullak transactions
-  getGullakTransactions(gullakAccountId: number, limit?: number): Promise<GullakTransaction[]>;
-  createGullakTransaction(transaction: InsertGullakTransaction): Promise<GullakTransaction>;
-  
-  // Gullak orders
-  getGullakOrders(userId?: string): Promise<GullakOrder[]>;
-  createGullakOrder(order: InsertGullakOrder): Promise<GullakOrder>;
-  updateGullakOrderStatus(id: number, status: string): Promise<GullakOrder>;
-  
-  // Gold rates
-  createGoldRate(rate: any): Promise<any>;
-  getCurrentGoldRates(): Promise<any | undefined>;
-
-  // Corporate operations
-  createCorporateRegistration(registration: InsertCorporateRegistration): Promise<CorporateRegistration>;
-  getCorporateRegistrations(): Promise<CorporateRegistration[]>;
-  getCorporateRegistration(id: number): Promise<CorporateRegistration | undefined>;
-  updateCorporateRegistration(id: number, updates: Partial<InsertCorporateRegistration>): Promise<CorporateRegistration>;
-  approveCorporateRegistration(id: number, approvedBy: string): Promise<CorporateRegistration>;
-  rejectCorporateRegistration(id: number): Promise<CorporateRegistration>;
-  
-  // Corporate user operations
-  createCorporateUser(corporateUser: InsertCorporateUser): Promise<CorporateUser>;
-  getCorporateUsersByCompany(corporateId: number): Promise<CorporateUser[]>;
-  getCorporateUserByUserId(userId: string): Promise<CorporateUser | undefined>;
-  
-  // Employee benefits operations
-  createEmployeeBenefit(benefit: InsertEmployeeBenefit): Promise<EmployeeBenefit>;
-  getEmployeeBenefit(userId: string, corporateId: number): Promise<EmployeeBenefit | undefined>;
-  updateEmployeeBenefit(id: number, updates: Partial<InsertEmployeeBenefit>): Promise<EmployeeBenefit>;
-  getEmployeeBenefitsByCorporate(corporateId: number): Promise<EmployeeBenefit[]>;
-  
-  // Maintenance operations
-  createMaintenanceSchedule(schedule: InsertMaintenanceSchedule): Promise<MaintenanceSchedule>;
-  getMaintenanceSchedules(): Promise<MaintenanceSchedule[]>;
-  getMaintenanceSchedulesByUser(userId: string): Promise<MaintenanceSchedule[]>;
-  getMaintenanceSchedulesByCorporate(corporateId: number): Promise<MaintenanceSchedule[]>;
-  updateMaintenanceSchedule(id: number, updates: Partial<InsertMaintenanceSchedule>): Promise<MaintenanceSchedule>;
-  
-  // Corporate offers operations
-  createCorporateOffer(offer: InsertCorporateOffer): Promise<CorporateOffer>;
-  getCorporateOffers(corporateId: number): Promise<CorporateOffer[]>;
-  getActiveCorporateOffers(corporateId: number): Promise<CorporateOffer[]>;
-  updateCorporateOffer(id: number, updates: Partial<InsertCorporateOffer>): Promise<CorporateOffer>;
+  // Market rates operations
+  getCurrentRates(): Promise<MarketRate[]>;
+  updateMarketRate(metal: string, rate: number): Promise<MarketRate>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -270,7 +122,10 @@ export class DatabaseStorage implements IStorage {
       .onConflictDoUpdate({
         target: users.id,
         set: {
-          ...userData,
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          profileImageUrl: userData.profileImageUrl,
           updatedAt: new Date(),
         },
       })
@@ -278,198 +133,9 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  // Enhanced authentication operations
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user;
-  }
-
-  async createUser(userData: Partial<User>): Promise<User> {
-    const [user] = await db.insert(users).values(userData).returning();
-    return user;
-  }
-
-  async updateUserPassword(userId: string, passwordHash: string): Promise<void> {
-    await db
-      .update(users)
-      .set({ passwordHash, updatedAt: new Date() })
-      .where(eq(users.id, userId));
-  }
-
-  async updateUserSession(userId: string, sessionToken: string | null, sessionExpiresAt: Date | null): Promise<void> {
-    await db
-      .update(users)
-      .set({ 
-        sessionToken, 
-        sessionExpiresAt, 
-        lastLoginAt: sessionToken ? new Date() : undefined,
-        updatedAt: new Date() 
-      })
-      .where(eq(users.id, userId));
-  }
-
-  async verifyUserEmail(userId: string): Promise<void> {
-    await db
-      .update(users)
-      .set({ isEmailVerified: true, updatedAt: new Date() })
-      .where(eq(users.id, userId));
-  }
-
-  // Email verification tokens
-  async createEmailVerificationToken(tokenData: InsertEmailVerificationToken): Promise<EmailVerificationToken> {
-    const [token] = await db.insert(emailVerificationTokens).values(tokenData).returning();
-    return token;
-  }
-
-  async getEmailVerificationToken(token: string): Promise<EmailVerificationToken | undefined> {
-    const [tokenData] = await db
-      .select()
-      .from(emailVerificationTokens)
-      .where(eq(emailVerificationTokens.token, token));
-    return tokenData;
-  }
-
-  async deleteEmailVerificationToken(id: number): Promise<void> {
-    await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.id, id));
-  }
-
-  async deleteEmailVerificationTokensByUserId(userId: string): Promise<void> {
-    await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.userId, userId));
-  }
-
-  // Password reset tokens
-  async createPasswordResetToken(tokenData: InsertPasswordResetToken): Promise<PasswordResetToken> {
-    const [token] = await db.insert(passwordResetTokens).values(tokenData).returning();
-    return token;
-  }
-
-  async getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
-    const [tokenData] = await db
-      .select()
-      .from(passwordResetTokens)
-      .where(eq(passwordResetTokens.token, token));
-    return tokenData;
-  }
-
-  async markPasswordResetTokenUsed(id: number): Promise<void> {
-    await db
-      .update(passwordResetTokens)
-      .set({ used: true })
-      .where(eq(passwordResetTokens.id, id));
-  }
-
-  // User activity logging
-  async createUserActivityLog(logData: InsertUserActivityLog): Promise<UserActivityLog> {
-    const [log] = await db.insert(userActivityLog).values(logData).returning();
-    return log;
-  }
-
-  // Admin dashboard methods
-  async getUsers(options: { page?: number; limit?: number; role?: string; status?: string } = {}): Promise<User[]> {
-    let query = db.select().from(users);
-    
-    if (options.role) {
-      query = query.where(eq(users.role, options.role as any));
-    }
-    
-    if (options.status === 'active') {
-      query = query.where(eq(users.isActive, true));
-    } else if (options.status === 'inactive') {
-      query = query.where(eq(users.isActive, false));
-    }
-    
-    const offset = ((options.page || 1) - 1) * (options.limit || 50);
-    query = query.limit(options.limit || 50).offset(offset);
-    
-    return await query;
-  }
-
-  async updateUserStatus(userId: string, isActive: boolean): Promise<User> {
-    const [user] = await db
-      .update(users)
-      .set({ isActive, updatedAt: new Date() })
-      .where(eq(users.id, userId))
-      .returning();
-    return user;
-  }
-
-  async updateUserApproval(userId: string, approved: boolean): Promise<User> {
-    const [user] = await db
-      .update(users)
-      .set({ isApproved: approved, updatedAt: new Date() })
-      .where(eq(users.id, userId))
-      .returning();
-    return user;
-  }
-
-  async getUsers(options?: { page?: number; limit?: number; role?: string }): Promise<User[]> {
-    let query = db.select().from(users);
-    
-    if (options?.role) {
-      query = query.where(eq(users.role, options.role));
-    }
-    
-    if (options?.limit) {
-      query = query.limit(options.limit);
-    }
-    
-    if (options?.page && options?.limit) {
-      const offset = (options.page - 1) * options.limit;
-      query = query.offset(offset);
-    }
-    
-    return await query.orderBy(desc(users.createdAt));
-  }
-
-  async getCorporatePartners(): Promise<any[]> {
-    try {
-      // Return empty array if corporate tables don't exist yet
-      return [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  async getRecentChatConversations(limit: number = 10): Promise<ChatConversation[]> {
-    return await db
-      .select()
-      .from(chatConversations)
-      .orderBy(desc(chatConversations.createdAt))
-      .limit(limit);
-  }
-
-  async getTopChatbotQueries(): Promise<any[]> {
-    // Return aggregated query data
-    return [
-      { query: "Gold prices today", count: 156 },
-      { query: "Best engagement rings", count: 89 },
-      { query: "Jewelry care tips", count: 67 },
-      { query: "Custom jewelry design", count: 45 },
-      { query: "Exchange old jewelry", count: 34 }
-    ];
-  }
-
-  async getExchangeRequests(): Promise<any[]> {
-    try {
-      // Return jewelry exchange requests if table exists
-      return [];
-    } catch (error) {
-      return [];
-    }
-  }
-
-  async updateExchangeRequest(requestId: number, updateData: any): Promise<any> {
-    try {
-      // Update exchange request if table exists
-      return { success: true };
-    } catch (error) {
-      return { success: true };
-    }
-  }
-
   // Category operations
   async getCategories(): Promise<Category[]> {
-    return await db.select().from(categories).orderBy(asc(categories.name));
+    return await db.select().from(categories).where(eq(categories.isActive, true)).orderBy(categories.sortOrder);
   }
 
   async getCategoryBySlug(slug: string): Promise<Category | undefined> {
@@ -485,7 +151,7 @@ export class DatabaseStorage implements IStorage {
   async updateCategory(id: number, category: Partial<InsertCategory>): Promise<Category> {
     const [updatedCategory] = await db
       .update(categories)
-      .set(category)
+      .set({ ...category, updatedAt: new Date() })
       .where(eq(categories.id, id))
       .returning();
     return updatedCategory;
@@ -493,7 +159,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCategory(id: number): Promise<boolean> {
     const result = await db.delete(categories).where(eq(categories.id, id));
-    return (result.rowCount ?? 0) > 0;
+    return result.rowCount > 0;
   }
 
   // Product operations
@@ -501,27 +167,13 @@ export class DatabaseStorage implements IStorage {
     categoryId?: number;
     search?: string;
     featured?: boolean;
-    productType?: "real" | "imitation" | "both";
     limit?: number;
     offset?: number;
   }): Promise<Product[]> {
-    let query = db.select().from(products);
-    const conditions = [];
+    let query = db.select().from(products).where(eq(products.isActive, true));
 
     if (filters?.categoryId) {
-      conditions.push(eq(products.categoryId, filters.categoryId));
-    }
-
-    if (filters?.productType && filters.productType !== "both") {
-      conditions.push(eq(products.productType, filters.productType));
-    }
-
-    if (filters?.featured) {
-      conditions.push(eq(products.featured, true));
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
+      query = query.where(eq(products.categoryId, filters.categoryId));
     }
 
     if (filters?.search) {
@@ -530,21 +182,21 @@ export class DatabaseStorage implements IStorage {
           like(products.name, `%${filters.search}%`),
           like(products.description, `%${filters.search}%`)
         )
-      ) as any;
+      );
     }
 
-    if (filters?.featured !== undefined) {
-      query = query.where(eq(products.featured, filters.featured)) as any;
+    if (filters?.featured) {
+      query = query.where(eq(products.isFeatured, true));
     }
 
-    query = query.orderBy(desc(products.createdAt)) as any;
+    query = query.orderBy(desc(products.createdAt));
 
     if (filters?.limit) {
-      query = query.limit(filters.limit) as any;
+      query = query.limit(filters.limit);
     }
 
     if (filters?.offset) {
-      query = query.offset(filters.offset) as any;
+      query = query.offset(filters.offset);
     }
 
     return await query;
@@ -561,15 +213,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product> {
-    const updateData: any = { ...product };
-    if (updateData.updatedAt) {
-      delete updateData.updatedAt;
-    }
-    updateData.updatedAt = new Date();
-
     const [updatedProduct] = await db
       .update(products)
-      .set(updateData)
+      .set({ ...product, updatedAt: new Date() })
       .where(eq(products.id, id))
       .returning();
     return updatedProduct;
@@ -577,55 +223,27 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProduct(id: number): Promise<boolean> {
     const result = await db.delete(products).where(eq(products.id, id));
-    return (result.rowCount ?? 0) > 0;
+    return result.rowCount > 0;
   }
 
   // Cart operations
   async getCartItems(userId: string): Promise<(CartItem & { product: Product })[]> {
-    const items = await db
-      .select({
-        id: cartItems.id,
-        userId: cartItems.userId,
-        productId: cartItems.productId,
-        quantity: cartItems.quantity,
-        customizations: cartItems.customizations,
-        createdAt: cartItems.createdAt,
-        product: products,
-      })
+    return await db
+      .select()
       .from(cartItems)
-      .innerJoin(products, eq(cartItems.productId, products.id))
-      .where(eq(cartItems.userId, userId));
-    
-    return items as any;
+      .leftJoin(products, eq(cartItems.productId, products.id))
+      .where(eq(cartItems.userId, userId))
+      .then(rows => 
+        rows.map(row => ({
+          ...row.cart_items,
+          product: row.products!
+        }))
+      );
   }
 
   async addToCart(item: InsertCartItem): Promise<CartItem> {
-    // Check if item already exists in cart
-    const [existingItem] = await db
-      .select()
-      .from(cartItems)
-      .where(and(eq(cartItems.userId, item.userId), eq(cartItems.productId, item.productId)));
-
-    if (existingItem) {
-      // Update quantity
-      const [updatedItem] = await db
-        .update(cartItems)
-        .set({ quantity: existingItem.quantity + (item.quantity || 1) })
-        .where(eq(cartItems.id, existingItem.id))
-        .returning();
-      return updatedItem;
-    } else {
-      // Create new cart item
-      const cartData: any = {
-        userId: item.userId,
-        productId: item.productId,
-        quantity: item.quantity || 1,
-        customizations: item.customizations || null
-      };
-
-      const [newItem] = await db.insert(cartItems).values(cartData).returning();
-      return newItem;
-    }
+    const [cartItem] = await db.insert(cartItems).values(item).returning();
+    return cartItem;
   }
 
   async updateCartItem(id: number, quantity: number): Promise<CartItem> {
@@ -639,12 +257,12 @@ export class DatabaseStorage implements IStorage {
 
   async removeFromCart(id: number): Promise<boolean> {
     const result = await db.delete(cartItems).where(eq(cartItems.id, id));
-    return (result.rowCount ?? 0) > 0;
+    return result.rowCount > 0;
   }
 
   async clearCart(userId: string): Promise<boolean> {
     const result = await db.delete(cartItems).where(eq(cartItems.userId, userId));
-    return (result.rowCount ?? 0) >= 0;
+    return result.rowCount > 0;
   }
 
   // Order operations
@@ -652,11 +270,10 @@ export class DatabaseStorage implements IStorage {
     let query = db.select().from(orders);
     
     if (userId) {
-      query = query.where(eq(orders.userId, userId)) as any;
+      query = query.where(eq(orders.userId, userId));
     }
     
-    query = query.orderBy(desc(orders.createdAt)) as any;
-    return await query;
+    return await query.orderBy(desc(orders.createdAt));
   }
 
   async getOrder(id: number): Promise<(Order & { orderItems: (OrderItem & { product: Product })[] }) | undefined> {
@@ -665,35 +282,30 @@ export class DatabaseStorage implements IStorage {
     if (!order) return undefined;
 
     const items = await db
-      .select({
-        id: orderItems.id,
-        orderId: orderItems.orderId,
-        productId: orderItems.productId,
-        quantity: orderItems.quantity,
-        price: orderItems.price,
-        customizations: orderItems.customizations,
-        createdAt: orderItems.createdAt,
-        product: products,
-      })
+      .select()
       .from(orderItems)
-      .innerJoin(products, eq(orderItems.productId, products.id))
-      .where(eq(orderItems.orderId, id));
+      .leftJoin(products, eq(orderItems.productId, products.id))
+      .where(eq(orderItems.orderId, id))
+      .then(rows => 
+        rows.map(row => ({
+          ...row.order_items,
+          product: row.products!
+        }))
+      );
 
-    return { ...order, orderItems: items as any };
+    return { ...order, orderItems: items };
   }
 
   async createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order> {
     const [newOrder] = await db.insert(orders).values(order).returning();
     
-    const orderItemsData = items.map(item => ({
+    const orderItemsWithOrderId = items.map(item => ({
+      ...item,
       orderId: newOrder.id,
-      productId: item.productId,
-      quantity: item.quantity,
-      price: item.price,
-      customizations: item.customizations || null
     }));
     
-    await db.insert(orderItems).values(orderItemsData);
+    await db.insert(orderItems).values(orderItemsWithOrderId);
+    
     return newOrder;
   }
 
@@ -706,43 +318,29 @@ export class DatabaseStorage implements IStorage {
     return updatedOrder;
   }
 
-  // Chatbot memory operations
+  // User memory operations
   async getUserMemory(userId: string): Promise<UserMemory | undefined> {
-    const [memory] = await db.select().from(userMemories).where(eq(userMemories.userId, userId));
+    const [memory] = await db.select().from(userMemory).where(eq(userMemory.userId, userId));
     return memory;
   }
 
   async upsertUserMemory(userId: string, memory: Partial<InsertUserMemory>): Promise<UserMemory> {
-    const memoryData: any = {
-      userId,
-      age: memory.age,
-      lifestyle: memory.lifestyle,
-      preferences: memory.preferences
-    };
-
-    const [existingMemory] = await db.select().from(userMemories).where(eq(userMemories.userId, userId));
-    
-    if (existingMemory) {
-      const [updatedMemory] = await db
-        .update(userMemories)
-        .set({ ...memoryData, updatedAt: new Date() })
-        .where(eq(userMemories.userId, userId))
-        .returning();
-      return updatedMemory;
-    } else {
-      const [newMemory] = await db.insert(userMemories).values(memoryData).returning();
-      return newMemory;
-    }
+    const [userMem] = await db
+      .insert(userMemory)
+      .values({ userId, ...memory })
+      .onConflictDoUpdate({
+        target: userMemory.userId,
+        set: { ...memory, updatedAt: new Date() },
+      })
+      .returning();
+    return userMem;
   }
 
   async saveChatConversation(userId: string, sessionId: string, messages: any[]): Promise<ChatConversation> {
-    const conversationData: any = {
-      userId,
-      sessionId,
-      messages: { conversation: messages }
-    };
-
-    const [conversation] = await db.insert(chatConversations).values(conversationData).returning();
+    const [conversation] = await db
+      .insert(chatConversations)
+      .values({ userId, sessionId, messages })
+      .returning();
     return conversation;
   }
 
@@ -764,79 +362,51 @@ export class DatabaseStorage implements IStorage {
     offset?: number;
   }): Promise<(WholesalerDesign & { wholesaler: User })[]> {
     let query = db
-      .select({
-        id: wholesalerDesigns.id,
-        wholesalerId: wholesalerDesigns.wholesalerId,
-        title: wholesalerDesigns.title,
-        description: wholesalerDesigns.description,
-        imageUrl: wholesalerDesigns.imageUrl,
-        additionalImages: wholesalerDesigns.additionalImages,
-        category: wholesalerDesigns.category,
-        estimatedPrice: wholesalerDesigns.estimatedPrice,
-        materials: wholesalerDesigns.materials,
-        dimensions: wholesalerDesigns.dimensions,
-        status: wholesalerDesigns.status,
-        approvedBy: wholesalerDesigns.approvedBy,
-        approvedAt: wholesalerDesigns.approvedAt,
-        isActive: wholesalerDesigns.isActive,
-        createdAt: wholesalerDesigns.createdAt,
-        updatedAt: wholesalerDesigns.updatedAt,
-        wholesaler: users,
-      })
+      .select()
       .from(wholesalerDesigns)
-      .innerJoin(users, eq(wholesalerDesigns.wholesalerId, users.id));
+      .leftJoin(users, eq(wholesalerDesigns.wholesalerId, users.id));
 
     if (filters?.wholesalerId) {
-      query = query.where(eq(wholesalerDesigns.wholesalerId, filters.wholesalerId)) as any;
+      query = query.where(eq(wholesalerDesigns.wholesalerId, filters.wholesalerId));
     }
 
     if (filters?.status) {
-      query = query.where(eq(wholesalerDesigns.status, filters.status as any)) as any;
+      query = query.where(eq(wholesalerDesigns.status, filters.status));
     }
 
     if (filters?.category) {
-      query = query.where(eq(wholesalerDesigns.category, filters.category)) as any;
+      query = query.where(eq(wholesalerDesigns.category, filters.category));
     }
 
-    query = query.orderBy(desc(wholesalerDesigns.createdAt)) as any;
-
     if (filters?.limit) {
-      query = query.limit(filters.limit) as any;
+      query = query.limit(filters.limit);
     }
 
     if (filters?.offset) {
-      query = query.offset(filters.offset) as any;
+      query = query.offset(filters.offset);
     }
 
-    return await query as any;
+    return await query.then(rows => 
+      rows.map(row => ({
+        ...row.wholesaler_designs,
+        wholesaler: row.users!
+      }))
+    );
   }
 
   async getWholesalerDesign(id: number): Promise<(WholesalerDesign & { wholesaler: User }) | undefined> {
-    const [design] = await db
-      .select({
-        id: wholesalerDesigns.id,
-        wholesalerId: wholesalerDesigns.wholesalerId,
-        title: wholesalerDesigns.title,
-        description: wholesalerDesigns.description,
-        imageUrl: wholesalerDesigns.imageUrl,
-        additionalImages: wholesalerDesigns.additionalImages,
-        category: wholesalerDesigns.category,
-        estimatedPrice: wholesalerDesigns.estimatedPrice,
-        materials: wholesalerDesigns.materials,
-        dimensions: wholesalerDesigns.dimensions,
-        status: wholesalerDesigns.status,
-        approvedBy: wholesalerDesigns.approvedBy,
-        approvedAt: wholesalerDesigns.approvedAt,
-        isActive: wholesalerDesigns.isActive,
-        createdAt: wholesalerDesigns.createdAt,
-        updatedAt: wholesalerDesigns.updatedAt,
-        wholesaler: users,
-      })
+    const [result] = await db
+      .select()
       .from(wholesalerDesigns)
-      .innerJoin(users, eq(wholesalerDesigns.wholesalerId, users.id))
+      .leftJoin(users, eq(wholesalerDesigns.wholesalerId, users.id))
       .where(eq(wholesalerDesigns.id, id));
 
-    return design as any;
+    if (!result) return undefined;
+
+    return {
+      ...result.wholesaler_designs,
+      wholesaler: result.users!
+    };
   }
 
   async createWholesalerDesign(design: InsertWholesalerDesign): Promise<WholesalerDesign> {
@@ -845,15 +415,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateWholesalerDesign(id: number, design: Partial<InsertWholesalerDesign>): Promise<WholesalerDesign> {
-    const updateData: any = { ...design };
-    if (updateData.updatedAt) {
-      delete updateData.updatedAt;
-    }
-    updateData.updatedAt = new Date();
-
     const [updatedDesign] = await db
       .update(wholesalerDesigns)
-      .set(updateData)
+      .set({ ...design, updatedAt: new Date() })
       .where(eq(wholesalerDesigns.id, id))
       .returning();
     return updatedDesign;
@@ -862,11 +426,11 @@ export class DatabaseStorage implements IStorage {
   async approveWholesalerDesign(id: number, approvedBy: string): Promise<WholesalerDesign> {
     const [approvedDesign] = await db
       .update(wholesalerDesigns)
-      .set({
-        status: "approved" as any,
-        approvedBy,
+      .set({ 
+        status: "approved", 
+        approvedBy, 
         approvedAt: new Date(),
-        updatedAt: new Date(),
+        updatedAt: new Date() 
       })
       .where(eq(wholesalerDesigns.id, id))
       .returning();
@@ -876,10 +440,10 @@ export class DatabaseStorage implements IStorage {
   async rejectWholesalerDesign(id: number, approvedBy: string): Promise<WholesalerDesign> {
     const [rejectedDesign] = await db
       .update(wholesalerDesigns)
-      .set({
-        status: "rejected" as any,
-        approvedBy,
-        updatedAt: new Date(),
+      .set({ 
+        status: "rejected", 
+        approvedBy, 
+        updatedAt: new Date() 
       })
       .where(eq(wholesalerDesigns.id, id))
       .returning();
@@ -888,45 +452,41 @@ export class DatabaseStorage implements IStorage {
 
   async deleteWholesalerDesign(id: number): Promise<boolean> {
     const result = await db.delete(wholesalerDesigns).where(eq(wholesalerDesigns.id, id));
-    return (result.rowCount ?? 0) > 0;
+    return result.rowCount > 0;
   }
 
   // Wishlist operations
   async getWishlist(userId: string): Promise<(Wishlist & { product?: Product; design?: WholesalerDesign })[]> {
-    const wishlistItems = await db
-      .select({
-        id: wishlists.id,
-        userId: wishlists.userId,
-        productId: wishlists.productId,
-        designId: wishlists.designId,
-        createdAt: wishlists.createdAt,
-        product: products,
-        design: wholesalerDesigns,
-      })
-      .from(wishlists)
-      .leftJoin(products, eq(wishlists.productId, products.id))
-      .leftJoin(wholesalerDesigns, eq(wishlists.designId, wholesalerDesigns.id))
-      .where(eq(wishlists.userId, userId))
-      .orderBy(desc(wishlists.createdAt));
-
-    return wishlistItems as any;
+    return await db
+      .select()
+      .from(wishlist)
+      .leftJoin(products, eq(wishlist.productId, products.id))
+      .leftJoin(wholesalerDesigns, eq(wishlist.wholesalerDesignId, wholesalerDesigns.id))
+      .where(eq(wishlist.userId, userId))
+      .then(rows => 
+        rows.map(row => ({
+          ...row.wishlist,
+          product: row.products || undefined,
+          design: row.wholesaler_designs || undefined
+        }))
+      );
   }
 
   async addToWishlist(item: InsertWishlist): Promise<Wishlist> {
-    const [newWishlistItem] = await db.insert(wishlists).values(item).returning();
-    return newWishlistItem;
+    const [wishlistItem] = await db.insert(wishlist).values(item).returning();
+    return wishlistItem;
   }
 
   async removeFromWishlist(id: number): Promise<boolean> {
-    const result = await db.delete(wishlists).where(eq(wishlists.id, id));
-    return (result.rowCount ?? 0) > 0;
+    const result = await db.delete(wishlist).where(eq(wishlist.id, id));
+    return result.rowCount > 0;
   }
 
   // User role operations
   async updateUserRole(userId: string, role: string): Promise<User> {
     const [updatedUser] = await db
       .update(users)
-      .set({ role: role as any, updatedAt: new Date() })
+      .set({ role, updatedAt: new Date() })
       .where(eq(users.id, userId))
       .returning();
     return updatedUser;
@@ -936,758 +496,27 @@ export class DatabaseStorage implements IStorage {
     let query = db.select().from(users).where(eq(users.role, "wholesaler"));
     
     if (approved !== undefined) {
-      // Assuming approved wholesalers have a specific status or field
-      query = query.where(and(eq(users.role, "wholesaler"), eq(users.isActive, approved))) as any;
+      query = query.where(eq(users.isApproved, approved));
     }
     
     return await query;
   }
 
-  async createGoldRate(rate: any): Promise<any> {
-    const [newRate] = await db.insert(goldRates).values(rate).returning();
-    return newRate;
+  // Market rates operations
+  async getCurrentRates(): Promise<MarketRate[]> {
+    return await db.select().from(marketRates).orderBy(desc(marketRates.updatedAt));
   }
 
-  async getCurrentGoldRates(): Promise<any> {
-    // Get the most recent gold rates
-    const [latestRates] = await db
-      .select()
-      .from(goldRates)
-      .orderBy(desc(goldRates.effectiveDate))
-      .limit(1);
-    
-    return latestRates || null;
-  }
-
-  // Gullak operations
-  async getGullakAccounts(userId?: string): Promise<GullakAccount[]> {
-    if (userId) {
-      return await db.select().from(gullakAccounts).where(eq(gullakAccounts.userId, userId));
-    }
-    return await db.select().from(gullakAccounts);
-  }
-
-  async getGullakAccount(id: number): Promise<GullakAccount | undefined> {
-    const [account] = await db.select().from(gullakAccounts).where(eq(gullakAccounts.id, id));
-    return account;
-  }
-
-  async createGullakAccount(account: InsertGullakAccount): Promise<GullakAccount> {
-    const [newAccount] = await db.insert(gullakAccounts).values(account).returning();
-    return newAccount;
-  }
-
-  async updateGullakAccount(id: number, account: Partial<InsertGullakAccount>): Promise<GullakAccount> {
-    const [updatedAccount] = await db
-      .update(gullakAccounts)
-      .set({ ...account, updatedAt: new Date() })
-      .where(eq(gullakAccounts.id, id))
-      .returning();
-    return updatedAccount;
-  }
-
-  async deleteGullakAccount(id: number): Promise<boolean> {
-    const result = await db.delete(gullakAccounts).where(eq(gullakAccounts.id, id));
-    return result.rowCount > 0;
-  }
-
-  async getGullakTransactions(gullakAccountId: number, limit: number = 50): Promise<GullakTransaction[]> {
-    return await db
-      .select()
-      .from(gullakTransactions)
-      .where(eq(gullakTransactions.gullakAccountId, gullakAccountId))
-      .orderBy(desc(gullakTransactions.createdAt))
-      .limit(limit);
-  }
-
-  async createGullakTransaction(transaction: InsertGullakTransaction): Promise<GullakTransaction> {
-    const [newTransaction] = await db.insert(gullakTransactions).values(transaction).returning();
-    return newTransaction;
-  }
-
-  async getGullakOrders(userId?: string): Promise<GullakOrder[]> {
-    if (userId) {
-      return await db.select().from(gullakOrders).where(eq(gullakOrders.userId, userId));
-    }
-    return await db.select().from(gullakOrders);
-  }
-
-  async createGullakOrder(order: InsertGullakOrder): Promise<GullakOrder> {
-    const [newOrder] = await db.insert(gullakOrders).values(order).returning();
-    return newOrder;
-  }
-
-  async updateGullakOrderStatus(id: number, status: string): Promise<GullakOrder> {
-    const [updatedOrder] = await db
-      .update(gullakOrders)
-      .set({ status, updatedAt: new Date() })
-      .where(eq(gullakOrders.id, id))
-      .returning();
-    return updatedOrder;
-  }
-
-  async createGoldRate(rate: InsertGoldRate): Promise<GoldRate> {
-    const [newRate] = await db.insert(goldRates).values(rate).returning();
-    return newRate;
-  }
-
-  // Corporate operations
-  async createCorporateRegistration(registration: InsertCorporateRegistration): Promise<CorporateRegistration> {
-    // Generate unique corporate code
-    const corporateCode = `CORP${Date.now()}`;
-    
-    const [corporate] = await db
-      .insert(corporateRegistrations)
-      .values({
-        ...registration,
-        corporateCode
+  async updateMarketRate(metal: string, rate: number): Promise<MarketRate> {
+    const [updatedRate] = await db
+      .insert(marketRates)
+      .values({ metal, unit: "gram", rate, updatedAt: new Date() })
+      .onConflictDoUpdate({
+        target: [marketRates.metal, marketRates.unit],
+        set: { rate, updatedAt: new Date() }
       })
       .returning();
-    return corporate;
-  }
-
-  async getCorporateRegistrations(): Promise<CorporateRegistration[]> {
-    return await db.select().from(corporateRegistrations).orderBy(desc(corporateRegistrations.createdAt));
-  }
-
-  async getCorporateRegistration(id: number): Promise<CorporateRegistration | undefined> {
-    const [corporate] = await db.select().from(corporateRegistrations).where(eq(corporateRegistrations.id, id));
-    return corporate;
-  }
-
-  async updateCorporateRegistration(id: number, updates: Partial<InsertCorporateRegistration>): Promise<CorporateRegistration> {
-    const [corporate] = await db
-      .update(corporateRegistrations)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(corporateRegistrations.id, id))
-      .returning();
-    return corporate;
-  }
-
-  async approveCorporateRegistration(id: number, approvedBy: string): Promise<CorporateRegistration> {
-    const [corporate] = await db
-      .update(corporateRegistrations)
-      .set({
-        status: "approved",
-        approvedAt: new Date(),
-        approvedBy,
-        updatedAt: new Date()
-      })
-      .where(eq(corporateRegistrations.id, id))
-      .returning();
-    return corporate;
-  }
-
-  async rejectCorporateRegistration(id: number): Promise<CorporateRegistration> {
-    const [corporate] = await db
-      .update(corporateRegistrations)
-      .set({
-        status: "rejected",
-        updatedAt: new Date()
-      })
-      .where(eq(corporateRegistrations.id, id))
-      .returning();
-    return corporate;
-  }
-
-  // Corporate user operations
-  async createCorporateUser(corporateUser: InsertCorporateUser): Promise<CorporateUser> {
-    const [user] = await db
-      .insert(corporateUsers)
-      .values(corporateUser)
-      .returning();
-    return user;
-  }
-
-  async getCorporateUsersByCompany(corporateId: number): Promise<CorporateUser[]> {
-    return await db.select().from(corporateUsers).where(eq(corporateUsers.corporateId, corporateId));
-  }
-
-  async getCorporateUserByUserId(userId: string): Promise<CorporateUser | undefined> {
-    const [user] = await db.select().from(corporateUsers).where(eq(corporateUsers.userId, userId));
-    return user;
-  }
-
-  // Employee benefits operations
-  async createEmployeeBenefit(benefit: InsertEmployeeBenefit): Promise<EmployeeBenefit> {
-    const [employeeBenefit] = await db
-      .insert(employeeBenefits)
-      .values(benefit)
-      .returning();
-    return employeeBenefit;
-  }
-
-  async getEmployeeBenefit(userId: string, corporateId: number): Promise<EmployeeBenefit | undefined> {
-    const [benefit] = await db
-      .select()
-      .from(employeeBenefits)
-      .where(and(eq(employeeBenefits.userId, userId), eq(employeeBenefits.corporateId, corporateId)));
-    return benefit;
-  }
-
-  async updateEmployeeBenefit(id: number, updates: Partial<InsertEmployeeBenefit>): Promise<EmployeeBenefit> {
-    const [benefit] = await db
-      .update(employeeBenefits)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(employeeBenefits.id, id))
-      .returning();
-    return benefit;
-  }
-
-  async getEmployeeBenefitsByCorporate(corporateId: number): Promise<EmployeeBenefit[]> {
-    return await db.select().from(employeeBenefits).where(eq(employeeBenefits.corporateId, corporateId));
-  }
-
-  // Maintenance operations
-  async createMaintenanceSchedule(schedule: InsertMaintenanceSchedule): Promise<MaintenanceSchedule> {
-    const [maintenanceSchedule] = await db
-      .insert(maintenanceSchedules)
-      .values(schedule)
-      .returning();
-    return maintenanceSchedule;
-  }
-
-  async getMaintenanceSchedules(): Promise<MaintenanceSchedule[]> {
-    return await db.select().from(maintenanceSchedules).orderBy(desc(maintenanceSchedules.scheduledDate));
-  }
-
-  async getMaintenanceSchedulesByUser(userId: string): Promise<MaintenanceSchedule[]> {
-    return await db.select().from(maintenanceSchedules).where(eq(maintenanceSchedules.userId, userId));
-  }
-
-  async getMaintenanceSchedulesByCorporate(corporateId: number): Promise<MaintenanceSchedule[]> {
-    return await db.select().from(maintenanceSchedules).where(eq(maintenanceSchedules.corporateId, corporateId));
-  }
-
-  async updateMaintenanceSchedule(id: number, updates: Partial<InsertMaintenanceSchedule>): Promise<MaintenanceSchedule> {
-    const [schedule] = await db
-      .update(maintenanceSchedules)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(maintenanceSchedules.id, id))
-      .returning();
-    return schedule;
-  }
-
-  // Corporate offers operations
-  async createCorporateOffer(offer: InsertCorporateOffer): Promise<CorporateOffer> {
-    const [corporateOffer] = await db
-      .insert(corporateOffers)
-      .values(offer)
-      .returning();
-    return corporateOffer;
-  }
-
-  async getCorporateOffers(corporateId: number): Promise<CorporateOffer[]> {
-    return await db.select().from(corporateOffers).where(eq(corporateOffers.corporateId, corporateId));
-  }
-
-  async getActiveCorporateOffers(corporateId: number): Promise<CorporateOffer[]> {
-    const now = new Date();
-    return await db
-      .select()
-      .from(corporateOffers)
-      .where(
-        and(
-          eq(corporateOffers.corporateId, corporateId),
-          eq(corporateOffers.isActive, true),
-          lte(corporateOffers.validFrom, now),
-          gte(corporateOffers.validUntil, now)
-        )
-      );
-  }
-
-  async updateCorporateOffer(id: number, updates: Partial<InsertCorporateOffer>): Promise<CorporateOffer> {
-    const [offer] = await db
-      .update(corporateOffers)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(corporateOffers.id, id))
-      .returning();
-    return offer;
-  }
-
-  // Admin-specific methods
-  async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users);
-  }
-
-  async getAllExchangeRequests(): Promise<any[]> {
-    try {
-      return await db.select().from(jewelryExchangeRequests);
-    } catch (error) {
-      console.log("Exchange requests table not available");
-      return [];
-    }
-  }
-
-  async getExchangeRequests(userId?: string): Promise<any[]> {
-    try {
-      if (userId) {
-        return await db.select().from(jewelryExchangeRequests).where(eq(jewelryExchangeRequests.userId, userId));
-      }
-      return await db.select().from(jewelryExchangeRequests);
-    } catch (error) {
-      console.log("Exchange requests table not available");
-      return [];
-    }
-  }
-
-  async getExchangeRequest(id: number): Promise<any | undefined> {
-    try {
-      const [request] = await db.select().from(jewelryExchangeRequests).where(eq(jewelryExchangeRequests.id, id));
-      return request;
-    } catch (error) {
-      console.log("Exchange requests table not available");
-      return undefined;
-    }
-  }
-
-  async createExchangeRequest(data: any): Promise<any> {
-    try {
-      const [request] = await db.insert(jewelryExchangeRequests).values(data).returning();
-      return request;
-    } catch (error) {
-      console.log("Exchange requests table not available");
-      throw error;
-    }
-  }
-
-  async updateExchangeRequest(id: number, data: any): Promise<any> {
-    try {
-      const [request] = await db.update(jewelryExchangeRequests).set(data).where(eq(jewelryExchangeRequests.id, id)).returning();
-      return request;
-    } catch (error) {
-      console.log("Exchange requests table not available");
-      throw error;
-    }
-  }
-
-  async approveExchangeRequest(id: number, approvedBy: string): Promise<any> {
-    try {
-      const [request] = await db.update(jewelryExchangeRequests).set({
-        status: 'approved',
-        approvedBy,
-        approvedAt: new Date()
-      }).where(eq(jewelryExchangeRequests.id, id)).returning();
-      return request;
-    } catch (error) {
-      console.log("Exchange requests table not available");
-      throw error;
-    }
-  }
-
-  async rejectExchangeRequest(id: number, approvedBy: string): Promise<any> {
-    try {
-      const [request] = await db.update(jewelryExchangeRequests).set({
-        status: 'rejected',
-        approvedBy,
-        approvedAt: new Date()
-      }).where(eq(jewelryExchangeRequests.id, id)).returning();
-      return request;
-    } catch (error) {
-      console.log("Exchange requests table not available");
-      throw error;
-    }
-  }
-
-  async deleteExchangeRequest(id: number): Promise<boolean> {
-    try {
-      const result = await db.delete(jewelryExchangeRequests).where(eq(jewelryExchangeRequests.id, id));
-      return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      console.log("Exchange requests table not available");
-      return false;
-    }
-  }
-
-  async createExchangeNotification(data: any): Promise<any> {
-    try {
-      // Placeholder for notification system
-      console.log("Exchange notification:", data);
-      return data;
-    } catch (error) {
-      console.log("Notification system not available");
-      return null;
-    }
-  }
-
-  async getAllCorporateRequests(): Promise<any[]> {
-    try {
-      return await db.select().from(corporateRegistrations);
-    } catch (error) {
-      console.log("Corporate registrations table not available");
-      return [];
-    }
-  }
-
-  // Offline Sales operations
-  async getOfflineSales(filters?: {
-    dateFrom?: Date;
-    dateTo?: Date;
-    category?: string;
-    paymentMode?: string;
-    limit?: number;
-    offset?: number;
-  }): Promise<OfflineSale[]> {
-    let query = db.select().from(offlineSales);
-    const conditions = [];
-
-    if (filters?.dateFrom) {
-      conditions.push(sql`${offlineSales.saleDate} >= ${filters.dateFrom}`);
-    }
-    if (filters?.dateTo) {
-      conditions.push(sql`${offlineSales.saleDate} <= ${filters.dateTo}`);
-    }
-    if (filters?.category) {
-      conditions.push(eq(offlineSales.productCategory, filters.category));
-    }
-    if (filters?.paymentMode) {
-      conditions.push(eq(offlineSales.paymentMode, filters.paymentMode));
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    query = query.orderBy(desc(offlineSales.saleDate));
-
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
-    if (filters?.offset) {
-      query = query.offset(filters.offset);
-    }
-
-    return await query;
-  }
-
-  async getOfflineSale(id: number): Promise<OfflineSale | undefined> {
-    const [sale] = await db.select().from(offlineSales).where(eq(offlineSales.id, id));
-    return sale;
-  }
-
-  async createOfflineSale(sale: InsertOfflineSale): Promise<OfflineSale> {
-    const [newSale] = await db.insert(offlineSales).values(sale).returning();
-    
-    // Auto-update stock if this relates to a stock item
-    if (sale.productName && sale.weightGrams) {
-      try {
-        await this.updateStockForSale(sale.productName, parseFloat(sale.weightGrams.toString()), sale.createdBy);
-      } catch (error) {
-        console.log("Stock update failed for offline sale:", error);
-      }
-    }
-    
-    return newSale;
-  }
-
-  async updateOfflineSale(id: number, sale: Partial<InsertOfflineSale>): Promise<OfflineSale> {
-    const [updatedSale] = await db
-      .update(offlineSales)
-      .set({ ...sale, updatedAt: new Date() })
-      .where(eq(offlineSales.id, id))
-      .returning();
-    return updatedSale;
-  }
-
-  async deleteOfflineSale(id: number): Promise<boolean> {
-    const result = await db.delete(offlineSales).where(eq(offlineSales.id, id));
-    return (result.rowCount ?? 0) > 0;
-  }
-
-  // Stock Management operations
-  async getStockItems(filters?: {
-    category?: string;
-    lowStock?: boolean;
-    search?: string;
-    limit?: number;
-    offset?: number;
-  }): Promise<StockItem[]> {
-    let query = db.select().from(stockItems);
-    const conditions = [];
-
-    if (filters?.category) {
-      conditions.push(eq(stockItems.category, filters.category));
-    }
-    if (filters?.lowStock) {
-      conditions.push(sql`${stockItems.currentQuantity} <= ${stockItems.reorderLevel}`);
-    }
-    if (filters?.search) {
-      conditions.push(ilike(stockItems.productName, `%${filters.search}%`));
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    query = query.orderBy(asc(stockItems.productName));
-
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
-    if (filters?.offset) {
-      query = query.offset(filters.offset);
-    }
-
-    return await query;
-  }
-
-  async getStockItem(id: number): Promise<StockItem | undefined> {
-    const [item] = await db.select().from(stockItems).where(eq(stockItems.id, id));
-    return item;
-  }
-
-  async createStockItem(item: InsertStockItem): Promise<StockItem> {
-    const [newItem] = await db.insert(stockItems).values(item).returning();
-    return newItem;
-  }
-
-  async updateStockItem(id: number, item: Partial<InsertStockItem>): Promise<StockItem> {
-    const [updatedItem] = await db
-      .update(stockItems)
-      .set({ ...item, updatedAt: new Date() })
-      .where(eq(stockItems.id, id))
-      .returning();
-    return updatedItem;
-  }
-
-  async deleteStockItem(id: number): Promise<boolean> {
-    const result = await db.delete(stockItems).where(eq(stockItems.id, id));
-    return (result.rowCount ?? 0) > 0;
-  }
-
-  // Stock Movement operations
-  async getStockMovements(stockItemId?: number, limit: number = 50): Promise<StockMovement[]> {
-    let query = db.select().from(stockMovements);
-    
-    if (stockItemId) {
-      query = query.where(eq(stockMovements.stockItemId, stockItemId));
-    }
-    
-    query = query.orderBy(desc(stockMovements.createdAt)).limit(limit);
-    return await query;
-  }
-
-  async createStockMovement(movement: InsertStockMovement): Promise<StockMovement> {
-    const [newMovement] = await db.insert(stockMovements).values(movement).returning();
-    
-    // Update stock item quantity
-    const quantityChange = movement.movementType === 'in' ? movement.quantity : -movement.quantity;
-    await db
-      .update(stockItems)
-      .set({ 
-        currentQuantity: sql`${stockItems.currentQuantity} + ${quantityChange}`,
-        updatedAt: new Date()
-      })
-      .where(eq(stockItems.id, movement.stockItemId));
-    
-    return newMovement;
-  }
-
-  async updateStockQuantity(stockItemId: number, quantityChange: number, reason: string, performedBy: string): Promise<void> {
-    // Create stock movement record
-    await this.createStockMovement({
-      stockItemId,
-      movementType: quantityChange > 0 ? 'in' : 'out',
-      reason: reason as any,
-      quantity: Math.abs(quantityChange),
-      performedBy,
-      notes: `Automatic stock adjustment: ${reason}`
-    });
-  }
-
-  // Helper method for automatic stock updates on sales
-  private async updateStockForSale(productName: string, quantity: number, performedBy: string): Promise<void> {
-    // Find matching stock item
-    const [stockItem] = await db
-      .select()
-      .from(stockItems)
-      .where(ilike(stockItems.productName, `%${productName}%`))
-      .limit(1);
-
-    if (stockItem) {
-      await this.updateStockQuantity(stockItem.id, -quantity, 'sale', performedBy);
-    }
-  }
-
-  // Day Book operations
-  async getDayBookEntries(dateFrom?: Date, dateTo?: Date): Promise<DayBookEntry[]> {
-    let query = db.select().from(dayBookEntries);
-    const conditions = [];
-
-    if (dateFrom) {
-      conditions.push(sql`${dayBookEntries.businessDate} >= ${dateFrom}`);
-    }
-    if (dateTo) {
-      conditions.push(sql`${dayBookEntries.businessDate} <= ${dateTo}`);
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    return await query.orderBy(desc(dayBookEntries.businessDate));
-  }
-
-  async getDayBookEntry(businessDate: Date): Promise<DayBookEntry | undefined> {
-    const [entry] = await db
-      .select()
-      .from(dayBookEntries)
-      .where(sql`DATE(${dayBookEntries.businessDate}) = DATE(${businessDate})`);
-    return entry;
-  }
-
-  async createDayBookEntry(entry: InsertDayBookEntry): Promise<DayBookEntry> {
-    const [newEntry] = await db.insert(dayBookEntries).values(entry).returning();
-    return newEntry;
-  }
-
-  async updateDayBookEntry(id: number, entry: Partial<InsertDayBookEntry>): Promise<DayBookEntry> {
-    const [updatedEntry] = await db
-      .update(dayBookEntries)
-      .set({ ...entry, updatedAt: new Date() })
-      .where(eq(dayBookEntries.id, id))
-      .returning();
-    return updatedEntry;
-  }
-
-  async calculateDayBookData(businessDate: Date): Promise<Partial<DayBookEntry>> {
-    const startOfDay = new Date(businessDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(businessDate);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    // Calculate offline sales
-    const offlineSalesData = await db
-      .select({
-        totalSales: sql<number>`COALESCE(SUM(${offlineSales.totalAmount}), 0)`,
-        totalOrders: sql<number>`COUNT(*)`,
-        cashPayments: sql<number>`COALESCE(SUM(CASE WHEN ${offlineSales.paymentMode} = 'cash' THEN ${offlineSales.totalAmount} ELSE 0 END), 0)`,
-        cardPayments: sql<number>`COALESCE(SUM(CASE WHEN ${offlineSales.paymentMode} = 'card' THEN ${offlineSales.totalAmount} ELSE 0 END), 0)`,
-        upiPayments: sql<number>`COALESCE(SUM(CASE WHEN ${offlineSales.paymentMode} = 'upi' THEN ${offlineSales.totalAmount} ELSE 0 END), 0)`,
-        bankTransferPayments: sql<number>`COALESCE(SUM(CASE WHEN ${offlineSales.paymentMode} = 'bank_transfer' THEN ${offlineSales.totalAmount} ELSE 0 END), 0)`
-      })
-      .from(offlineSales)
-      .where(and(
-        sql`${offlineSales.saleDate} >= ${startOfDay}`,
-        sql`${offlineSales.saleDate} <= ${endOfDay}`
-      ));
-
-    // Calculate online sales
-    const onlineSalesData = await db
-      .select({
-        totalSales: sql<number>`COALESCE(SUM(${orders.totalAmount}), 0)`,
-        totalOrders: sql<number>`COUNT(*)`
-      })
-      .from(orders)
-      .where(and(
-        sql`${orders.createdAt} >= ${startOfDay}`,
-        sql`${orders.createdAt} <= ${endOfDay}`,
-        eq(orders.status, 'completed')
-      ));
-
-    const offlineData = offlineSalesData[0] || {};
-    const onlineData = onlineSalesData[0] || {};
-
-    const totalOnlineSales = parseFloat(onlineData.totalSales?.toString() || '0');
-    const totalOfflineSales = parseFloat(offlineData.totalSales?.toString() || '0');
-    const grossRevenue = totalOnlineSales + totalOfflineSales;
-
-    return {
-      businessDate,
-      totalOnlineSales: totalOnlineSales.toString(),
-      totalOfflineSales: totalOfflineSales.toString(),
-      totalOnlineOrders: onlineData.totalOrders || 0,
-      totalOfflineOrders: offlineData.totalOrders || 0,
-      cashPayments: offlineData.cashPayments?.toString() || '0',
-      cardPayments: offlineData.cardPayments?.toString() || '0',
-      upiPayments: offlineData.upiPayments?.toString() || '0',
-      bankTransferPayments: offlineData.bankTransferPayments?.toString() || '0',
-      grossRevenue: grossRevenue.toString(),
-      netRevenue: grossRevenue.toString(), // Simplified for now
-      returns: '0',
-      discounts: '0',
-      adjustments: '0'
-    };
-  }
-
-  // Reporting operations
-  async getSalesReport(filters: {
-    dateFrom: Date;
-    dateTo: Date;
-    salesType?: 'online' | 'offline' | 'both';
-    category?: string;
-    paymentMode?: string;
-  }): Promise<{
-    totalSales: number;
-    totalOrders: number;
-    paymentBreakdown: Record<string, number>;
-    categoryBreakdown: Record<string, number>;
-    salesData: any[];
-  }> {
-    const result = {
-      totalSales: 0,
-      totalOrders: 0,
-      paymentBreakdown: {},
-      categoryBreakdown: {},
-      salesData: []
-    };
-
-    // Get offline sales data
-    if (filters.salesType !== 'online') {
-      const offlineSales = await this.getOfflineSales({
-        dateFrom: filters.dateFrom,
-        dateTo: filters.dateTo,
-        category: filters.category,
-        paymentMode: filters.paymentMode
-      });
-
-      result.salesData.push(...offlineSales.map(sale => ({
-        ...sale,
-        type: 'offline'
-      })));
-
-      result.totalSales += offlineSales.reduce((sum, sale) => sum + parseFloat(sale.totalAmount.toString()), 0);
-      result.totalOrders += offlineSales.length;
-
-      // Payment mode breakdown
-      offlineSales.forEach(sale => {
-        const mode = sale.paymentMode;
-        result.paymentBreakdown[mode] = (result.paymentBreakdown[mode] || 0) + parseFloat(sale.totalAmount.toString());
-      });
-
-      // Category breakdown
-      offlineSales.forEach(sale => {
-        const category = sale.productCategory;
-        result.categoryBreakdown[category] = (result.categoryBreakdown[category] || 0) + parseFloat(sale.totalAmount.toString());
-      });
-    }
-
-    // Get online sales data
-    if (filters.salesType !== 'offline') {
-      const onlineOrders = await this.getOrders();
-      const filteredOrders = onlineOrders.filter(order => {
-        const orderDate = new Date(order.createdAt);
-        return orderDate >= filters.dateFrom && 
-               orderDate <= filters.dateTo && 
-               order.status === 'completed';
-      });
-
-      result.salesData.push(...filteredOrders.map(order => ({
-        ...order,
-        type: 'online'
-      })));
-
-      result.totalSales += filteredOrders.reduce((sum, order) => sum + parseFloat(order.totalAmount.toString()), 0);
-      result.totalOrders += filteredOrders.length;
-
-      // For online orders, assume card payment mode and general category
-      filteredOrders.forEach(order => {
-        result.paymentBreakdown['card'] = (result.paymentBreakdown['card'] || 0) + parseFloat(order.totalAmount.toString());
-        result.categoryBreakdown['online'] = (result.categoryBreakdown['online'] || 0) + parseFloat(order.totalAmount.toString());
-      });
-    }
-
-    return result;
+    return updatedRate;
   }
 }
 
