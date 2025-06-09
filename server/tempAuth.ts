@@ -59,10 +59,10 @@ export async function setupTempAuth(app: Express) {
     }
   });
 
-  // Login redirect endpoint
-  app.get("/api/login", (req, res) => {
-    res.redirect("/temp-login");
-  });
+  // Login redirect endpoint - DISABLED to prevent conflicts with main auth
+  // app.get("/api/login", (req, res) => {
+  //   res.redirect("/temp-login");
+  // });
 
   // Logout endpoint
   app.post("/api/logout", (req, res) => {

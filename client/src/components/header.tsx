@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import CartSidebar from "./cart-sidebar";
@@ -294,7 +295,15 @@ export default function Header() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => window.location.href = "/api/logout"}
+                      onClick={async () => {
+                        try {
+                          await apiRequest("POST", "/api/logout");
+                          queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+                          window.location.href = "/";
+                        } catch (error) {
+                          console.error("Logout failed:", error);
+                        }
+                      }}
                       className="hidden sm:flex relative group text-warm-gray hover:text-red-500 transition-all duration-300 rounded-lg hover:bg-red-50 hover:shadow-md transform hover:scale-105"
                     >
                       <span className="relative z-10">Logout</span>
@@ -305,7 +314,7 @@ export default function Header() {
               ) : (
                 <Button
                   className="relative group bg-gradient-to-r from-gold to-amber-500 hover:from-amber-500 hover:to-gold text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
-                  onClick={() => window.location.href = "/api/login"}
+                  onClick={() => window.location.href = "/auth"}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 rounded-md scale-0 group-hover:scale-100 transition-transform duration-300"></div>
                   <User className="h-4 w-4 mr-2 relative z-10 transform group-hover:scale-110 transition-transform duration-300" />

@@ -101,12 +101,13 @@ export async function setupAuth(app: Express) {
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
-  app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      prompt: "login consent",
-      scope: ["openid", "email", "profile", "offline_access"],
-    })(req, res, next);
-  });
+  // DISABLED to prevent conflicts with main auth system
+  // app.get("/api/login", (req, res, next) => {
+  //   passport.authenticate(`replitauth:${req.hostname}`, {
+  //     prompt: "login consent",
+  //     scope: ["openid", "email", "profile", "offline_access"],
+  //   })(req, res, next);
+  // });
 
   app.get("/api/callback", (req, res, next) => {
     passport.authenticate(`replitauth:${req.hostname}`, {
