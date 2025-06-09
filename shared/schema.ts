@@ -365,3 +365,12 @@ export type InsertUserMemory = z.infer<typeof insertUserMemorySchema>;
 export type ChatConversation = typeof chatConversations.$inferSelect;
 
 export type MarketRate = typeof marketRates.$inferSelect;
+
+export type CorporateRegistration = typeof corporateRegistrations.$inferSelect;
+export type InsertCorporateRegistration = z.infer<typeof insertCorporateRegistrationSchema>;
+
+// Authentication types
+export type CustomerSignup = z.infer<typeof customerSignupSchema>;
+export type WholesalerSignup = z.infer<typeof wholesalerSignupSchema>;
+export type Signin = z.infer<typeof signinSchema>;
+export type ForgotPassword = z.infer<typeof forgotPasswordSchema>;
