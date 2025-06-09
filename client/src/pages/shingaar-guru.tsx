@@ -17,6 +17,7 @@ import { Sparkles, Heart, Calendar, MapPin, Users, Crown, Palette, Zap, Star, Gi
 import { motion, AnimatePresence } from "framer-motion";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import PageNavigation from "@/components/page-navigation";
 import { Link } from "wouter";
 import type { Product } from "@shared/schema";
 
@@ -191,25 +192,9 @@ export default function ShingaarGuru() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <PageNavigation />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Navigation Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <Home className="w-4 h-4" />
-                Home
-              </Button>
-            </Link>
-            <Link href="/products">
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Browse Products
-              </Button>
-            </Link>
-          </div>
-        </div>
 
         {/* Header Section */}
         <div className="text-center mb-12">

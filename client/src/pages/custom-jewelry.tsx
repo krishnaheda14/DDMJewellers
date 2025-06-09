@@ -133,30 +133,7 @@ export default function CustomJewelry() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      {/* Navigation Header */}
-      <div className="bg-white border-b py-4">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <Button 
-              variant="outline" 
-              onClick={() => window.location.href = "/"}
-              className="flex items-center gap-2 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Home
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => window.location.href = "/"}
-              className="flex items-center gap-2 text-amber-600 hover:text-amber-700"
-            >
-              <Home className="h-4 w-4" />
-              DDM Jewellers
-            </Button>
-          </div>
-        </div>
-      </div>
+      <PageNavigation />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">

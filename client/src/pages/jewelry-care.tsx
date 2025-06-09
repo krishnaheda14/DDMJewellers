@@ -25,6 +25,7 @@ import {
   Diamond,
   Gem
 } from "lucide-react";
+import PageNavigation from "@/components/page-navigation";
 import type { CareTutorial, TutorialProgress } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
@@ -187,6 +188,7 @@ export default function JewelryCare() {
 
   return (
     <div className="container-fluid p-responsive min-h-screen bg-gradient-to-br from-amber-50/30 via-white to-gold/5">
+      <PageNavigation />
       {/* Hero Section */}
       <div className="text-center m-responsive">
         <motion.div

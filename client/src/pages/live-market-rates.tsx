@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { TrendingUp, TrendingDown, RefreshCw, Calculator, Clock } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import PageNavigation from "@/components/page-navigation";
 
 interface MarketRates {
   id: number;
