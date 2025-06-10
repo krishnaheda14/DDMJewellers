@@ -112,9 +112,7 @@ export class OptimizedStorage {
         userId: cartItems.userId,
         productId: cartItems.productId,
         quantity: cartItems.quantity,
-        customizations: cartItems.customizations,
         createdAt: cartItems.createdAt,
-        updatedAt: cartItems.updatedAt,
         // Essential product fields only
         product: {
           id: products.id,
@@ -124,8 +122,7 @@ export class OptimizedStorage {
           productType: products.productType,
           material: products.material,
           weight: products.weight,
-          isActive: products.isActive,
-          stockQuantity: products.stockQuantity
+          isActive: products.isActive
         }
       })
       .from(cartItems)
@@ -141,9 +138,7 @@ export class OptimizedStorage {
         userId: row.userId,
         productId: row.productId,
         quantity: row.quantity,
-        customizations: row.customizations,
         createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
         product: row.product as Product
       }));
       

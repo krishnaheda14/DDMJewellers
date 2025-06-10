@@ -130,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
-      const cartItems = await storage.getCartItems(userId);
+      const cartItems = await optimizedStorage.getCartItems(userId);
       res.json(cartItems);
     } catch (error) {
       console.error("Error fetching cart:", error);
@@ -223,10 +223,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Market rates
+  // Market rates - using optimized storage
   app.get("/api/market-rates", async (req, res) => {
     try {
-      const rates = await storage.getCurrentRates();
+      const rates = await optimizedStorage.getCurrentRates();
       res.json(rates);
     } catch (error) {
       console.error("Error fetching market rates:", error);
