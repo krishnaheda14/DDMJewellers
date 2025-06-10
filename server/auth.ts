@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { Express, Request, Response, NextFunction } from 'express';
 import session from 'express-session';
-import { storage } from './storage';
+import { storage } from './storage-simple';
 import { 
   User 
 } from '@shared/schema';

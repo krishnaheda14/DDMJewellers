@@ -15,6 +15,9 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: any): Promise<User>;
+  createEmailVerificationToken(token: any): Promise<any>;
 
   // Category operations
   getCategories(): Promise<Category[]>;
@@ -114,6 +117,43 @@ export class SimpleStorage implements IStorage {
       return result[0];
     } catch (error) {
       console.error("Error upserting user:", error);
+      throw error;
+    }
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    try {
+      const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error("Error getting user by email:", error);
+      return undefined;
+    }
+  }
+
+  async createUser(userData: any): Promise<User> {
+    try {
+      const result = await db.insert(users).values(userData).returning();
+      return result[0];
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
+  }
+
+  async createEmailVerificationToken(tokenData: any): Promise<any> {
+    try {
+      // Store verification token in the user record
+      await db
+        .update(users)
+        .set({ 
+          emailVerificationToken: tokenData.token,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, tokenData.userId));
+      return { userId: tokenData.userId, token: tokenData.token, expiresAt: tokenData.expiresAt };
+    } catch (error) {
+      console.error("Error creating email verification token:", error);
       throw error;
     }
   }

@@ -1,6 +1,6 @@
 import { Express } from "express";
 import { Server } from "http";
-import { isAuthenticated, isAdmin, isWholesaler } from "./auth";
+import { isAuthenticated, isAdmin, isWholesaler, setupAuth } from "./auth";
 import { storage } from "./storage-simple";
 import { marketRatesService } from "./market-rates";
 import OpenAI from "openai";
@@ -48,6 +48,9 @@ const storage_config = multer.diskStorage({
 const upload = multer({ storage: storage_config });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Setup authentication routes first
+  await setupAuth(app);
   
   // Basic health check
   app.get("/api/health", (req, res) => {
