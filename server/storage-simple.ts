@@ -9,7 +9,7 @@ import {
   type Wishlist, type InsertWishlist, type UserMemory, type InsertUserMemory,
   type ChatConversation, type MarketRate
 } from "@shared/schema";
-import { eq, and, ilike, desc } from "drizzle-orm";
+import { eq, and, ilike, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
