@@ -37,18 +37,9 @@ export class OptimizedStorage {
         weight: products.weight,
         makingCharges: products.makingCharges,
         purity: products.purity,
-        stoneType: products.stoneType,
-        stoneWeight: products.stoneWeight,
-        certification: products.certification,
-        isCustomizable: products.isCustomizable,
         isFeatured: products.isFeatured,
         isActive: products.isActive,
         tags: products.tags,
-        sku: products.sku,
-        stockQuantity: products.stockQuantity,
-        dimensions: products.dimensions,
-        metalWeight: products.metalWeight,
-        laborCharges: products.laborCharges,
         createdAt: products.createdAt,
         updatedAt: products.updatedAt
       }).from(products);

@@ -2,6 +2,7 @@ import { Express } from "express";
 import { Server } from "http";
 import { isAuthenticated, isAdmin, isWholesaler, setupAuth } from "./auth";
 import { storage } from "./storage-simple";
+import { optimizedStorage } from "./optimized-storage";
 import { marketRatesService } from "./market-rates";
 import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
@@ -57,10 +58,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Categories
+  // Categories - using optimized storage
   app.get("/api/categories", async (req, res) => {
     try {
-      const categories = await storage.getCategories();
+      const categories = await optimizedStorage.getCategories();
       res.json(categories);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -79,17 +80,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Products
+  // Products - using optimized storage
   app.get("/api/products", async (req, res) => {
     try {
       const filters = {
         categoryId: req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined,
         search: req.query.search as string,
         featured: req.query.featured === 'true',
-        limit: req.query.limit ? parseInt(req.query.limit as string) : undefined,
-        offset: req.query.offset ? parseInt(req.query.offset as string) : undefined,
+        limit: req.query.limit ? parseInt(req.query.limit as string) : 20,
+        offset: req.query.offset ? parseInt(req.query.offset as string) : 0,
       };
-      const products = await storage.getProducts(filters);
+      const products = await optimizedStorage.getProducts(filters);
       res.json(products);
     } catch (error) {
       console.error("Error fetching products:", error);
