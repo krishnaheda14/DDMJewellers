@@ -85,6 +85,9 @@ export interface IStorage {
   // Market rates operations
   getCurrentRates(): Promise<MarketRate[]>;
   updateMarketRate(metal: string, rate: number): Promise<MarketRate>;
+
+  // Authentication session operations
+  updateUserSession(userId: string, sessionToken: string | null, sessionExpiresAt: Date | null): Promise<void>;
 }
 
 export class SimpleStorage implements IStorage {
@@ -630,6 +633,21 @@ export class SimpleStorage implements IStorage {
       return result[0];
     } catch (error) {
       console.error("Error updating market rate:", error);
+      throw error;
+    }
+  }
+
+  async updateUserSession(userId: string, sessionToken: string | null, sessionExpiresAt: Date | null): Promise<void> {
+    try {
+      await db
+        .update(users)
+        .set({ 
+          sessionToken: sessionToken, 
+          sessionExpiresAt: sessionExpiresAt 
+        })
+        .where(eq(users.id, userId));
+    } catch (error) {
+      console.error("Error updating user session:", error);
       throw error;
     }
   }
