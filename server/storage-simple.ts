@@ -639,13 +639,12 @@ export class SimpleStorage implements IStorage {
 
   async updateUserSession(userId: string, sessionToken: string | null, sessionExpiresAt: Date | null): Promise<void> {
     try {
-      await db
-        .update(users)
-        .set({ 
-          sessionToken: sessionToken, 
-          sessionExpiresAt: sessionExpiresAt 
-        })
-        .where(eq(users.id, userId));
+      // Use raw SQL to avoid Drizzle schema issues
+      await db.execute(sql`
+        UPDATE users 
+        SET session_token = ${sessionToken}, session_expires_at = ${sessionExpiresAt}
+        WHERE id = ${userId}
+      `);
     } catch (error) {
       console.error("Error updating user session:", error);
       throw error;
