@@ -14,7 +14,7 @@ const customerSignupSchema = z.object({
   password: z.string().min(6),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  phoneNumber: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 const wholesalerSignupSchema = z.object({
@@ -221,7 +221,7 @@ export async function setupAuth(app: Express): Promise<void> {
         passwordHash,
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
-        phoneNumber: validatedData.phoneNumber,
+        phoneNumber: validatedData.phone,
         role: 'customer',
         isEmailVerified: false,
         isApproved: true, // Customers are auto-approved

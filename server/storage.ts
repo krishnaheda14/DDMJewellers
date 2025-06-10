@@ -39,6 +39,9 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: any): Promise<User>;
+  createEmailVerificationToken(token: any): Promise<any>;
 
   // Category operations
   getCategories(): Promise<Category[]>;
@@ -131,6 +134,30 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: any): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
+    return user;
+  }
+
+  async createEmailVerificationToken(tokenData: any): Promise<any> {
+    // For now, we'll store the verification token in the user record
+    // In a production app, you might want a separate tokens table
+    const [user] = await db
+      .update(users)
+      .set({ 
+        emailVerificationToken: tokenData.token,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, tokenData.userId))
+      .returning();
+    return { userId: tokenData.userId, token: tokenData.token, expiresAt: tokenData.expiresAt };
   }
 
   // Category operations
