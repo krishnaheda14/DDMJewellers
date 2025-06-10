@@ -218,18 +218,32 @@ export class SimpleStorage implements IStorage {
     offset?: number;
   }): Promise<Product[]> {
     try {
-      let query = db.select().from(products);
+      let whereConditions = [];
       
       if (filters?.categoryId) {
-        query = query.where(eq(products.categoryId, filters.categoryId));
+        whereConditions.push(eq(products.categoryId, filters.categoryId));
       }
       
       if (filters?.featured) {
-        query = query.where(eq(products.featured, true));
+        whereConditions.push(eq(products.isFeatured, true));
+      }
+      
+      if (filters?.search) {
+        whereConditions.push(ilike(products.name, `%${filters.search}%`));
+      }
+      
+      let query = db.select().from(products);
+      
+      if (whereConditions.length > 0) {
+        query = query.where(and(...whereConditions));
       }
       
       if (filters?.limit) {
         query = query.limit(filters.limit);
+      }
+      
+      if (filters?.offset) {
+        query = query.offset(filters.offset);
       }
       
       return await query;
