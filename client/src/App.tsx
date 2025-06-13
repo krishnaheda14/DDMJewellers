@@ -34,6 +34,7 @@ const CorporateAdmin = lazy(() => import("@/pages/corporate-admin"));
 const Shop = lazy(() => import("@/pages/shop"));
 const LiveMarketRates = lazy(() => import("@/pages/live-market-rates"));
 const AdminDashboard = lazy(() => import("@/pages/admin-dashboard"));
+const AdminCategories = lazy(() => import("@/pages/admin-categories"));
 const EnhancedAdminDashboard = lazy(() => import("@/pages/enhanced-admin-dashboard"));
 const CustomerDashboard = lazy(() => import("@/pages/customer-dashboard"));
 const WholesalerDashboard = lazy(() => import("@/pages/wholesaler-dashboard"));
@@ -83,6 +84,7 @@ function Router() {
         <Route path="/" component={isAuthenticated ? Home : Landing} />
         <Route path="/cart" component={isAuthenticated ? Cart : AuthPage} />
         <Route path="/admin" component={isAuthenticated ? Admin : AuthPage} />
+        <Route path="/admin/categories" component={isAuthenticated ? AdminCategories : AuthPage} />
         <Route path="/admin/dashboard" component={isAuthenticated ? EnhancedAdminDashboard : AuthPage} />
         <Route path="/customer/dashboard" component={isAuthenticated ? CustomerDashboard : AuthPage} />
         <Route path="/wholesaler/dashboard" component={isAuthenticated ? WholesalerDashboard : AuthPage} />

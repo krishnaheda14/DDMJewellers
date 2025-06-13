@@ -129,6 +129,23 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-green-600" />
+                Category Management
+              </CardTitle>
+              <CardDescription>
+                Manage jewelry categories and subcategories
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button className="w-full" onClick={() => window.location.href = '/admin/categories'}>
+                Manage Categories
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-blue-600" />
                 Product Management
               </CardTitle>
               <CardDescription>
