@@ -77,7 +77,7 @@ export default function Home() {
               <Button 
                 size="lg"
                 variant="outline" 
-                className="btn-responsive border-2 border-white text-white hover:bg-white hover:text-deep-navy rounded-full font-semibold transition-all touch-target"
+                className="btn-responsive border-2 border-gold bg-gold/20 text-gold hover:bg-gold hover:text-white rounded-full font-semibold transition-all touch-target backdrop-blur-sm"
                 onClick={() => navigate("/products?featured=true")}
               >
                 Featured Products
@@ -87,14 +87,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Live Gold Rates */}
+      {/* Live Gold & Silver Rates - Prominent Position */}
       {goldRates && (
-        <section className="p-responsive bg-gradient-to-r from-gold/10 via-cream-bg to-gold/10">
+        <section className="py-12 sm:py-16 bg-gradient-to-br from-gold/5 via-white to-amber-50/30 border-b border-gold/10">
           <div className="container-fluid">
             <div className="text-center mb-8 sm:mb-12">
               <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                 <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-gold" />
-                <h2 className="heading-lg font-bold text-deep-navy">Live Gold Rates</h2>
+                <h2 className="heading-lg font-bold text-deep-navy">Live Gold & Silver Rates</h2>
                 <Coins className="h-6 w-6 sm:h-8 sm:w-8 text-gold" />
               </div>
               <p className="text-warm-gray responsive-text">Current market prices for gold and silver investments</p>

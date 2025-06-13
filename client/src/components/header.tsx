@@ -271,7 +271,7 @@ export default function Header() {
 
                   {/* User Menu */}
                   <div className="flex items-center space-x-2">
-                    {user?.isAdmin && (
+                    {user?.role === 'admin' && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -440,7 +440,7 @@ export default function Header() {
                 {/* Mobile User Actions */}
                 {isAuthenticated && (
                   <div className="flex flex-col space-y-2 pt-4 border-t border-gray-100">
-                    {user?.isAdmin && (
+                    {user?.role === 'admin' && (
                       <button
                         onClick={() => {
                           navigate("/admin");
