@@ -5,10 +5,11 @@ import {
   cartItems,
   orders,
   orderItems,
-  userMemories,
+  userMemory,
   chatConversations,
   wholesalerDesigns,
   wishlists,
+  marketRates,
   type User,
   type UpsertUser,
   type Category,
@@ -24,7 +25,7 @@ import {
   type UserMemory,
   type InsertUserMemory,
   type ChatConversation,
-  type InsertChatConversation,
+
   type WholesalerDesign,
   type InsertWholesalerDesign,
   type Wishlist,
@@ -585,6 +586,33 @@ export class DatabaseStorage implements IStorage {
     }
     
     return await query;
+  }
+
+  // Market rates operations
+  async createGoldRate(rates: {
+    rate24k: string;
+    rate22k: string;
+    rate18k: string;
+    silverRate: string;
+    currency?: string;
+    source?: string;
+  }): Promise<void> {
+    // Clear existing rates
+    await db.delete(marketRates);
+    
+    // Insert new rates
+    const rateData = [
+      { metal: "gold_24k", unit: "gram", rate: rates.rate24k, currency: rates.currency || "INR", source: rates.source || "auto" },
+      { metal: "gold_22k", unit: "gram", rate: rates.rate22k, currency: rates.currency || "INR", source: rates.source || "auto" },
+      { metal: "gold_18k", unit: "gram", rate: rates.rate18k, currency: rates.currency || "INR", source: rates.source || "auto" },
+      { metal: "silver", unit: "gram", rate: rates.silverRate, currency: rates.currency || "INR", source: rates.source || "auto" }
+    ];
+    
+    await db.insert(marketRates).values(rateData);
+  }
+
+  async getCurrentRates(): Promise<any[]> {
+    return await db.select().from(marketRates).orderBy(desc(marketRates.updatedAt));
   }
 }
 
