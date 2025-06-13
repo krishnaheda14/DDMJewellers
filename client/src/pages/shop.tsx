@@ -26,6 +26,7 @@ import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import PageNavigation from "@/components/page-navigation";
+import { ProductCard } from "@/components/ProductCard";
 
 interface Product {
   id: number;
