@@ -190,6 +190,14 @@ export default function AdminCategories() {
     }
   };
 
+  // Handle status toggle
+  const handleToggleStatus = (category: Category) => {
+    updateCategoryMutation.mutate({
+      id: category.id,
+      data: { isActive: !category.isActive }
+    });
+  };
+
   // Filter categories
   const mainCategories = categories.filter((cat: Category) => !cat.parentId);
   const subcategories = categories.filter((cat: Category) => cat.parentId);
@@ -395,13 +403,13 @@ export default function AdminCategories() {
           </Card>
         </div>
 
-        {/* Filters */}
+        {/* Filters and Bulk Actions */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Filters</CardTitle>
+            <CardTitle>Filters & Bulk Actions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -428,6 +436,16 @@ export default function AdminCategories() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            
+            {/* Quick Stats */}
+            <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+              <span>Total: {categories.length} categories</span>
+              <span>Main: {mainCategories.length}</span>
+              <span>Subcategories: {subcategories.length}</span>
+              {filterParent !== "all" && (
+                <span>Filtered: {filteredCategories.length} shown</span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -496,20 +514,44 @@ export default function AdminCategories() {
                           </p>
                         )}
                         
-                        {/* Quick Add Subcategory */}
-                        <div className="mt-3 pt-3 border-t">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setIsCreateDialogOpen(true);
-                              createForm.setValue("parentId", category.id);
-                            }}
-                            className="text-xs"
-                          >
-                            <Plus className="h-3 w-3 mr-1" />
-                            Add Subcategory to {category.name}
-                          </Button>
+                        {/* Quick Actions */}
+                        <div className="mt-3 pt-3 border-t space-y-2">
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setIsCreateDialogOpen(true);
+                                createForm.setValue("parentId", category.id);
+                              }}
+                              className="text-xs flex-1"
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              Add Subcategory
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(category)}
+                              className="text-xs"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                          
+                          {/* Category Status Toggle */}
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-gray-500">Status:</span>
+                            <Button
+                              variant={category.isActive ? "default" : "secondary"}
+                              size="sm"
+                              onClick={() => handleToggleStatus(category)}
+                              className="h-6 px-2 text-xs"
+                            >
+                              {category.isActive ? "Active" : "Inactive"}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     );
