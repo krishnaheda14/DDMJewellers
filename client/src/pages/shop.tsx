@@ -486,13 +486,54 @@ export default function Shop() {
               </Select>
             </div>
             
-            {/* Visual Category Browser */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
-              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <Filter className="h-5 w-5 text-amber-600" />
-                Browse by Category
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+            {/* Category Breadcrumb Navigation */}
+            {selectedParentCategory !== "all" && (
+              <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedParentCategory("all");
+                      setSelectedCategory("all");
+                    }}
+                    className="h-auto p-1 text-amber-700 hover:text-amber-900"
+                  >
+                    <Home className="h-4 w-4 mr-1" />
+                    All Categories
+                  </Button>
+                  <span className="text-amber-600">/</span>
+                  <span className="font-medium text-amber-800">
+                    {mainCategories.find(cat => cat.id.toString() === selectedParentCategory)?.name}
+                  </span>
+                  {selectedCategory !== "all" && (
+                    <>
+                      <span className="text-amber-600">/</span>
+                      <span className="font-medium text-amber-900">
+                        {subcategories.find(cat => cat.id.toString() === selectedCategory)?.name}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Enhanced Category Browser with Clear Division */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border overflow-hidden">
+              <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-4">
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <Filter className="h-5 w-5" />
+                  Shop by Category
+                </h3>
+                <p className="text-amber-100 text-sm mt-1">Choose a main category to explore subcategories</p>
+              </div>
+              
+              <div className="p-6">
+                <h4 className="font-medium text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
+                  <div className="h-1 w-6 bg-amber-600 rounded"></div>
+                  Main Categories by Body Parts
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
                 <Button
                   variant={selectedParentCategory === "all" ? "default" : "outline"}
                   size="sm"
@@ -505,49 +546,71 @@ export default function Shop() {
                   <Crown className="h-5 w-5" />
                   <span className="text-xs font-medium">All Categories</span>
                 </Button>
-                {mainCategories.map((category: Category) => (
-                  <Button
-                    key={category.id}
-                    variant={selectedParentCategory === category.id.toString() ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setSelectedParentCategory(category.id.toString());
-                      setSelectedCategory("all");
-                    }}
-                    className="h-auto p-3 flex flex-col items-center justify-center gap-2 min-h-[80px]"
-                  >
-                    <Gem className="h-5 w-5" />
-                    <span className="text-xs font-medium text-center leading-tight">{category.name}</span>
-                  </Button>
-                ))}
+                {mainCategories.map((category: Category) => {
+                  const categoryProductCount = products.filter((p: Product) => p.categoryId === category.id).length;
+                  const subcategoryCount = categories.filter((c: Category) => c.parentId === category.id).length;
+                  
+                  return (
+                    <Button
+                      key={category.id}
+                      variant={selectedParentCategory === category.id.toString() ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        setSelectedParentCategory(category.id.toString());
+                        setSelectedCategory("all");
+                      }}
+                      className="h-auto p-3 flex flex-col items-center justify-center gap-2 min-h-[90px] relative"
+                    >
+                      <Gem className="h-5 w-5" />
+                      <span className="text-xs font-medium text-center leading-tight">{category.name}</span>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 flex gap-2">
+                        <span>{categoryProductCount} items</span>
+                        {subcategoryCount > 0 && <span>• {subcategoryCount} types</span>}
+                      </div>
+                    </Button>
+                  );
+                })}
               </div>
               
-              {/* Subcategory Browser */}
+              {/* Enhanced Subcategory Browser */}
               {subcategories.length > 0 && (
-                <div className="mt-6 pt-6 border-t">
-                  <h4 className="font-medium text-sm mb-3 text-gray-700 dark:text-gray-300">
-                    {mainCategories.find(cat => cat.id.toString() === selectedParentCategory)?.name} Subcategories:
-                  </h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
-                    <Button
-                      variant={selectedCategory === "all" ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => setSelectedCategory("all")}
-                      className="h-auto p-2 text-xs"
-                    >
-                      All Items
-                    </Button>
-                    {subcategories.map((category: Category) => (
+                <div className="mt-6 pt-6 border-t border-amber-100">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="h-1 w-8 bg-amber-600 rounded"></div>
+                    <h4 className="font-semibold text-base text-gray-800 dark:text-gray-200">
+                      {mainCategories.find(cat => cat.id.toString() === selectedParentCategory)?.name} Subcategories
+                    </h4>
+                    <div className="h-1 flex-1 bg-amber-100 rounded"></div>
+                  </div>
+                  <div className="bg-amber-50 dark:bg-gray-700 rounded-lg p-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
                       <Button
-                        key={category.id}
-                        variant={selectedCategory === category.id.toString() ? "default" : "ghost"}
+                        variant={selectedCategory === "all" ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setSelectedCategory(category.id.toString())}
-                        className="h-auto p-2 text-xs text-left"
+                        onClick={() => setSelectedCategory("all")}
+                        className="h-auto p-3 flex flex-col items-center gap-2 min-h-[60px] bg-white dark:bg-gray-800"
                       >
-                        {category.name}
+                        <Crown className="h-4 w-4" />
+                        <span className="text-xs font-medium">All Items</span>
                       </Button>
-                    ))}
+                      {subcategories.map((category: Category) => {
+                        const subcategoryProductCount = products.filter((p: Product) => p.categoryId === category.id).length;
+                        
+                        return (
+                          <Button
+                            key={category.id}
+                            variant={selectedCategory === category.id.toString() ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedCategory(category.id.toString())}
+                            className="h-auto p-3 flex flex-col items-center gap-2 min-h-[70px] bg-white dark:bg-gray-800 hover:bg-amber-50 dark:hover:bg-gray-700 border-l-4 border-l-amber-200"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                            <span className="text-xs font-medium text-center leading-tight">{category.name}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{subcategoryProductCount} items</span>
+                          </Button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
