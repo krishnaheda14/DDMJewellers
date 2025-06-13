@@ -47,7 +47,12 @@ export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
-  const [authMode, setAuthMode] = useState<"signin" | "signup" | "forgot">("signin");
+  
+  // Check if we're on the signup route and set default mode accordingly
+  const currentPath = window.location.pathname;
+  const [authMode, setAuthMode] = useState<"signin" | "signup" | "forgot">(
+    currentPath === "/signup" ? "signup" : "signin"
+  );
   const [userType, setUserType] = useState<"customer" | "wholesaler">("customer");
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [redirectUser, setRedirectUser] = useState<any>(null);

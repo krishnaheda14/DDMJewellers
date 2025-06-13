@@ -14,7 +14,6 @@ import AuthPage from "@/pages/auth-page";
 
 // Lazy load non-critical components
 const EnhancedChatbot = lazy(() => import("@/components/enhanced-chatbot"));
-const Signup = lazy(() => import("@/pages/signup"));
 const Products = lazy(() => import("@/pages/products"));
 const ProductDetail = lazy(() => import("@/pages/product-detail"));
 const Cart = lazy(() => import("@/pages/cart"));
@@ -65,7 +64,7 @@ function Router() {
       <Switch>
         {/* Always accessible routes */}
         <Route path="/auth" component={AuthPage} />
-        <Route path="/signup" component={Signup} />
+        <Route path="/signup" component={AuthPage} />
         <Route path="/shop" component={Shop} />
         <Route path="/products" component={Products} />
         <Route path="/products/:id" component={ProductDetail} />
