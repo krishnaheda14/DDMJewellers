@@ -84,7 +84,7 @@ export default function AuthPage() {
           setLocation("/admin/dashboard");
           break;
         case "customer":
-          setLocation("/customer/dashboard");
+          setLocation("/"); // Customers go to home page
           break;
         case "wholesaler":
           setLocation("/wholesaler/dashboard");

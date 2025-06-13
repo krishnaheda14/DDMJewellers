@@ -285,6 +285,15 @@ export default function Header() {
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={() => {
+                        if (user?.role === 'customer') {
+                          navigate('/customer/dashboard');
+                        } else if (user?.role === 'wholesaler') {
+                          navigate('/wholesaler/dashboard');
+                        } else if (user?.role === 'admin') {
+                          navigate('/admin/dashboard');
+                        }
+                      }}
                       className="relative group p-2 text-warm-gray hover:text-gold flex items-center gap-2 transition-all duration-300 rounded-lg hover:bg-gold/10 hover:shadow-md transform hover:scale-105"
                     >
                       <User className="h-5 w-5 transform group-hover:scale-110 transition-all duration-300" />
