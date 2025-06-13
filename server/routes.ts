@@ -405,6 +405,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Gullak (Gold Savings) Routes
+  app.get("/api/gullak/accounts", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const accounts = await db
+        .select()
+        .from(schema.gullakAccounts)
+        .where(eq(schema.gullakAccounts.userId, userId));
+      res.json(accounts);
+    } catch (error) {
+      console.error("Error fetching Gullak accounts:", error);
+      res.status(500).json({ error: "Failed to fetch Gullak accounts" });
+    }
+  });
+
+  app.post("/api/gullak/accounts", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const accountData = {
+        ...req.body,
+        userId,
+        currentBalance: "0",
+        status: "active",
+      };
+
+      // Calculate next payment date
+      const now = new Date();
+      let nextPaymentDate = new Date(now);
+      
+      if (accountData.paymentFrequency === "weekly") {
+        const targetDay = accountData.paymentDayOfWeek || 1;
+        const currentDay = now.getDay();
+        const daysUntilTarget = (targetDay - currentDay + 7) % 7 || 7;
+        nextPaymentDate.setDate(now.getDate() + daysUntilTarget);
+      } else if (accountData.paymentFrequency === "monthly") {
+        const targetDate = accountData.paymentDayOfMonth || 1;
+        nextPaymentDate.setMonth(now.getMonth() + 1);
+        nextPaymentDate.setDate(Math.min(targetDate, new Date(nextPaymentDate.getFullYear(), nextPaymentDate.getMonth() + 1, 0).getDate()));
+      } else {
+        nextPaymentDate.setDate(now.getDate() + 1);
+      }
+
+      accountData.nextPaymentDate = nextPaymentDate.toISOString();
+
+      const [account] = await db
+        .insert(schema.gullakAccounts)
+        .values(accountData)
+        .returning();
+
+      res.json(account);
+    } catch (error) {
+      console.error("Error creating Gullak account:", error);
+      res.status(500).json({ error: "Failed to create Gullak account" });
+    }
+  });
+
+  app.get("/api/gullak/transactions/:accountId", isAuthenticated, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.accountId);
+      const transactions = await db
+        .select()
+        .from(schema.gullakTransactions)
+        .where(eq(schema.gullakTransactions.accountId, accountId))
+        .orderBy(schema.gullakTransactions.transactionDate);
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ error: "Failed to fetch transactions" });
+    }
+  });
+
+  app.post("/api/gullak/deposit", isAuthenticated, async (req, res) => {
+    try {
+      const { accountId, amount, paymentMethod = "manual" } = req.body;
+      
+      // Get current gold rates
+      const rates = await marketRatesService.getCurrentRates();
+      const goldRate = rates.find(r => r.metal === "gold")?.rate || "7200";
+      const goldValue = (parseFloat(amount) / parseFloat(goldRate)).toFixed(6);
+
+      // Create transaction
+      const [transaction] = await db
+        .insert(schema.gullakTransactions)
+        .values({
+          accountId: parseInt(accountId),
+          amount,
+          type: "deposit",
+          goldRate,
+          goldValue,
+          description: `Manual deposit via ${paymentMethod}`,
+          paymentMethod,
+          status: "completed",
+        })
+        .returning();
+
+      // Update account balance
+      await db
+        .update(schema.gullakAccounts)
+        .set({
+          currentBalance: db.raw(`current_balance + ${parseFloat(amount)}`),
+          updatedAt: new Date(),
+        })
+        .where(eq(schema.gullakAccounts.id, parseInt(accountId)));
+
+      res.json(transaction);
+    } catch (error) {
+      console.error("Error processing deposit:", error);
+      res.status(500).json({ error: "Failed to process deposit" });
+    }
+  });
+
+  app.get("/api/gullak/gold-rates", async (req, res) => {
+    try {
+      const rates = await marketRatesService.getCurrentRates();
+      const goldRates = {
+        rate24k: rates.find(r => r.metal === "gold_24k")?.rate || "7200",
+        rate22k: rates.find(r => r.metal === "gold_22k")?.rate || "6600", 
+        rate18k: rates.find(r => r.metal === "gold_18k")?.rate || "5400",
+        silverRate: rates.find(r => r.metal === "silver")?.rate || "85",
+        effectiveDate: new Date().toISOString(),
+      };
+      res.json(goldRates);
+    } catch (error) {
+      console.error("Error fetching gold rates:", error);
+      res.status(500).json({ error: "Failed to fetch gold rates" });
+    }
+  });
+
   // Return a dummy server object since the actual server is started in index.ts
   return {} as Server;
 }
