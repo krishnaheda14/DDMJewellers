@@ -233,6 +233,44 @@ export const corporateRegistrations = pgTable("corporate_registrations", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Gullak accounts storage
+export const gullakAccounts = pgTable("gullak_accounts", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  metalType: varchar("metal_type", { enum: ["gold", "silver"] }).notNull(),
+  metalPurity: varchar("metal_purity", { enum: ["24k", "22k", "18k", "silver"] }).notNull(),
+  paymentAmount: decimal("payment_amount", { precision: 10, scale: 2 }).notNull(),
+  paymentFrequency: varchar("payment_frequency", { enum: ["daily", "weekly", "monthly"] }).notNull(),
+  paymentDayOfWeek: integer("payment_day_of_week"), // 0-6 for weekly
+  paymentDayOfMonth: integer("payment_day_of_month"), // 1-28 for monthly
+  targetMetalWeight: decimal("target_metal_weight", { precision: 10, scale: 3 }).notNull(),
+  targetAmount: decimal("target_amount", { precision: 10, scale: 2 }).notNull(),
+  currentBalance: decimal("current_balance", { precision: 10, scale: 2 }).default("0"),
+  status: varchar("status", { enum: ["active", "paused", "completed", "cancelled"] }).default("active"),
+  autoPayEnabled: boolean("auto_pay_enabled").default(true),
+  nextPaymentDate: timestamp("next_payment_date"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Gullak transactions storage
+export const gullakTransactions = pgTable("gullak_transactions", {
+  id: serial("id").primaryKey(),
+  accountId: integer("account_id").notNull().references(() => gullakAccounts.id),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  type: varchar("type", { enum: ["deposit", "withdrawal", "autopay", "manual"] }).notNull(),
+  goldRate: decimal("gold_rate", { precision: 10, scale: 2 }),
+  goldValue: decimal("gold_value", { precision: 10, scale: 6 }),
+  description: text("description"),
+  paymentMethod: varchar("payment_method", { length: 50 }),
+  transactionId: varchar("transaction_id", { length: 255 }),
+  status: varchar("status", { enum: ["pending", "completed", "failed"] }).default("completed"),
+  transactionDate: timestamp("transaction_date").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -292,6 +330,17 @@ export const insertCorporateRegistrationSchema = createInsertSchema(corporateReg
   status: true,
   approvedBy: true,
   approvedAt: true,
+});
+
+export const insertGullakAccountSchema = createInsertSchema(gullakAccounts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertGullakTransactionSchema = createInsertSchema(gullakTransactions).omit({
+  id: true,
+  createdAt: true,
 });
 
 // Authentication schemas
@@ -370,6 +419,12 @@ export type MarketRate = typeof marketRates.$inferSelect;
 
 export type CorporateRegistration = typeof corporateRegistrations.$inferSelect;
 export type InsertCorporateRegistration = z.infer<typeof insertCorporateRegistrationSchema>;
+
+export type GullakAccount = typeof gullakAccounts.$inferSelect;
+export type InsertGullakAccount = z.infer<typeof insertGullakAccountSchema>;
+
+export type GullakTransaction = typeof gullakTransactions.$inferSelect;
+export type InsertGullakTransaction = z.infer<typeof insertGullakTransactionSchema>;
 
 // Authentication types
 export type CustomerSignup = z.infer<typeof customerSignupSchema>;
