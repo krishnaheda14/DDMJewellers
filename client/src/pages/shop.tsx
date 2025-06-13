@@ -220,9 +220,17 @@ export default function Shop() {
             </h3>
           </Link>
           <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
-          {product.material && (
-            <p className="text-xs text-gray-500">Material: {product.material}</p>
-          )}
+          <div className="flex items-center gap-2 flex-wrap">
+            {product.material && (
+              <p className="text-xs text-gray-500">Material: {product.material}</p>
+            )}
+            <Badge 
+              variant={product.productType === "real" ? "default" : "secondary"}
+              className={product.productType === "real" ? "bg-emerald-100 text-emerald-800 text-xs" : "bg-purple-100 text-purple-800 text-xs"}
+            >
+              {product.productType === "real" ? "Real Jewelry" : "Imitation"}
+            </Badge>
+          </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold text-amber-600">₹{parseFloat(product.price).toLocaleString()}</span>
@@ -266,6 +274,12 @@ export default function Shop() {
                 {product.customizable && (
                   <Badge variant="outline">Customizable</Badge>
                 )}
+                <Badge 
+                  variant={product.productType === "real" ? "default" : "secondary"}
+                  className={product.productType === "real" ? "bg-emerald-100 text-emerald-800 text-xs" : "bg-purple-100 text-purple-800 text-xs"}
+                >
+                  {product.productType === "real" ? "Real" : "Imitation"}
+                </Badge>
               </div>
             </div>
             <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
