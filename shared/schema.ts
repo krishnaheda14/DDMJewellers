@@ -183,7 +183,7 @@ export const wishlist = pgTable("wishlist", {
 });
 
 // User memory for chatbot
-export const userMemory = pgTable("user_memory", {
+export const userMemory = pgTable("user_memories", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   age: varchar("age"),

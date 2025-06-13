@@ -211,7 +211,7 @@ export default function EnhancedChatbot(): JSX.Element {
         
         // Simple non-personalized responses
         const response = await chatMutation.mutateAsync({ message });
-        addBotMessage(response.message);
+        addBotMessage(response.response || response.message || "I can help you with jewelry questions!");
         return;
       }
 
@@ -237,7 +237,7 @@ export default function EnhancedChatbot(): JSX.Element {
 
       // AI conversation
       const response = await chatMutation.mutateAsync({ message, userProfile });
-      addBotMessage(response.message);
+      addBotMessage(response.response || response.message || "I'm here to help with your jewelry needs!");
       
     } catch (error) {
       console.error('Error sending message:', error);
