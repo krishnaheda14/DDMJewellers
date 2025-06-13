@@ -447,6 +447,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin category management routes
+  app.get("/api/admin/categories", isAdmin, async (req, res) => {
+    try {
+      const categories = await storage.getCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching admin categories:", error);
+      res.status(500).json({ error: "Failed to fetch categories" });
+    }
+  });
+
+  app.post("/api/admin/categories", isAdmin, async (req, res) => {
+    try {
+      const categoryData = insertCategorySchema.parse(req.body);
+      const category = await storage.createCategory(categoryData);
+      res.json(category);
+    } catch (error) {
+      console.error("Error creating admin category:", error);
+      res.status(500).json({ error: "Failed to create category" });
+    }
+  });
+
+  app.put("/api/admin/categories/:id", isAdmin, async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const categoryData = insertCategorySchema.partial().parse(req.body);
+      const category = await storage.updateCategory(categoryId, categoryData);
+      res.json(category);
+    } catch (error) {
+      console.error("Error updating admin category:", error);
+      res.status(500).json({ error: "Failed to update category" });
+    }
+  });
+
+  app.delete("/api/admin/categories/:id", isAdmin, async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const success = await storage.deleteCategory(categoryId);
+      if (success) {
+        res.json({ message: "Category deleted successfully" });
+      } else {
+        res.status(404).json({ error: "Category not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting admin category:", error);
+      res.status(500).json({ error: "Failed to delete category" });
+    }
+  });
+
+  // Admin product management routes
+  app.get("/api/admin/products", isAdmin, async (req, res) => {
+    try {
+      const products = await storage.getProducts();
+      res.json(products);
+    } catch (error) {
+      console.error("Error fetching admin products:", error);
+      res.status(500).json({ error: "Failed to fetch products" });
+    }
+  });
+
+  app.post("/api/admin/products", isAdmin, async (req, res) => {
+    try {
+      const productData = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(productData);
+      res.json(product);
+    } catch (error) {
+      console.error("Error creating admin product:", error);
+      res.status(500).json({ error: "Failed to create product" });
+    }
+  });
+
+  app.put("/api/admin/products/:id", isAdmin, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const productData = insertProductSchema.partial().parse(req.body);
+      const product = await storage.updateProduct(productId, productData);
+      res.json(product);
+    } catch (error) {
+      console.error("Error updating admin product:", error);
+      res.status(500).json({ error: "Failed to update product" });
+    }
+  });
+
+  app.delete("/api/admin/products/:id", isAdmin, async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const success = await storage.deleteProduct(productId);
+      if (success) {
+        res.json({ message: "Product deleted successfully" });
+      } else {
+        res.status(404).json({ error: "Product not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting admin product:", error);
+      res.status(500).json({ error: "Failed to delete product" });
+    }
+  });
+
   // General signup route (handles both customer and wholesaler)
   app.post("/api/auth/signup", async (req, res) => {
     try {
