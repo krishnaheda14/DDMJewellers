@@ -59,10 +59,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Categories - using optimized storage
+  // Categories - using fast storage with caching
   app.get("/api/categories", async (req, res) => {
     try {
-      const categories = await optimizedStorage.getCategories();
+      res.set('Cache-Control', 'public, max-age=600'); // 10 minutes browser cache
+      const categories = await fastStorage.getCategories();
       res.json(categories);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -81,9 +82,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Products - using optimized storage
+  // Products - using fast storage with caching
   app.get("/api/products", async (req, res) => {
     try {
+      res.set('Cache-Control', 'public, max-age=300'); // 5 minutes browser cache
+      
       const filters = {
         categoryId: req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined,
         search: req.query.search as string,
@@ -91,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         limit: req.query.limit ? parseInt(req.query.limit as string) : 20,
         offset: req.query.offset ? parseInt(req.query.offset as string) : 0,
       };
-      const products = await optimizedStorage.getProducts(filters);
+      const products = await fastStorage.getProducts(filters);
       res.json(products);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -131,7 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId) {
         return res.status(401).json({ error: "User not authenticated" });
       }
-      const cartItems = await optimizedStorage.getCartItems(userId);
+      const cartItems = await fastStorage.getCartItems(userId);
       res.json(cartItems);
     } catch (error) {
       console.error("Error fetching cart:", error);
@@ -224,10 +227,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Market rates - using optimized storage
+  // Market rates - using fast storage with caching
   app.get("/api/market-rates", async (req, res) => {
     try {
-      const rates = await optimizedStorage.getCurrentRates();
+      res.set('Cache-Control', 'public, max-age=120'); // 2 minutes browser cache
+      const rates = await fastStorage.getCurrentRates();
       res.json(rates);
     } catch (error) {
       console.error("Error fetching market rates:", error);

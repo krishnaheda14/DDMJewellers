@@ -50,37 +50,56 @@ export class FastStorage {
       const offset = filters?.offset || 0;
       
       let whereClause = 'WHERE in_stock = true';
-      const params: any[] = [];
-      let paramCount = 1;
+      let query = '';
       
-      if (filters?.categoryId) {
-        whereClause += ` AND category_id = $${paramCount}`;
-        params.push(filters.categoryId);
-        paramCount++;
+      if (filters?.categoryId && filters?.featured) {
+        query = `
+          SELECT id, name, description, price, category_id, image_url, 
+                 material, weight, featured, product_type, created_at
+          FROM products 
+          WHERE in_stock = true AND category_id = ${filters.categoryId} AND featured = true
+          ORDER BY featured DESC, created_at DESC 
+          LIMIT ${limit} OFFSET ${offset}
+        `;
+      } else if (filters?.categoryId) {
+        query = `
+          SELECT id, name, description, price, category_id, image_url, 
+                 material, weight, featured, product_type, created_at
+          FROM products 
+          WHERE in_stock = true AND category_id = ${filters.categoryId}
+          ORDER BY featured DESC, created_at DESC 
+          LIMIT ${limit} OFFSET ${offset}
+        `;
+      } else if (filters?.featured) {
+        query = `
+          SELECT id, name, description, price, category_id, image_url, 
+                 material, weight, featured, product_type, created_at
+          FROM products 
+          WHERE in_stock = true AND featured = true
+          ORDER BY featured DESC, created_at DESC 
+          LIMIT ${limit} OFFSET ${offset}
+        `;
+      } else if (filters?.search) {
+        query = `
+          SELECT id, name, description, price, category_id, image_url, 
+                 material, weight, featured, product_type, created_at
+          FROM products 
+          WHERE in_stock = true AND name ILIKE '%${filters.search}%'
+          ORDER BY featured DESC, created_at DESC 
+          LIMIT ${limit} OFFSET ${offset}
+        `;
+      } else {
+        query = `
+          SELECT id, name, description, price, category_id, image_url, 
+                 material, weight, featured, product_type, created_at
+          FROM products 
+          WHERE in_stock = true
+          ORDER BY featured DESC, created_at DESC 
+          LIMIT ${limit} OFFSET ${offset}
+        `;
       }
       
-      if (filters?.featured) {
-        whereClause += ` AND featured = true`;
-      }
-      
-      if (filters?.search) {
-        whereClause += ` AND name ILIKE $${paramCount}`;
-        params.push(`%${filters.search}%`);
-        paramCount++;
-      }
-      
-      const query = `
-        SELECT id, name, description, price, category_id, image_url, 
-               material, weight, featured, product_type, created_at
-        FROM products 
-        ${whereClause}
-        ORDER BY featured DESC, created_at DESC 
-        LIMIT $${paramCount} OFFSET $${paramCount + 1}
-      `;
-      
-      params.push(limit, offset);
-      
-      const result = await db.execute(sql.raw(query, ...params));
+      const result = await db.execute(sql.raw(query));
       const products = result.rows;
       
       setCache(cacheKey, products);
