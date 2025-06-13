@@ -81,7 +81,7 @@ export default function AuthPage() {
     setTimeout(() => {
       switch (userData.role) {
         case "admin":
-          setLocation("/admin/dashboard");
+          setLocation("/"); // Admins go to home page first
           break;
         case "customer":
           setLocation("/"); // Customers go to home page

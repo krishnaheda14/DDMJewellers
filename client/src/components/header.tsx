@@ -281,17 +281,6 @@ export default function Header() {
 
                   {/* User Menu */}
                   <div className="flex items-center space-x-2">
-                    {user?.role === 'admin' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate("/admin")}
-                        className="hidden sm:flex relative group border-gold/30 text-gold hover:bg-gold hover:text-white transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-gold/10 to-amber-100/20 rounded-md scale-0 group-hover:scale-100 transition-transform duration-300"></div>
-                        <span className="relative z-10">Admin</span>
-                      </Button>
-                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -308,7 +297,7 @@ export default function Header() {
                     >
                       <User className="h-5 w-5 transform group-hover:scale-110 transition-all duration-300" />
                       <span className="hidden sm:inline relative z-10">
-                        {user?.firstName || user?.email || "Account"}
+                        {user?.role === 'admin' ? 'Profile' : user?.firstName || user?.email || "Account"}
                       </span>
                       <div className="absolute inset-0 bg-gradient-to-r from-gold/10 via-amber-50/50 to-gold/10 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300"></div>
                     </Button>

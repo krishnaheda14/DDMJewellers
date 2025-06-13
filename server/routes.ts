@@ -389,13 +389,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin routes
   app.get("/api/admin/stats", isAdmin, async (req, res) => {
     try {
-      // Basic stats
+      // Get user counts from database
+      const usersResult = await db.$client.query('SELECT role, COUNT(*) as count FROM users GROUP BY role');
+      const totalUsersResult = await db.$client.query('SELECT COUNT(*) as total FROM users');
+      
+      // Get product count
+      const productsResult = await db.$client.query('SELECT COUNT(*) as count FROM products');
+      
+      // Get order count and revenue
+      const ordersResult = await db.$client.query('SELECT COUNT(*) as count, COALESCE(SUM(CAST(total AS DECIMAL)), 0) as revenue FROM orders');
+      
+      // Process user counts
+      const userCounts = usersResult.rows.reduce((acc: any, row: any) => {
+        acc[row.role] = parseInt(row.count);
+        return acc;
+      }, {});
+      
       const stats = {
-        totalUsers: 0,
-        totalProducts: 0,
-        totalOrders: 0,
-        totalRevenue: 0
+        totalUsers: parseInt(totalUsersResult.rows[0]?.total || '0'),
+        totalCustomers: userCounts.customer || 0,
+        totalWholesalers: userCounts.wholesaler || 0,
+        totalCorporateUsers: userCounts.corporate || 0,
+        totalProducts: parseInt(productsResult.rows[0]?.count || '0'),
+        totalOrders: parseInt(ordersResult.rows[0]?.count || '0'),
+        totalRevenue: parseFloat(ordersResult.rows[0]?.revenue || '0')
       };
+      
       res.json(stats);
     } catch (error) {
       console.error("Error fetching admin stats:", error);
