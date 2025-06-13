@@ -24,25 +24,7 @@ export class OptimizedStorage {
       const limit = Math.min(filters?.limit || 20, 100); // Cap at 100 items
       const offset = filters?.offset || 0;
       
-      let query = db.select({
-        id: products.id,
-        name: products.name,
-        description: products.description,
-        categoryId: products.categoryId,
-        imageUrl: products.imageUrl,
-        imageUrls: products.imageUrls,
-        price: products.price,
-        productType: products.productType,
-        material: products.material,
-        weight: products.weight,
-        makingCharges: products.makingCharges,
-        purity: products.purity,
-        isFeatured: products.isFeatured,
-        isActive: products.isActive,
-        tags: products.tags,
-        createdAt: products.createdAt,
-        updatedAt: products.updatedAt
-      }).from(products);
+      let query = db.select().from(products);
 
       const whereConditions = [];
       
@@ -51,22 +33,22 @@ export class OptimizedStorage {
       }
       
       if (filters?.featured) {
-        whereConditions.push(eq(products.isFeatured, true));
+        whereConditions.push(eq(products.featured, true));
       }
       
       if (filters?.search) {
         whereConditions.push(ilike(products.name, `%${filters.search}%`));
       }
       
-      // Always filter active products
-      whereConditions.push(eq(products.isActive, true));
+      // Always filter in-stock products
+      whereConditions.push(eq(products.inStock, true));
       
       if (whereConditions.length > 0) {
         query = query.where(and(...whereConditions));
       }
       
       return await query
-        .orderBy(desc(products.isFeatured), desc(products.createdAt))
+        .orderBy(desc(products.featured), desc(products.createdAt))
         .limit(limit)
         .offset(offset);
         

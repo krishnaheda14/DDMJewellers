@@ -3,6 +3,7 @@ import { Server } from "http";
 import { isAuthenticated, isAdmin, isWholesaler, setupAuth } from "./auth";
 import { storage } from "./storage-simple";
 import { optimizedStorage } from "./optimized-storage";
+import { fastStorage } from "./fast-storage";
 import { marketRatesService } from "./market-rates";
 import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
