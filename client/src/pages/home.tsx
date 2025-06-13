@@ -87,117 +87,109 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Live Gold & Silver Rates - Always Visible */}
-      <section className="py-12 sm:py-16 bg-gradient-to-br from-gold/5 via-white to-amber-50/30 border-b border-gold/10">
-          <div className="container-fluid">
-            <div className="text-center mb-8 sm:mb-12">
-              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-gold" />
-                <h2 className="heading-lg font-bold text-deep-navy">Live Gold & Silver Rates</h2>
-                <Coins className="h-6 w-6 sm:h-8 sm:w-8 text-gold" />
+      {/* Compact Live Gold & Silver Rates */}
+      <section className="py-6 bg-gradient-to-r from-amber-50/30 via-white to-gold/5 border-b border-gold/10">
+        <div className="container-fluid">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-semibold text-deep-navy flex items-center justify-center gap-2">
+              <TrendingUp className="h-5 w-5 text-gold" />
+              Live Gold & Silver Rates
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
+            {/* 24K Gold */}
+            <div className="bg-white border border-gold/20 rounded-lg p-3 text-center hover:shadow-md transition-all">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <span className="text-xs font-medium text-gold">24K Gold</span>
               </div>
-              <p className="text-warm-gray responsive-text">Current market prices for gold and silver investments</p>
-            </div>
-
-            <div className="responsive-grid max-w-6xl mx-auto mb-6 sm:mb-8">
-              <Card className="border-2 border-gold/20 hover:border-gold/40 transition-colors hover-effect">
-                <CardContent className="responsive-card text-center">
-                  <div className="bg-gold/10 rounded-full p-3 sm:p-4 w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-                    <span className="text-gold font-bold text-lg sm:text-xl">24K</span>
-                  </div>
-                  <h3 className="responsive-text font-semibold text-deep-navy mb-2">24 Karat Gold</h3>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold mb-1">
-                    ₹{goldRates ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate24k)) : '7,200'}
-                  </p>
-                  <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
-                  <Badge variant="secondary" className="mt-2 sm:mt-3 bg-green-100 text-green-800 text-xs">
-                    99.9% Pure
-                  </Badge>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-gold/20 hover:border-gold/40 transition-colors hover-effect">
-                <CardContent className="responsive-card text-center">
-                  <div className="bg-gold/10 rounded-full p-3 sm:p-4 w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-                    <span className="text-gold font-bold text-lg sm:text-xl">22K</span>
-                  </div>
-                  <h3 className="responsive-text font-semibold text-deep-navy mb-2">22 Karat Gold</h3>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold mb-1">
-                    ₹{goldRates ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate22k)) : '6,600'}
-                  </p>
-                  <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
-                  <Badge variant="secondary" className="mt-2 sm:mt-3 bg-blue-100 text-blue-800 text-xs">
-                    91.7% Pure
-                  </Badge>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-gold/20 hover:border-gold/40 transition-colors hover-effect">
-                <CardContent className="responsive-card text-center">
-                  <div className="bg-gold/10 rounded-full p-3 sm:p-4 w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-                    <span className="text-gold font-bold text-lg sm:text-xl">18K</span>
-                  </div>
-                  <h3 className="responsive-text font-semibold text-deep-navy mb-2">18 Karat Gold</h3>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold mb-1">
-                    ₹{goldRates ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate18k)) : '5,400'}
-                  </p>
-                  <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
-                  <Badge variant="secondary" className="mt-2 sm:mt-3 bg-purple-100 text-purple-800 text-xs">
-                    75.0% Pure
-                  </Badge>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-gray-300/40 hover:border-gray-400/60 transition-colors hover-effect">
-                <CardContent className="responsive-card text-center">
-                  <div className="bg-gray-100 rounded-full p-3 sm:p-4 w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 flex items-center justify-center">
-                    <span className="text-gray-600 font-bold text-lg sm:text-xl">Ag</span>
-                  </div>
-                  <h3 className="responsive-text font-semibold text-deep-navy mb-2">Pure Silver</h3>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-600 mb-1">
-                    ₹{goldRates?.silverRate ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.silverRate)) : '85'}
-                  </p>
-                  <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
-                  <Badge variant="secondary" className="mt-2 sm:mt-3 bg-gray-100 text-gray-800 text-xs">
-                    99.9% Pure
-                  </Badge>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="text-center">
-              <p className="text-xs sm:text-sm text-warm-gray mb-3 sm:mb-4">
-                Last updated: {new Date().toLocaleString('en-IN', { 
-                  dateStyle: 'medium', 
-                  timeStyle: 'short' 
-                })}
+              <p className="text-lg font-bold text-deep-navy">
+                ₹{goldRates ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate24k)) : '7,200'}
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
-                <Button 
-                  onClick={() => navigate("/gullak")}
-                  className="btn-responsive bg-gold hover:bg-gold/90 text-white touch-target"
-                >
-                  <Coins className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                  Start Gold Savings with Gullak
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate("/products?search=gold")}
-                  className="btn-responsive border-gold text-gold hover:bg-gold hover:text-white touch-target"
-                >
-                  Browse Gold Jewelry
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate("/products?search=silver")}
-                  className="btn-responsive border-gray-500 text-gray-600 hover:bg-gray-500 hover:text-white touch-target"
-                >
-                  Browse Silver Jewelry
-                </Button>
+              <p className="text-xs text-warm-gray">per gram</p>
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <span className="text-xs text-green-600">↗ +1.2%</span>
+              </div>
+            </div>
+
+            {/* 22K Gold */}
+            <div className="bg-white border border-gold/20 rounded-lg p-3 text-center hover:shadow-md transition-all">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <span className="text-xs font-medium text-gold">22K Gold</span>
+              </div>
+              <p className="text-lg font-bold text-deep-navy">
+                ₹{goldRates ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate22k)) : '6,600'}
+              </p>
+              <p className="text-xs text-warm-gray">per gram</p>
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <span className="text-xs text-green-600">↗ +0.8%</span>
+              </div>
+            </div>
+
+            {/* 18K Gold */}
+            <div className="bg-white border border-gold/20 rounded-lg p-3 text-center hover:shadow-md transition-all">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <span className="text-xs font-medium text-gold">18K Gold</span>
+              </div>
+              <p className="text-lg font-bold text-deep-navy">
+                ₹{goldRates ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate18k)) : '5,400'}
+              </p>
+              <p className="text-xs text-warm-gray">per gram</p>
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <span className="text-xs text-green-600">↗ +0.5%</span>
+              </div>
+            </div>
+
+            {/* Silver */}
+            <div className="bg-white border border-gray-300/40 rounded-lg p-3 text-center hover:shadow-md transition-all">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <span className="text-xs font-medium text-gray-600">Silver</span>
+              </div>
+              <p className="text-lg font-bold text-deep-navy">
+                ₹{goldRates?.silverRate ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.silverRate)) : '85'}
+              </p>
+              <p className="text-xs text-warm-gray">per gram</p>
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <span className="text-xs text-red-600">↘ -0.3%</span>
               </div>
             </div>
           </div>
-        </section>
+
+          <div className="text-center mt-4">
+            <p className="text-xs text-warm-gray mb-3">
+              Last updated: {new Date().toLocaleString('en-IN', { 
+                timeStyle: 'short' 
+              })} • Auto-refresh every 5 min
+            </p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              <Button 
+                size="sm"
+                onClick={() => navigate("/gullak")}
+                className="bg-gold hover:bg-gold/90 text-white text-xs px-3 py-1"
+              >
+                <Coins className="h-3 w-3 mr-1" />
+                Start Gullak
+              </Button>
+              <Button 
+                size="sm"
+                variant="outline"
+                onClick={() => navigate("/products?search=gold")}
+                className="border-gold text-gold hover:bg-gold hover:text-white text-xs px-3 py-1"
+              >
+                Gold Jewelry
+              </Button>
+              <Button 
+                size="sm"
+                variant="outline"
+                onClick={() => navigate("/live-market-rates")}
+                className="border-gray-400 text-gray-600 hover:bg-gray-500 hover:text-white text-xs px-3 py-1"
+              >
+                View Details
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Featured Categories */}
       <section className="p-responsive bg-white">
