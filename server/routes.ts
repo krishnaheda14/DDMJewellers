@@ -408,12 +408,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Gullak (Gold Savings) Routes
   app.get("/api/gullak/accounts", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user!.id;
-      const accounts = await db
-        .select()
-        .from(schema.gullakAccounts)
-        .where(eq(schema.gullakAccounts.userId, userId));
-      res.json(accounts);
+      const userId = (req.user as any)?.id;
+      const result = await db.$client.query(
+        `SELECT * FROM gullak_accounts WHERE user_id = $1 ORDER BY created_at DESC`,
+        [userId]
+      );
+      res.json(result.rows);
     } catch (error) {
       console.error("Error fetching Gullak accounts:", error);
       res.status(500).json({ error: "Failed to fetch Gullak accounts" });
@@ -422,39 +422,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/gullak/accounts", isAuthenticated, async (req, res) => {
     try {
-      const userId = req.user!.id;
-      const accountData = {
-        ...req.body,
-        userId,
-        currentBalance: "0",
-        status: "active",
-      };
+      const userId = (req.user as any)?.id;
+      const { name, metalType, paymentAmount, paymentFrequency, targetMetalWeight, targetAmount, paymentDayOfMonth } = req.body;
 
       // Calculate next payment date
       const now = new Date();
       let nextPaymentDate = new Date(now);
       
-      if (accountData.paymentFrequency === "weekly") {
-        const targetDay = accountData.paymentDayOfWeek || 1;
-        const currentDay = now.getDay();
-        const daysUntilTarget = (targetDay - currentDay + 7) % 7 || 7;
-        nextPaymentDate.setDate(now.getDate() + daysUntilTarget);
-      } else if (accountData.paymentFrequency === "monthly") {
-        const targetDate = accountData.paymentDayOfMonth || 1;
+      if (paymentFrequency === "weekly") {
+        nextPaymentDate.setDate(now.getDate() + 7);
+      } else if (paymentFrequency === "monthly") {
+        const targetDate = paymentDayOfMonth || 1;
         nextPaymentDate.setMonth(now.getMonth() + 1);
         nextPaymentDate.setDate(Math.min(targetDate, new Date(nextPaymentDate.getFullYear(), nextPaymentDate.getMonth() + 1, 0).getDate()));
       } else {
         nextPaymentDate.setDate(now.getDate() + 1);
       }
 
-      accountData.nextPaymentDate = nextPaymentDate.toISOString();
+      const result = await db.$client.query(`
+        INSERT INTO gullak_accounts (
+          user_id, name, daily_amount, target_gold_weight, target_amount, current_balance,
+          status, auto_pay_enabled, next_payment_date, metal_type, target_metal_weight,
+          payment_amount, payment_frequency, payment_day_of_month, created_at, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW(), NOW())
+        RETURNING *
+      `, [
+        userId, name, paymentAmount, targetMetalWeight, targetAmount, "0",
+        "active", true, nextPaymentDate.toISOString(), metalType, targetMetalWeight,
+        paymentAmount, paymentFrequency, paymentDayOfMonth
+      ]);
 
-      const [account] = await db
-        .insert(schema.gullakAccounts)
-        .values(accountData)
-        .returning();
-
-      res.json(account);
+      res.json(result.rows[0]);
     } catch (error) {
       console.error("Error creating Gullak account:", error);
       res.status(500).json({ error: "Failed to create Gullak account" });
@@ -464,12 +462,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/gullak/transactions/:accountId", isAuthenticated, async (req, res) => {
     try {
       const accountId = parseInt(req.params.accountId);
-      const transactions = await db
-        .select()
-        .from(schema.gullakTransactions)
-        .where(eq(schema.gullakTransactions.accountId, accountId))
-        .orderBy(schema.gullakTransactions.transactionDate);
-      res.json(transactions);
+      const result = await db.$client.query(
+        `SELECT * FROM gullak_transactions WHERE gullak_account_id = $1 ORDER BY transaction_date DESC`,
+        [accountId]
+      );
+      res.json(result.rows);
     } catch (error) {
       console.error("Error fetching transactions:", error);
       res.status(500).json({ error: "Failed to fetch transactions" });
@@ -479,37 +476,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/gullak/deposit", isAuthenticated, async (req, res) => {
     try {
       const { accountId, amount, paymentMethod = "manual" } = req.body;
+      const userId = (req.user as any)?.id;
       
       // Get current gold rates
       const rates = await marketRatesService.getCurrentRates();
-      const goldRate = rates.find(r => r.metal === "gold")?.rate || "7200";
+      const goldRate = rates.find((r: any) => r.metal === "gold")?.rate || "7200";
       const goldValue = (parseFloat(amount) / parseFloat(goldRate)).toFixed(6);
 
       // Create transaction
-      const [transaction] = await db
-        .insert(schema.gullakTransactions)
-        .values({
-          accountId: parseInt(accountId),
-          amount,
-          type: "deposit",
-          goldRate,
-          goldValue,
-          description: `Manual deposit via ${paymentMethod}`,
-          paymentMethod,
-          status: "completed",
-        })
-        .returning();
+      const transactionResult = await db.$client.query(`
+        INSERT INTO gullak_transactions (
+          gullak_account_id, user_id, amount, type, gold_rate, gold_value, 
+          description, status, transaction_date, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+        RETURNING *
+      `, [
+        accountId, userId, amount, "deposit", goldRate, goldValue,
+        `Manual deposit via ${paymentMethod}`, "completed"
+      ]);
 
       // Update account balance
-      await db
-        .update(schema.gullakAccounts)
-        .set({
-          currentBalance: db.raw(`current_balance + ${parseFloat(amount)}`),
-          updatedAt: new Date(),
-        })
-        .where(eq(schema.gullakAccounts.id, parseInt(accountId)));
+      await db.$client.query(`
+        UPDATE gullak_accounts 
+        SET current_balance = (CAST(current_balance AS DECIMAL) + $1)::TEXT, updated_at = NOW()
+        WHERE id = $2
+      `, [parseFloat(amount), accountId]);
 
-      res.json(transaction);
+      res.json(transactionResult.rows[0]);
     } catch (error) {
       console.error("Error processing deposit:", error);
       res.status(500).json({ error: "Failed to process deposit" });
@@ -520,10 +513,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const rates = await marketRatesService.getCurrentRates();
       const goldRates = {
-        rate24k: rates.find(r => r.metal === "gold_24k")?.rate || "7200",
-        rate22k: rates.find(r => r.metal === "gold_22k")?.rate || "6600", 
-        rate18k: rates.find(r => r.metal === "gold_18k")?.rate || "5400",
-        silverRate: rates.find(r => r.metal === "silver")?.rate || "85",
+        rate24k: rates.find((r: any) => r.metal === "gold_24k")?.rate || "7200",
+        rate22k: rates.find((r: any) => r.metal === "gold_22k")?.rate || "6600", 
+        rate18k: rates.find((r: any) => r.metal === "gold_18k")?.rate || "5400",
+        silverRate: rates.find((r: any) => r.metal === "silver")?.rate || "85",
         effectiveDate: new Date().toISOString(),
       };
       res.json(goldRates);
