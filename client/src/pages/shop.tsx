@@ -111,8 +111,8 @@ export default function Shop() {
   // Filter products based on search, category, and product type
   const filteredProducts = products.filter((product: Product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.material?.toLowerCase().includes(searchTerm.toLowerCase());
+                         (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+                         (product.material?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     
     const matchesCategory = selectedCategory === "all" || 
                            product.categoryId === parseInt(selectedCategory);
@@ -190,7 +190,7 @@ export default function Shop() {
     }
   };
 
-  const ProductCard = ({ product }: { product: Product }) => (
+  const ProductCardComponent = ({ product }: { product: Product }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
       <div className="relative overflow-hidden">
         <img
@@ -401,50 +401,51 @@ export default function Shop() {
           </div>
 
           {/* Search and Filters */}
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search jewelry..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <div className="flex gap-2 flex-wrap">
-              <Select value={selectedParentCategory} onValueChange={(value) => {
-                setSelectedParentCategory(value);
-                setSelectedCategory("all"); // Reset subcategory when parent changes
-              }}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Main Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Main Categories</SelectItem>
-                  {mainCategories.map((category: Category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {subcategories.length > 0 && (
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <div className="space-y-6">
+            <div className="flex flex-col lg:flex-row gap-4 items-center">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search jewelry..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <div className="flex gap-2 flex-wrap">
+                <Select value={selectedParentCategory} onValueChange={(value) => {
+                  setSelectedParentCategory(value);
+                  setSelectedCategory("all"); // Reset subcategory when parent changes
+                }}>
                   <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Subcategory" />
+                    <SelectValue placeholder="Main Category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Subcategories</SelectItem>
-                    {subcategories.map((category: Category) => (
+                    <SelectItem value="all">All Main Categories</SelectItem>
+                    {mainCategories.map((category: Category) => (
                       <SelectItem key={category.id} value={category.id.toString()}>
                         {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              )}
+
+                {subcategories.length > 0 && (
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Subcategory" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Subcategories</SelectItem>
+                      {subcategories.map((category: Category) => (
+                        <SelectItem key={category.id} value={category.id.toString()}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
 
               <Select value={selectedProductType} onValueChange={setSelectedProductType}>
                 <SelectTrigger className="w-40">
@@ -483,6 +484,73 @@ export default function Shop() {
                   <SelectItem value="name">Name A-Z</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            
+            {/* Visual Category Browser */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <Filter className="h-5 w-5 text-amber-600" />
+                Browse by Category
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+                <Button
+                  variant={selectedParentCategory === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    setSelectedParentCategory("all");
+                    setSelectedCategory("all");
+                  }}
+                  className="h-auto p-3 flex flex-col items-center justify-center gap-2 min-h-[80px]"
+                >
+                  <Crown className="h-5 w-5" />
+                  <span className="text-xs font-medium">All Categories</span>
+                </Button>
+                {mainCategories.map((category: Category) => (
+                  <Button
+                    key={category.id}
+                    variant={selectedParentCategory === category.id.toString() ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setSelectedParentCategory(category.id.toString());
+                      setSelectedCategory("all");
+                    }}
+                    className="h-auto p-3 flex flex-col items-center justify-center gap-2 min-h-[80px]"
+                  >
+                    <Gem className="h-5 w-5" />
+                    <span className="text-xs font-medium text-center leading-tight">{category.name}</span>
+                  </Button>
+                ))}
+              </div>
+              
+              {/* Subcategory Browser */}
+              {subcategories.length > 0 && (
+                <div className="mt-6 pt-6 border-t">
+                  <h4 className="font-medium text-sm mb-3 text-gray-700 dark:text-gray-300">
+                    {mainCategories.find(cat => cat.id.toString() === selectedParentCategory)?.name} Subcategories:
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+                    <Button
+                      variant={selectedCategory === "all" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setSelectedCategory("all")}
+                      className="h-auto p-2 text-xs"
+                    >
+                      All Items
+                    </Button>
+                    {subcategories.map((category: Category) => (
+                      <Button
+                        key={category.id}
+                        variant={selectedCategory === category.id.toString() ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setSelectedCategory(category.id.toString())}
+                        className="h-auto p-2 text-xs text-left"
+                      >
+                        {category.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

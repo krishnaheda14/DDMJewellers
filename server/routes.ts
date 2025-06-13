@@ -499,7 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bulk delete all categories
   app.delete("/api/admin/categories/bulk-delete", isAuthenticated, isAdmin, async (req, res) => {
     try {
-      const result = await db.delete(categories);
+      const result = await db.$client.query('DELETE FROM categories');
       res.json({ 
         message: "All categories deleted successfully",
         deletedCount: result.rowCount || 0
