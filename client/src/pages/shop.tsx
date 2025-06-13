@@ -59,7 +59,12 @@ interface Category {
   slug: string;
   description?: string;
   imageUrl?: string;
+  parentId?: number;
+  productType?: string;
+  sortOrder?: number;
+  isActive?: boolean;
   createdAt: string;
+  children?: Category[];
 }
 
 export default function Shop() {
@@ -70,6 +75,7 @@ export default function Shop() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedParentCategory, setSelectedParentCategory] = useState<string>("all");
   
   const { toast } = useToast();
 
@@ -80,6 +86,26 @@ export default function Shop() {
   const { data: products = [], isLoading: productsLoading, refetch } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
+
+  // Process categories into hierarchical structure
+  const processedCategories = categories.reduce((acc, category) => {
+    if (!category.parentId) {
+      // Main category
+      acc.push({
+        ...category,
+        children: categories.filter(c => c.parentId === category.id).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+      });
+    }
+    return acc;
+  }, [] as Category[]).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+  // Get main categories only
+  const mainCategories = categories.filter(cat => !cat.parentId).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+  // Get subcategories for selected parent
+  const subcategories = selectedParentCategory !== "all" 
+    ? categories.filter(cat => cat.parentId === parseInt(selectedParentCategory)).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+    : [];
 
   // Filter products based on search, category, and product type
   const filteredProducts = products.filter((product: Product) => {
@@ -386,19 +412,38 @@ export default function Shop() {
             </div>
             
             <div className="flex gap-2 flex-wrap">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Category" />
+              <Select value={selectedParentCategory} onValueChange={(value) => {
+                setSelectedParentCategory(value);
+                setSelectedCategory("all"); // Reset subcategory when parent changes
+              }}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Main Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((category: Category) => (
+                  <SelectItem value="all">All Main Categories</SelectItem>
+                  {mainCategories.map((category: Category) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
+              {subcategories.length > 0 && (
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Subcategory" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Subcategories</SelectItem>
+                    {subcategories.map((category: Category) => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
               <Select value={selectedProductType} onValueChange={setSelectedProductType}>
                 <SelectTrigger className="w-40">
@@ -490,6 +535,51 @@ export default function Shop() {
 
           <TabsContent value="categories">
             <div className="space-y-12">
+              {/* Category Overview */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                  <Gem className="h-6 w-6 text-amber-600" />
+                  Browse by Category
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {processedCategories.map((mainCategory) => (
+                    <div key={mainCategory.id} className="space-y-3">
+                      <div 
+                        className="font-semibold text-lg text-amber-700 dark:text-amber-400 cursor-pointer hover:text-amber-800 dark:hover:text-amber-300 transition-colors"
+                        onClick={() => {
+                          setSelectedParentCategory(mainCategory.id.toString());
+                          setSelectedCategory("all");
+                        }}
+                      >
+                        {mainCategory.name}
+                      </div>
+                      {mainCategory.children && mainCategory.children.length > 0 && (
+                        <div className="space-y-1 ml-3">
+                          {mainCategory.children.slice(0, 6).map((subCategory) => (
+                            <div 
+                              key={subCategory.id}
+                              className="text-sm text-gray-600 dark:text-gray-300 cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                              onClick={() => {
+                                setSelectedParentCategory(mainCategory.id.toString());
+                                setSelectedCategory(subCategory.id.toString());
+                              }}
+                            >
+                              • {subCategory.name}
+                            </div>
+                          ))}
+                          {mainCategory.children.length > 6 && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              +{mainCategory.children.length - 6} more...
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Products by Category */}
               {productsByCategory.map((category: Category & { products: Product[] }) => (
                 category.products.length > 0 && (
                   <div key={category.id}>
