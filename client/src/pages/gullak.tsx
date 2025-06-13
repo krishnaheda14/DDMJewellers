@@ -134,9 +134,10 @@ export default function Gullak() {
   }
 
   return (
-    <PageTransition>
-      <PageNavigation />
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-cream-white via-white to-amber-50/20">
+      <PageTransition>
+        <PageNavigation />
+        <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -342,7 +343,8 @@ export default function Gullak() {
             </TabsContent>
           </Tabs>
         )}
-      </div>
-    </PageTransition>
+        </div>
+      </PageTransition>
+    </div>
   );
 }
