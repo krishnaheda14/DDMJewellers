@@ -159,18 +159,28 @@ export default function Header() {
 
           {/* Main Navigation */}
           <div className="flex items-center justify-between py-3 sm:py-4">
-            {/* Logo */}
+            {/* Enhanced DDM Jewellers Logo */}
             <div className="flex-shrink-0">
-              <button onClick={() => navigate("/")} className="text-left group relative transform hover:scale-105 transition-all duration-300">
-                <div className="absolute inset-0 bg-gradient-to-r from-gold/5 to-amber-100/20 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300"></div>
-                <div className="relative z-10 p-1 sm:p-2">
-                  <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-deep-navy">
-                    <span className="text-gold drop-shadow-sm bg-gradient-to-r from-gold to-amber-600 bg-clip-text text-transparent">DDM</span> 
-                    <span className="ml-1 bg-gradient-to-r from-deep-navy to-slate-700 bg-clip-text text-transparent">Jewellers</span>
+              <button 
+                onClick={() => navigate("/")} 
+                className="text-left group relative transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gold/50 rounded-lg"
+                aria-label="DDM Jewellers - Go to Home"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-gold/10 via-amber-50/20 to-silver-light/10 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300 shadow-lg"></div>
+                <div className="relative z-10 p-2 sm:p-3">
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">
+                    <span className="text-gold drop-shadow-lg bg-gradient-to-r from-gold via-amber-500 to-gold bg-clip-text text-transparent font-extrabold">DDM</span> 
+                    <span className="ml-2 bg-gradient-to-r from-silver-dark via-gray-700 to-deep-navy bg-clip-text text-transparent font-bold">Jewellers</span>
                   </h1>
-                  <p className="text-xs text-warm-gray -mt-1 group-hover:text-gold/70 transition-colors duration-300 hidden sm:block">Since 1985</p>
+                  <div className="flex items-center gap-2 -mt-1">
+                    <p className="text-xs text-warm-gray group-hover:text-gold/80 transition-colors duration-300 font-medium">Since 1985</p>
+                    <div className="hidden sm:flex items-center gap-1">
+                      <div className="w-1 h-1 bg-gold rounded-full animate-pulse"></div>
+                      <span className="text-xs text-gold font-medium">Premium Quality</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-gold to-amber-500 group-hover:w-full transition-all duration-500"></div>
+                <div className="absolute -bottom-1 left-0 w-0 h-1 bg-gradient-to-r from-gold via-amber-500 to-silver group-hover:w-full transition-all duration-500 rounded-full"></div>
               </button>
             </div>
 

@@ -313,7 +313,7 @@ export default function Shop() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-cream-white via-white to-amber-50/20">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b">
         <PageNavigation />

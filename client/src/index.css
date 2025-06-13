@@ -41,6 +41,9 @@
   --cream-white: hsl(47, 78%, 98%);
   --warm-gray: hsl(220, 13%, 46%);
   --rose-gold: hsl(14, 41%, 74%);
+  --silver: hsl(0, 0%, 75%);
+  --silver-light: hsl(0, 0%, 85%);
+  --silver-dark: hsl(0, 0%, 65%);
 }
 
 .dark {
@@ -120,6 +123,34 @@
   
   .bg-rose-gold {
     background-color: var(--rose-gold);
+  }
+
+  .text-silver {
+    color: var(--silver);
+  }
+  
+  .bg-silver {
+    background-color: var(--silver);
+  }
+  
+  .border-silver {
+    border-color: var(--silver);
+  }
+  
+  .text-silver-light {
+    color: var(--silver-light);
+  }
+  
+  .bg-silver-light {
+    background-color: var(--silver-light);
+  }
+  
+  .text-silver-dark {
+    color: var(--silver-dark);
+  }
+  
+  .bg-silver-dark {
+    background-color: var(--silver-dark);
   }
   
   /* Responsive container utilities */

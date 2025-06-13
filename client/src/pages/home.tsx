@@ -45,7 +45,7 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-cream-white via-white to-amber-50/20">
       <Header />
       
       {/* Hero Section */}
