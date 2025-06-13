@@ -511,12 +511,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/gullak/gold-rates", async (req, res) => {
     try {
-      const rates = await marketRatesService.getCurrentRates();
+      // Use fixed rates for now until market rates service is fixed
       const goldRates = {
-        rate24k: rates.find((r: any) => r.metal === "gold_24k")?.rate || "7200",
-        rate22k: rates.find((r: any) => r.metal === "gold_22k")?.rate || "6600", 
-        rate18k: rates.find((r: any) => r.metal === "gold_18k")?.rate || "5400",
-        silverRate: rates.find((r: any) => r.metal === "silver")?.rate || "85",
+        rate24k: "7200",
+        rate22k: "6600", 
+        rate18k: "5400",
+        silverRate: "85",
         effectiveDate: new Date().toISOString(),
       };
       res.json(goldRates);
