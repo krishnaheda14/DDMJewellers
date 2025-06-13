@@ -43,6 +43,12 @@ interface Product {
   featured: boolean;
   customizable: boolean;
   customizationOptions?: any;
+  productType: "real" | "imitation";
+  plating?: string;
+  baseMaterial?: string;
+  category?: {
+    name: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -59,6 +65,7 @@ interface Category {
 export default function Shop() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedProductType, setSelectedProductType] = useState<string>("all");
   const [sortBy, setSortBy] = useState("featured");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState<string>("all");
@@ -74,7 +81,7 @@ export default function Shop() {
     queryKey: ["/api/products"],
   });
 
-  // Filter products based on search and category
+  // Filter products based on search, category, and product type
   const filteredProducts = products.filter((product: Product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,13 +90,16 @@ export default function Shop() {
     const matchesCategory = selectedCategory === "all" || 
                            product.categoryId === parseInt(selectedCategory);
     
+    const matchesProductType = selectedProductType === "all" || 
+                              product.productType === selectedProductType;
+    
     const matchesPrice = priceRange === "all" || 
                         (priceRange === "under-5000" && parseFloat(product.price) < 5000) ||
                         (priceRange === "5000-15000" && parseFloat(product.price) >= 5000 && parseFloat(product.price) <= 15000) ||
                         (priceRange === "15000-50000" && parseFloat(product.price) >= 15000 && parseFloat(product.price) <= 50000) ||
                         (priceRange === "above-50000" && parseFloat(product.price) > 50000);
     
-    return matchesSearch && matchesCategory && matchesPrice;
+    return matchesSearch && matchesCategory && matchesProductType && matchesPrice;
   });
 
   // Sort products
@@ -373,6 +383,17 @@ export default function Shop() {
                       {category.name}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedProductType} onValueChange={setSelectedProductType}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Product Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="real">Real Jewelry</SelectItem>
+                  <SelectItem value="imitation">Imitation Jewelry</SelectItem>
                 </SelectContent>
               </Select>
 
