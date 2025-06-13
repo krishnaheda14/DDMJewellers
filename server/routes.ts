@@ -387,7 +387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-  app.get("/api/admin/stats", isAdmin, async (req, res) => {
+  app.get("/api/admin/stats", isAuthenticated, isAdmin, async (req, res) => {
     try {
       // Get user counts from database
       const usersResult = await db.$client.query('SELECT role, COUNT(*) as count FROM users GROUP BY role');
@@ -422,7 +422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/users", isAdmin, async (req, res) => {
+  app.get("/api/admin/users", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const result = await db.$client.query(`
         SELECT id, email, first_name, last_name, role, is_active, 
@@ -437,7 +437,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/orders", isAdmin, async (req, res) => {
+  app.get("/api/admin/orders", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const orders = await storage.getOrders();
       res.json(orders);
@@ -448,7 +448,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin category management routes
-  app.get("/api/admin/categories", isAdmin, async (req, res) => {
+  app.get("/api/admin/categories", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const categories = await storage.getCategories();
       res.json(categories);
@@ -458,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/categories", isAdmin, async (req, res) => {
+  app.post("/api/admin/categories", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const categoryData = insertCategorySchema.parse(req.body);
       const category = await storage.createCategory(categoryData);
@@ -469,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/categories/:id", isAdmin, async (req, res) => {
+  app.put("/api/admin/categories/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const categoryId = parseInt(req.params.id);
       const categoryData = insertCategorySchema.partial().parse(req.body);
@@ -481,7 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/categories/:id", isAdmin, async (req, res) => {
+  app.delete("/api/admin/categories/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const categoryId = parseInt(req.params.id);
       const success = await storage.deleteCategory(categoryId);
@@ -497,7 +497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin product management routes
-  app.get("/api/admin/products", isAdmin, async (req, res) => {
+  app.get("/api/admin/products", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const products = await storage.getProducts();
       res.json(products);
@@ -507,7 +507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/products", isAdmin, async (req, res) => {
+  app.post("/api/admin/products", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const productData = insertProductSchema.parse(req.body);
       const product = await storage.createProduct(productData);
@@ -518,7 +518,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/products/:id", isAdmin, async (req, res) => {
+  app.put("/api/admin/products/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
       const productData = insertProductSchema.partial().parse(req.body);
@@ -530,7 +530,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/products/:id", isAdmin, async (req, res) => {
+  app.delete("/api/admin/products/:id", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const productId = parseInt(req.params.id);
       const success = await storage.deleteProduct(productId);
