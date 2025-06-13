@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, ShoppingCart, Star, Filter, Search, Sparkles, Crown, Gem } from "lucide-react";
 import { Link } from "wouter";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 
 interface Product {
   id: number;
@@ -111,16 +113,18 @@ export default function ImitationJewelryPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-purple-900">
+    <div className="min-h-screen bg-gradient-to-br from-cream-white via-white to-amber-50/20">
+      <Header />
+      
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white">
+      <div className="relative overflow-hidden bg-gradient-to-r from-gold via-amber-500 to-rose-gold text-white">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative container mx-auto px-4 py-20">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-pink-200 bg-clip-text text-transparent">
-              Imitation Jewelry
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-cream-white bg-clip-text text-transparent">
+              Imitation Jewelry Collection
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-pink-100">
+            <p className="text-xl md:text-2xl mb-8 text-cream-white/90">
               Discover our exquisite collection of premium imitation jewelry crafted with finest materials and elegant plating
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
@@ -143,31 +147,31 @@ export default function ImitationJewelryPage() {
 
       {/* Featured Categories */}
       <div className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-white">
+        <h2 className="text-3xl font-bold text-center mb-12 text-bronze-dark">
           Featured Categories
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
           {featuredCategories.map((category, index) => {
             const IconComponent = category.icon;
             return (
-              <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+              <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-gold/20 bg-white/90 backdrop-blur-sm hover:bg-cream-white/95">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <IconComponent className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-                    <Badge variant="outline" className="text-xs">
+                    <IconComponent className="h-8 w-8 text-gold" />
+                    <Badge variant="outline" className="text-xs border-gold/30 text-bronze-dark">
                       {category.count} items
                     </Badge>
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">
+                  <h3 className="text-xl font-semibold mb-2 text-bronze-dark">
                     {category.name}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+                  <p className="text-bronze/70 mb-4 text-sm">
                     {category.description}
                   </p>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full group-hover:bg-purple-600 group-hover:text-white transition-colors"
+                    className="w-full border-gold/30 text-bronze-dark hover:bg-gold hover:text-white transition-colors"
                     onClick={() => setSelectedCategory(category.name.toLowerCase())}
                   >
                     Explore {category.name}
@@ -182,20 +186,20 @@ export default function ImitationJewelryPage() {
       {/* Filters and Products */}
       <div className="container mx-auto px-4 pb-16">
         {/* Search and Filter Bar */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg border-0">
+        <div className="bg-white/90 border border-gold/20 backdrop-blur-sm rounded-2xl p-6 mb-8 shadow-lg">
           <div className="grid md:grid-cols-5 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-bronze" />
               <Input
                 placeholder="Search jewelry..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                className="pl-10 border-gold/30 bg-white/95 focus:border-gold"
               />
             </div>
             
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <SelectTrigger className="border-gold/30 bg-white/95">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -209,7 +213,7 @@ export default function ImitationJewelryPage() {
             </Select>
 
             <Select value={priceRange} onValueChange={setPriceRange}>
-              <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <SelectTrigger className="border-gold/30 bg-white/95">
                 <SelectValue placeholder="Price Range" />
               </SelectTrigger>
               <SelectContent>
@@ -222,7 +226,7 @@ export default function ImitationJewelryPage() {
             </Select>
 
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <SelectTrigger className="border-gold/30 bg-white/95">
                 <SelectValue placeholder="Sort By" />
               </SelectTrigger>
               <SelectContent>
@@ -233,7 +237,7 @@ export default function ImitationJewelryPage() {
               </SelectContent>
             </Select>
 
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button className="bg-gold hover:bg-amber-600 text-white border-0">
               <Filter className="h-4 w-4 mr-2" />
               Filter
             </Button>
@@ -256,7 +260,7 @@ export default function ImitationJewelryPage() {
         ) : (
           <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm overflow-hidden">
+              <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 border border-gold/20 bg-white/95 hover:bg-cream-white/98 backdrop-blur-sm overflow-hidden">
                 <div className="relative overflow-hidden">
                   <img
                     src={product.imageUrl || "/api/placeholder/300/300"}
@@ -264,13 +268,13 @@ export default function ImitationJewelryPage() {
                     className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   {product.featured && (
-                    <Badge className="absolute top-2 left-2 bg-purple-600 text-white">
+                    <Badge className="absolute top-2 left-2 bg-gold text-white">
                       Featured
                     </Badge>
                   )}
                   <div className="absolute top-2 right-2 flex gap-2">
-                    <Button size="icon" variant="ghost" className="bg-white/80 hover:bg-white">
-                      <Heart className="h-4 w-4" />
+                    <Button size="icon" variant="ghost" className="bg-white/80 hover:bg-white border-gold/20">
+                      <Heart className="h-4 w-4 text-bronze" />
                     </Button>
                   </div>
                   {!product.inStock && (
@@ -280,17 +284,17 @@ export default function ImitationJewelryPage() {
                   )}
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2">
+                  <h3 className="font-semibold text-bronze-dark mb-2 line-clamp-2">
                     {product.name}
                   </h3>
                   <div className="flex flex-wrap gap-1 mb-3">
                     {product.plating && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs border-gold/30 text-bronze">
                         {product.plating}
                       </Badge>
                     )}
                     {product.baseMaterial && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs border-gold/30 text-bronze">
                         {product.baseMaterial}
                       </Badge>
                     )}
