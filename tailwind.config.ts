@@ -61,6 +61,33 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        // Custom DDM Jewellers brand colors
+        gold: {
+          50: "var(--gold-50)",
+          100: "var(--gold-100)",
+          200: "var(--gold-200)",
+          300: "var(--gold-300)",
+          400: "var(--gold-400)",
+          500: "var(--gold-500)",
+          600: "var(--gold-600)",
+          700: "var(--gold-700)",
+          800: "var(--gold-800)",
+          900: "var(--gold-900)",
+          DEFAULT: "var(--luxury-gold)",
+        },
+        bronze: {
+          DEFAULT: "hsl(30, 25%, 45%)",
+          dark: "hsl(30, 30%, 25%)",
+        },
+        "deep-navy": "var(--deep-navy)",
+        "cream-white": "var(--cream-white)",
+        "warm-gray": "var(--warm-gray)",
+        "rose-gold": "var(--rose-gold)",
+        silver: {
+          DEFAULT: "var(--silver)",
+          light: "var(--silver-light)",
+          dark: "var(--silver-dark)",
+        },
       },
       keyframes: {
         "accordion-down": {

@@ -122,6 +122,7 @@ export const cartItems = pgTable("cart_items", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   productId: integer("product_id").references(() => products.id, { onDelete: "cascade" }),
   quantity: integer("quantity").notNull().default(1),
+  customizations: jsonb("customizations"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -154,6 +155,7 @@ export const orderItems = pgTable("order_items", {
   ratePerGram: decimal("rate_per_gram", { precision: 10, scale: 2 }),
   metalCost: decimal("metal_cost", { precision: 10, scale: 2 }),
   gstAmount: decimal("gst_amount", { precision: 10, scale: 2 }),
+  customizations: jsonb("customizations"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -164,11 +166,15 @@ export const wholesalerDesigns = pgTable("wholesaler_designs", {
   title: varchar("title", { length: 200 }).notNull(),
   description: text("description"),
   imageUrl: varchar("image_url"),
+  additionalImages: jsonb("additional_images"),
   category: varchar("category"),
+  materials: jsonb("materials"),
+  dimensions: varchar("dimensions"),
   estimatedPrice: decimal("estimated_price", { precision: 10, scale: 2 }),
   status: varchar("status", { enum: ["pending", "approved", "rejected"] }).default("pending"),
   approvedBy: varchar("approved_by").references(() => users.id),
   approvedAt: timestamp("approved_at"),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
