@@ -125,7 +125,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5 text-green-600" />
@@ -135,10 +135,31 @@ export default function AdminDashboard() {
                 Manage jewelry categories and subcategories
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button className="w-full" onClick={() => window.location.href = '/admin/categories'}>
-                Manage Categories
+            <CardContent className="space-y-2">
+              <Button 
+                className="w-full" 
+                onClick={() => window.location.href = '/admin/categories'}
+              >
+                View All Categories
               </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => window.location.href = '/admin/categories?filter=main'}
+                >
+                  Main Categories
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => window.location.href = '/admin/categories?filter=sub'}
+                >
+                  Subcategories
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
