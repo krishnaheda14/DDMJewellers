@@ -424,7 +424,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/admin/users", isAdmin, async (req, res) => {
     try {
-      res.json([]);
+      const result = await db.$client.query(`
+        SELECT id, email, first_name, last_name, role, is_active, 
+               approved, email_verified, created_at, updated_at 
+        FROM users 
+        ORDER BY created_at DESC
+      `);
+      res.json(result.rows);
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ error: "Failed to fetch users" });
