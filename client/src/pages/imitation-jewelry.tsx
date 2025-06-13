@@ -301,31 +301,31 @@ export default function ImitationJewelryPage() {
                   </div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                      <span className="text-lg font-bold text-gold">
                         ₹{product.price}
                       </span>
                       {product.originalPrice && (
-                        <span className="text-sm text-gray-500 line-through">
+                        <span className="text-sm text-bronze/60 line-through">
                           ₹{product.originalPrice}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">4.5</span>
+                      <Star className="h-4 w-4 fill-gold text-gold" />
+                      <span className="text-sm text-bronze">4.5</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <Button 
                       size="sm" 
-                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
+                      className="flex-1 bg-gold hover:bg-amber-600 text-white border-0"
                       disabled={!product.inStock}
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
                       Add to Cart
                     </Button>
                     <Link href={`/product/${product.id}`}>
-                      <Button size="sm" variant="outline" className="px-3">
+                      <Button size="sm" variant="outline" className="px-3 border-gold/30 text-bronze hover:bg-gold hover:text-white">
                         View
                       </Button>
                     </Link>
@@ -338,18 +338,20 @@ export default function ImitationJewelryPage() {
 
         {filteredProducts.length === 0 && !isLoading && (
           <div className="text-center py-16">
-            <div className="text-gray-400 mb-4">
+            <div className="text-bronze/60 mb-4">
               <Gem className="h-16 w-16 mx-auto mb-4" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
+            <h3 className="text-xl font-semibold text-bronze-dark mb-2">
               No products found
             </h3>
-            <p className="text-gray-500 dark:text-gray-400">
+            <p className="text-bronze/70">
               Try adjusting your search or filter criteria
             </p>
           </div>
         )}
       </div>
+      
+      <Footer />
     </div>
   );
 }
