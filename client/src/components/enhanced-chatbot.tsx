@@ -103,7 +103,7 @@ export default function EnhancedChatbot(): JSX.Element {
   // Chat mutation with AI
   const chatMutation = useMutation({
     mutationFn: async ({ message, userProfile }: { message: string; userProfile?: UserProfile }) => {
-      const response = await apiRequest('/api/chatbot/chat', 'POST', { message, userProfile });
+      const response = await apiRequest('POST', '/api/chatbot/chat', { message, userProfile });
       return response;
     },
   });

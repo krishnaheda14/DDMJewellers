@@ -586,6 +586,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/gullak/accounts", isAuthenticated, async (req, res) => {
+    try {
+      const userId = (req.user as any)?.id;
+      const result = await db.$client.query(
+        `SELECT * FROM gullak_accounts WHERE user_id = $1 ORDER BY created_at DESC`,
+        [userId]
+      );
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error fetching Gullak accounts:", error);
+      res.status(500).json({ error: "Failed to fetch Gullak accounts" });
+    }
+  });
+
   app.get("/api/gullak/gold-rates", async (req, res) => {
     try {
       // Use fixed rates for now until market rates service is fixed
