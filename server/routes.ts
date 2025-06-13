@@ -1,6 +1,6 @@
 import { Express } from "express";
 import { Server } from "http";
-import { isAuthenticated, isAdmin, isWholesaler, setupAuth } from "./auth";
+import { isAuthenticated, isAdmin, isWholesaler, setupAuth, hashPassword } from "./auth";
 import { storage } from "./storage-simple";
 import { optimizedStorage } from "./optimized-storage";
 import { fastStorage } from "./fast-storage";
@@ -8,6 +8,10 @@ import { marketRatesService } from "./market-rates";
 import OpenAI from "openai";
 import Anthropic from '@anthropic-ai/sdk';
 import fs from "fs";
+import { db } from "./db";
+import * as schema from "../shared/schema";
+import { eq } from "drizzle-orm";
+import crypto from "crypto";
 import {
   insertCategorySchema,
   insertProductSchema,
@@ -338,6 +342,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching orders:", error);
       res.status(500).json({ error: "Failed to fetch orders" });
+    }
+  });
+
+  // General signup route (handles both customer and wholesaler)
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { role, ...userData } = req.body;
+      
+      if (!role) {
+        return res.status(400).json({ message: "Role is required" });
+      }
+
+      // Create user using storage layer (simplified approach)
+      const userId = crypto.randomUUID();
+      
+      const newUser = {
+        id: userId,
+        email: userData.email,
+        password: userData.password || 'temp123',
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        phoneNumber: userData.phone || null,
+        role: role,
+        businessName: userData.businessName || null,
+        businessAddress: userData.businessAddress || null,
+        businessDescription: userData.businessDescription || null,
+      };
+
+      // Use storage to create user (this will handle duplicate checking)
+      const createdUser = await storage.upsertUser(newUser);
+
+      res.status(201).json({
+        message: role === 'wholesaler' 
+          ? 'Wholesaler account created successfully. Please wait for admin approval.'
+          : 'Account created successfully!',
+        user: {
+          id: createdUser.id,
+          email: createdUser.email,
+          firstName: createdUser.firstName,
+          lastName: createdUser.lastName,
+          role: createdUser.role,
+          isEmailVerified: false,
+          isApproved: role === 'customer',
+        }
+      });
+
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      res.status(500).json({ message: 'Registration failed. Please try again.' });
     }
   });
 
