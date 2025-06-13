@@ -144,6 +144,27 @@ export default function AdminCategories() {
     },
   });
 
+  // Delete all categories mutation
+  const deleteAllCategoriesMutation = useMutation({
+    mutationFn: () => apiRequest("/api/admin/categories/bulk-delete", {
+      method: "DELETE",
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
+      toast({
+        title: "Success",
+        description: "All categories deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete all categories",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Generate slug from name
   const generateSlug = (name: string) => {
     return name
@@ -438,13 +459,41 @@ export default function AdminCategories() {
               </div>
             </div>
             
-            {/* Quick Stats */}
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-              <span>Total: {categories.length} categories</span>
-              <span>Main: {mainCategories.length}</span>
-              <span>Subcategories: {subcategories.length}</span>
-              {filterParent !== "all" && (
-                <span>Filtered: {filteredCategories.length} shown</span>
+            {/* Quick Stats and Bulk Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
+                <span>Total: {categories.length} categories</span>
+                <span>Main: {mainCategories.length}</span>
+                <span>Subcategories: {subcategories.length}</span>
+                {filterParent !== "all" && (
+                  <span>Filtered: {filteredCategories.length} shown</span>
+                )}
+              </div>
+              
+              {categories.length > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    if (confirm(`Are you sure you want to delete ALL ${categories.length} categories? This action cannot be undone.`)) {
+                      deleteAllCategoriesMutation.mutate();
+                    }
+                  }}
+                  disabled={deleteAllCategoriesMutation.isPending}
+                  className="text-xs"
+                >
+                  {deleteAllCategoriesMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Delete All Categories
+                    </>
+                  )}
+                </Button>
               )}
             </div>
           </CardContent>

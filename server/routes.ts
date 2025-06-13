@@ -496,6 +496,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk delete all categories
+  app.delete("/api/admin/categories/bulk-delete", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const result = await db.delete(categories);
+      res.json({ 
+        message: "All categories deleted successfully",
+        deletedCount: result.rowCount || 0
+      });
+    } catch (error) {
+      console.error("Error deleting all categories:", error);
+      res.status(500).json({ error: "Failed to delete all categories" });
+    }
+  });
+
   // Admin product management routes
   app.get("/api/admin/products", isAuthenticated, isAdmin, async (req, res) => {
     try {
