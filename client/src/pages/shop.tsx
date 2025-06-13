@@ -26,7 +26,7 @@ import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import PageNavigation from "@/components/page-navigation";
-import { ProductCard } from "@/components/ProductCard";
+// ProductCard component will be defined inline
 
 interface Product {
   id: number;
@@ -593,7 +593,7 @@ export default function Shop() {
               }>
                 {sortedProducts.map((product: Product) => 
                   viewMode === "grid" ? (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCardComponent key={product.id} product={product} />
                   ) : (
                     <ProductListItem key={product.id} product={product} />
                   )
@@ -674,7 +674,7 @@ export default function Shop() {
                     }>
                       {category.products.map((product: Product) => 
                         viewMode === "grid" ? (
-                          <ProductCard key={product.id} product={product} />
+                          <ProductCardComponent key={product.id} product={product} />
                         ) : (
                           <ProductListItem key={product.id} product={product} />
                         )
@@ -705,7 +705,7 @@ export default function Shop() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {sortedProducts.filter(p => p.name.toLowerCase().includes('gold') || p.name.toLowerCase().includes('diamond')).slice(0, 4).map((product: Product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCardComponent key={product.id} product={product} />
                   ))}
                 </div>
               </div>
@@ -727,7 +727,7 @@ export default function Shop() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {sortedProducts.filter(p => p.name.toLowerCase().includes('necklace') || p.name.toLowerCase().includes('set')).slice(0, 4).map((product: Product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCardComponent key={product.id} product={product} />
                   ))}
                 </div>
               </div>
@@ -749,7 +749,7 @@ export default function Shop() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {sortedProducts.filter(p => p.name.toLowerCase().includes('bracelet') || p.name.toLowerCase().includes('ring')).slice(0, 4).map((product: Product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCardComponent key={product.id} product={product} />
                   ))}
                 </div>
               </div>
@@ -771,7 +771,7 @@ export default function Shop() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {sortedProducts.filter(p => p.name.toLowerCase().includes('emerald') || p.name.toLowerCase().includes('ruby')).slice(0, 4).map((product: Product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCardComponent key={product.id} product={product} />
                   ))}
                 </div>
               </div>
