@@ -423,78 +423,236 @@ export default function AdminCategories() {
           </CardContent>
         </Card>
 
-        {/* Categories List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Categories</CardTitle>
-            <CardDescription>
-              Manage your jewelry categories and subcategories
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {filteredCategories.map((category: Category) => (
-                <div
-                  key={category.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold">{category.name}</h3>
-                      {category.parentId && (
-                        <Badge variant="secondary">
-                          Subcategory
-                        </Badge>
-                      )}
-                      {!category.isActive && (
-                        <Badge variant="destructive">
-                          Inactive
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Slug: {category.slug}
-                    </p>
-                    {category.description && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        {category.description}
-                      </p>
-                    )}
-                    {category.parentId && (
-                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                        Parent: {mainCategories.find(c => c.id === category.parentId)?.name}
-                      </p>
-                    )}
+        {/* Hierarchical Categories Display */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Main Categories */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-blue-600" />
+                Main Categories
+              </CardTitle>
+              <CardDescription>
+                Body part categories that organize jewelry types
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {mainCategories
+                  .filter((category: Category) => 
+                    category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    category.slug.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map((category: Category) => {
+                    const categorySubcategories = subcategories.filter((sub: Category) => sub.parentId === category.id);
+                    return (
+                      <div
+                        key={category.id}
+                        className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-lg">{category.name}</h3>
+                            <Badge variant="outline">
+                              {categorySubcategories.length} subcategories
+                            </Badge>
+                            {!category.isActive && (
+                              <Badge variant="destructive">Inactive</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(category)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDelete(category)}
+                              disabled={deleteCategoryMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          Slug: {category.slug}
+                        </p>
+                        {category.description && (
+                          <p className="text-sm text-gray-500 mb-3">
+                            {category.description}
+                          </p>
+                        )}
+                        
+                        {/* Quick Add Subcategory */}
+                        <div className="mt-3 pt-3 border-t">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setIsCreateDialogOpen(true);
+                              createForm.setValue("parentId", category.id);
+                            }}
+                            className="text-xs"
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add Subcategory to {category.name}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                
+                {mainCategories.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No main categories found.
                   </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(category)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(category)}
-                      disabled={deleteCategoryMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Subcategories */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5 text-green-600" />
+                Subcategories
+              </CardTitle>
+              <CardDescription>
+                Specific jewelry types organized under main categories
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {filterParent === "all" || filterParent === "sub" ? (
+                  // Show all subcategories grouped by parent
+                  mainCategories.map((parent: Category) => {
+                    const categorySubcategories = subcategories.filter((sub: Category) => 
+                      sub.parentId === parent.id &&
+                      (sub.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       sub.slug.toLowerCase().includes(searchTerm.toLowerCase()))
+                    );
+                    
+                    if (categorySubcategories.length === 0) return null;
+                    
+                    return (
+                      <div key={parent.id} className="mb-6">
+                        <h4 className="font-semibold text-sm text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-1">
+                          <Package className="h-3 w-3" />
+                          {parent.name} ({categorySubcategories.length})
+                        </h4>
+                        <div className="space-y-2 ml-4">
+                          {categorySubcategories.map((subcategory: Category) => (
+                            <div
+                              key={subcategory.id}
+                              className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h5 className="font-medium">{subcategory.name}</h5>
+                                  {!subcategory.isActive && (
+                                    <Badge variant="destructive" className="text-xs">
+                                      Inactive
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
+                                  Slug: {subcategory.slug}
+                                </p>
+                                {subcategory.description && (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {subcategory.description}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEdit(subcategory)}
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDelete(subcategory)}
+                                  disabled={deleteCategoryMutation.isPending}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  // Show subcategories for specific parent
+                  subcategories
+                    .filter((sub: Category) => 
+                      sub.parentId?.toString() === filterParent &&
+                      (sub.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       sub.slug.toLowerCase().includes(searchTerm.toLowerCase()))
+                    )
+                    .map((subcategory: Category) => (
+                      <div
+                        key={subcategory.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h5 className="font-medium">{subcategory.name}</h5>
+                            {!subcategory.isActive && (
+                              <Badge variant="destructive">
+                                Inactive
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Slug: {subcategory.slug}
+                          </p>
+                          {subcategory.description && (
+                            <p className="text-sm text-gray-500 mt-1">
+                              {subcategory.description}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(subcategory)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(subcategory)}
+                            disabled={deleteCategoryMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                )}
+                
+                {subcategories.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No subcategories found.
                   </div>
-                </div>
-              ))}
-              
-              {filteredCategories.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No categories found matching your criteria.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Edit Dialog */}
