@@ -87,9 +87,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Live Gold & Silver Rates - Prominent Position */}
-      {goldRates && (
-        <section className="py-12 sm:py-16 bg-gradient-to-br from-gold/5 via-white to-amber-50/30 border-b border-gold/10">
+      {/* Live Gold & Silver Rates - Always Visible */}
+      <section className="py-12 sm:py-16 bg-gradient-to-br from-gold/5 via-white to-amber-50/30 border-b border-gold/10">
           <div className="container-fluid">
             <div className="text-center mb-8 sm:mb-12">
               <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
@@ -108,7 +107,7 @@ export default function Home() {
                   </div>
                   <h3 className="responsive-text font-semibold text-deep-navy mb-2">24 Karat Gold</h3>
                   <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold mb-1">
-                    ₹{new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate24k))}
+                    ₹{goldRates ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate24k)) : '7,200'}
                   </p>
                   <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
                   <Badge variant="secondary" className="mt-2 sm:mt-3 bg-green-100 text-green-800 text-xs">
@@ -124,7 +123,7 @@ export default function Home() {
                   </div>
                   <h3 className="responsive-text font-semibold text-deep-navy mb-2">22 Karat Gold</h3>
                   <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold mb-1">
-                    ₹{new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate22k))}
+                    ₹{goldRates ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate22k)) : '6,600'}
                   </p>
                   <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
                   <Badge variant="secondary" className="mt-2 sm:mt-3 bg-blue-100 text-blue-800 text-xs">
@@ -140,7 +139,7 @@ export default function Home() {
                   </div>
                   <h3 className="responsive-text font-semibold text-deep-navy mb-2">18 Karat Gold</h3>
                   <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gold mb-1">
-                    ₹{new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate18k))}
+                    ₹{goldRates ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.rate18k)) : '5,400'}
                   </p>
                   <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
                   <Badge variant="secondary" className="mt-2 sm:mt-3 bg-purple-100 text-purple-800 text-xs">
@@ -156,7 +155,7 @@ export default function Home() {
                   </div>
                   <h3 className="responsive-text font-semibold text-deep-navy mb-2">Pure Silver</h3>
                   <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-600 mb-1">
-                    ₹{goldRates.silverRate ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.silverRate)) : '85'}
+                    ₹{goldRates?.silverRate ? new Intl.NumberFormat('en-IN').format(parseInt(goldRates.silverRate)) : '85'}
                   </p>
                   <p className="text-xs sm:text-sm text-warm-gray">per gram</p>
                   <Badge variant="secondary" className="mt-2 sm:mt-3 bg-gray-100 text-gray-800 text-xs">
@@ -199,7 +198,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-      )}
 
       {/* Featured Categories */}
       <section className="p-responsive bg-white">
