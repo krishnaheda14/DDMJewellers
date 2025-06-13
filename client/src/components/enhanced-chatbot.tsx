@@ -31,40 +31,163 @@ interface UserMemory {
 }
 
 // Custom Rajasthani Man Icon Component
-const RajasthaniManIcon = ({ className = "h-6 w-6" }: { className?: string }) => (
-  <svg viewBox="0 0 64 64" className={className} fill="currentColor">
-    {/* Turban */}
-    <path d="M32 4c-12 0-18 8-18 16 0 4 2 8 6 10l2-2c2-2 4-2 6-2s4 0 6 2l2 2c4-2 6-6 6-10 0-8-6-16-10-16z" fill="#FF6B35"/>
-    <path d="M26 12c0-2 2-4 6-4s6 2 6 4-2 4-6 4-6-2-6-4z" fill="#FFD700"/>
+const YoungBusinessmanIcon = ({ className = "h-8 w-8" }: { className?: string }) => (
+  <svg viewBox="0 0 80 80" className={className} fill="currentColor">
+    {/* Hair */}
+    <path d="M40 8c-14 0-22 6-22 16 0 2 0.5 4 1.5 6 1-1 2-1.5 3-1.5 2 0 4 1 6 1s4-1 6-1 4 1 6 1 4-1 6-1c1 0 2 0.5 3 1.5 1-2 1.5-4 1.5-6 0-10-8-16-11-16z" fill="#2C1810"/>
     
     {/* Face */}
-    <circle cx="32" cy="28" r="8" fill="#D4A574"/>
+    <ellipse cx="40" cy="32" rx="12" ry="14" fill="#D4A574"/>
     
     {/* Eyes */}
-    <circle cx="29" cy="26" r="1.5" fill="#000"/>
-    <circle cx="35" cy="26" r="1.5" fill="#000"/>
+    <circle cx="36" cy="29" r="2" fill="#FFF"/>
+    <circle cx="44" cy="29" r="2" fill="#FFF"/>
+    <circle cx="36" cy="29" r="1.2" fill="#000"/>
+    <circle cx="44" cy="29" r="1.2" fill="#000"/>
     
-    {/* Mustache */}
-    <path d="M28 30c2 0 4 1 4 2s-2 2-4 2-4-1-4-2 2-2 4-2z M36 30c2 0 4 1 4 2s-2 2-4 2-4-1-4-2 2-2 4-2z" fill="#8B4513"/>
+    {/* Eyebrows */}
+    <path d="M33 26c2-1 4-1 6 0" stroke="#2C1810" strokeWidth="1.5" fill="none"/>
+    <path d="M41 26c2-1 4-1 6 0" stroke="#2C1810" strokeWidth="1.5" fill="none"/>
     
-    {/* Traditional shirt */}
-    <path d="M20 36c0-4 4-8 12-8s12 4 12 8v20c0 4-4 8-12 8s-12-4-12-8V36z" fill="#FF4444"/>
+    {/* Nose */}
+    <path d="M40 32c-1 0-2 1-2 2s1 2 2 2 2-1 2-2-1-2-2-2z" fill="#C4956A"/>
     
-    {/* Jewelry/Necklace */}
-    <circle cx="32" cy="42" r="3" fill="none" stroke="#FFD700" strokeWidth="2"/>
-    <circle cx="32" cy="42" r="1" fill="#FFD700"/>
+    {/* Mouth */}
+    <path d="M37 37c2 1 4 1 6 0" stroke="#A0785A" strokeWidth="1.5" fill="none"/>
+    
+    {/* Suit jacket */}
+    <path d="M20 46c0-6 6-12 20-12s20 6 20 12v28c0 4-4 6-8 6H28c-4 0-8-2-8-6V46z" fill="#1a1a2e"/>
+    
+    {/* Shirt */}
+    <path d="M32 46c0-4 4-8 8-8s8 4 8 8v24c0 2-2 4-4 4h-8c-2 0-4-2-4-4V46z" fill="#FFF"/>
+    
+    {/* Tie */}
+    <path d="M38 46c0-2 1-4 2-4s2 2 2 4v18c0 2-1 4-2 4s-2-2-2-4V46z" fill="#8B0000"/>
+    
+    {/* Collar */}
+    <path d="M32 46l4-4 4 4" stroke="#DDD" strokeWidth="1" fill="none"/>
     
     {/* Arms */}
-    <path d="M20 40c-4 0-8 2-8 6v8c0 2 2 4 4 4s4-2 4-4v-8c0-2 0-4 0-6z" fill="#D4A574"/>
-    <path d="M44 40c4 0 8 2 8 6v8c0 2-2 4-4 4s-4-2-4-4v-8c0-2 0-4 0-6z" fill="#D4A574"/>
+    <path d="M20 50c-4 0-8 2-8 6v10c0 2 2 4 4 4s4-2 4-4V56c0-2 0-4 0-6z" fill="#D4A574"/>
+    <path d="M60 50c4 0 8 2 8 6v10c0 2-2 4-4 4s-4-2-4-4V56c0-2 0-4 0-6z" fill="#D4A574"/>
     
-    {/* Traditional decorative elements */}
-    <circle cx="26" cy="45" r="1" fill="#FFD700"/>
-    <circle cx="38" cy="45" r="1" fill="#FFD700"/>
+    {/* Suit sleeves */}
+    <path d="M18 54c0-2 1-4 2-4s2 2 2 4v12c0 2-1 4-2 4s-2-2-2-4V54z" fill="#1a1a2e"/>
+    <path d="M58 54c0-2 1-4 2-4s2 2 2 4v12c0 2-1 4-2 4s-2-2-2-4V54z" fill="#1a1a2e"/>
+    
+    {/* Watch */}
+    <rect x="16" y="62" width="4" height="2" fill="#FFD700"/>
+    
+    {/* Suit buttons */}
+    <circle cx="40" cy="52" r="1" fill="#C0C0C0"/>
+    <circle cx="40" cy="58" r="1" fill="#C0C0C0"/>
   </svg>
 );
 
-// Global chatbot state to persist across page navigation
+return (
+    <>
+      {/* Floating Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          onClick={() => setIsOpen(!isOpen)}
+          className="h-16 w-16 rounded-full bg-gradient-to-r from-gold to-yellow-600 hover:from-gold/90 hover:to-yellow-500 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+        >
+          {isOpen ? <X className="h-8 w-8" /> : <YoungBusinessmanIcon className="h-10 w-10" />}
+        </Button>
+      </div>
+
+      {/* Chat Window */}
+      {isOpen && (
+        <div className="fixed bottom-24 right-6 w-96 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col z-50">
+          {/* Header */}
+          <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-gold to-yellow-600 text-white rounded-t-lg">
+            <YoungBusinessmanIcon className="h-12 w-12" />
+            <div>
+              <h3 className="font-semibold text-lg">Arjun</h3>
+              <p className="text-sm opacity-90">Jewelry Business Consultant</p>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-xs p-3 rounded-lg ${
+                    message.type === 'user'
+                      ? 'bg-gold text-white'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  {message.content}
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex space-x-2">
+              <Input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Type your message..."
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                className="flex-1"
+              />
+              <Button
+                onClick={isRecording ? stopRecording : startRecording}
+                variant="outline"
+                size="icon"
+                className={isRecording ? 'bg-red-100 text-red-600' : ''}
+              >
+                {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
+              <Button onClick={() => handleSendMessage()} size="icon">
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+            {isRecording && (
+              <div className="text-sm text-red-600 mt-2">
+                Recording... {recordingTime}s
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+import React, { useState, useEffect, useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { X, Send, Mic, MicOff } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+
+interface Message {
+  id: string;
+  type: 'user' | 'bot';
+  content: string;
+  timestamp: Date;
+}
+
+interface UserProfile {
+  age?: string;
+  lifestyle?: string;
+}
+
+interface UserMemory {
+  age?: string;
+  lifestyle?: string;
+  preferences?: any;
+}
+
 let globalChatbotState = {
   isOpen: false,
   messages: [] as Message[],
@@ -182,18 +305,28 @@ export default function EnhancedChatbot() {
   useEffect(() => {
     if (isOpen && messages.length === 0 && isAuthenticated) {
       if (userMemory?.age) {
-        const greeting = `Namaste ji! Welcome back. I remember you're ${userMemory.age} years old. How can I help you with jewelry today?`;
+        const greeting = `Hey there! I'm Arjun, your 20-year-old jewelry business consultant. I remember you're ${userMemory.age} years old. How can I help you with jewelry today?`;
         addBotMessage(greeting);
         setConversationStage('ai');
         setUserProfile({ age: userMemory.age || '', lifestyle: userMemory.lifestyle || '' });
       } else {
-        addBotMessage("Namaste! I'm Sunaarji, your personal jewelry consultant. May I ask your age, beta?");
+        addBotMessage("Hey! I'm Arjun, a 20-year-old jewelry business consultant. I'm here to help you find the perfect jewelry for any occasion. What's your age, if you don't mind me asking?");
         setConversationStage('age');
       }
     } else if (isOpen && messages.length === 0 && !isAuthenticated) {
-      addBotMessage("Namaste! I'm Sunaarji, your personal jewelry consultant. To provide personalized recommendations and remember our conversations, please log in first, ji.");
+      addBotMessage("Hi! I'm Arjun, your personal jewelry consultant. To provide personalized recommendations and remember our conversations, please log in first!");
     }
-  }, [isOpen, isAuthenticated, userMemory, messages.length, addBotMessage]);
+  }, [isOpen, isAuthenticated, userMemory, messages.length]);
+
+  const addBotMessage = (content: string) => {
+    const message: Message = {
+      id: Date.now().toString(),
+      type: 'bot',
+      content,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, message]);
+  };
 
   // Voice recording functions
   const startRecording = async () => {
@@ -208,6 +341,91 @@ export default function EnhancedChatbot() {
         handleVoiceMessage(audioBlob);
         setRecordingTime(0);
       };
+
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+      recorder.start();
+
+      // Start recording timer
+      recordingTimerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Error starting recording:', error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+      setMediaRecorder(null);
+      
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+    }
+  };
+
+  const handleVoiceMessage = async (audioBlob: Blob) => {
+    try {
+      const result = await speechToTextMutation.mutateAsync(audioBlob);
+      if (result.text) {
+        setInputValue(result.text);
+        handleSendMessage(result.text);
+      }
+    } catch (error) {
+      console.error('Error processing voice message:', error);
+    }
+  };
+
+  const handleSendMessage = async (messageText?: string) => {
+    const message = messageText || inputValue.trim();
+    if (!message) return;
+
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: message,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+
+    try {
+      // Handle conversation flow
+      if (conversationStage === 'age') {
+        setUserProfile(prev => ({ ...prev, age: message }));
+        addBotMessage("Great! What's your lifestyle like? Are you more traditional, modern, or a mix of both?");
+        setConversationStage('lifestyle');
+        return;
+      }
+
+      if (conversationStage === 'lifestyle') {
+        const updatedProfile = { ...userProfile, lifestyle: message };
+        setUserProfile(updatedProfile);
+        
+        // Save to memory
+        await saveMemoryMutation.mutateAsync(updatedProfile);
+        
+        addBotMessage("Perfect! Now I know you better. I'm here to help you with jewelry recommendations, current rates, and styling advice. What can I help you with today?");
+        setConversationStage('ai');
+        return;
+      }
+
+      // AI conversation
+      const response = await chatMutation.mutateAsync({ message, userProfile });
+      addBotMessage(response.message);
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      addBotMessage("Sorry, I'm having trouble right now. Please try again!");
+    }
+  };
 
       setMediaRecorder(recorder);
       setIsRecording(true);
