@@ -406,10 +406,12 @@ export async function setupAuth(app: Express): Promise<void> {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          businessName: user.businessName, // Include business name for wholesalers
           role: user.role,
           isEmailVerified: user.isEmailVerified,
           isApproved: user.isApproved,
         },
+        sessionToken, // Include session token for frontend storage
         redirectTo
       });
 

@@ -3,12 +3,50 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Building, Package, TrendingUp, FileText, Upload, Eye, Clock, Briefcase } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Building, Package, TrendingUp, FileText, Upload, Eye, Clock, Briefcase, LogOut } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function WholesalerDashboard() {
   const { user, isLoading, isWholesaler } = useAuth();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+
+  // Sign out mutation
+  const signOutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/auth/signout", {});
+      if (!response.ok) {
+        throw new Error("Sign out failed");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      // Clear session storage
+      localStorage.removeItem("sessionToken");
+      localStorage.removeItem("ddm_user_session");
+      
+      // Invalidate auth queries
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.clear();
+      
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account.",
+      });
+      
+      // Redirect to auth page
+      setLocation("/auth");
+    },
+    onError: () => {
+      toast({
+        title: "Sign out failed",
+        description: "There was an error signing you out.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Redirect if not wholesaler
   if (!isLoading && (!user || !isWholesaler)) {
@@ -73,9 +111,20 @@ export default function WholesalerDashboard() {
                 Welcome back, {user?.firstName} {user?.lastName} - {user?.businessName}
               </p>
             </div>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-              Approved Wholesaler
-            </Badge>
+            <div className="flex items-center gap-4">
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                Approved Wholesaler
+              </Badge>
+              <Button
+                variant="outline"
+                onClick={() => signOutMutation.mutate()}
+                disabled={signOutMutation.isPending}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                {signOutMutation.isPending ? "Signing out..." : "Sign Out"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

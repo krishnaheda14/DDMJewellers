@@ -61,10 +61,10 @@ export default function AuthPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading && user && !isRedirecting) {
       handleRoleBasedRedirect(user);
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, isRedirecting]);
 
   const handleRoleBasedRedirect = (userData: any) => {
     setIsRedirecting(true);
@@ -81,10 +81,10 @@ export default function AuthPage() {
     setTimeout(() => {
       switch (userData.role) {
         case "admin":
-          setLocation("/"); // Admins go to home page first
+          setLocation("/admin/dashboard");
           break;
         case "customer":
-          setLocation("/"); // Customers go to home page
+          setLocation("/");
           break;
         case "wholesaler":
           setLocation("/wholesaler/dashboard");
@@ -92,7 +92,7 @@ export default function AuthPage() {
         default:
           setLocation("/");
       }
-    }, 2000);
+    }, 1500); // Reduced delay for better UX
   };
 
   // Sign In Form
