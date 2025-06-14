@@ -156,13 +156,18 @@ export default function AuthPage() {
       return response.json();
     },
     onSuccess: (data) => {
+      // Store session token in localStorage
+      if (data.sessionToken) {
+        localStorage.setItem("sessionToken", data.sessionToken);
+      }
+      
       toast({
         title: "Welcome back!",
         description: "You have successfully signed in.",
       });
       
       // Invalidate auth query to trigger refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
       // Use role-based redirect with loading animation
       handleRoleBasedRedirect(data.user);
