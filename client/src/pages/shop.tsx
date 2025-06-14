@@ -100,12 +100,17 @@ export default function Shop() {
     return acc;
   }, [] as Category[]).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
-  // Get main categories only
-  const mainCategories = categories.filter(cat => !cat.parentId).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-
-  // Get subcategories for selected parent
-  const subcategories = selectedParentCategory !== "all" 
+  // Three-level hierarchy: Material Type (Gold/Silver) → Body Part → Specific Type
+  const materialCategories = categories.filter(cat => !cat.parentId).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  
+  // Get body part categories for selected material (e.g., Gold → Neck Jewelry, Earrings, etc.)
+  const bodyPartCategories = selectedParentCategory !== "all" 
     ? categories.filter(cat => cat.parentId === parseInt(selectedParentCategory)).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+    : [];
+    
+  // Get specific type categories for selected body part (e.g., Neck → Chain, Choker, etc.)
+  const specificTypeCategories = selectedCategory !== "all" && selectedCategory !== "all-bodyparts"
+    ? categories.filter(cat => cat.parentId === parseInt(selectedCategory)).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
     : [];
 
   // Filter products based on search, category, and product type
