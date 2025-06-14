@@ -205,7 +205,7 @@ export default function EnhancedAdminDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-10">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
@@ -213,7 +213,6 @@ export default function EnhancedAdminDashboard() {
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="corporate">Corporate</TabsTrigger>
           <TabsTrigger value="gullak">Gullak</TabsTrigger>
-          <TabsTrigger value="chatbot">Chatbot</TabsTrigger>
           <TabsTrigger value="rates">Live Rates</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>

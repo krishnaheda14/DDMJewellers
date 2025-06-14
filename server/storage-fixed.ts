@@ -103,9 +103,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
+    const userToInsert = {
+      ...userData,
+      updatedAt: new Date(),
+    };
+    
     const [user] = await db
       .insert(users)
-      .values(userData)
+      .values(userToInsert)
       .onConflictDoUpdate({
         target: users.id,
         set: {
@@ -170,7 +175,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (filters?.featured !== undefined) {
-      query = query.where(eq(products.featured, filters.featured)) as any;
+      query = query.where(eq(products.isFeatured, filters.featured)) as any;
     }
 
     query = query.orderBy(desc(products.createdAt)) as any;
@@ -486,19 +491,19 @@ export class DatabaseStorage implements IStorage {
   async getWishlist(userId: string): Promise<(Wishlist & { product?: Product; design?: WholesalerDesign })[]> {
     const wishlistItems = await db
       .select({
-        id: wishlists.id,
-        userId: wishlists.userId,
-        productId: wishlists.productId,
-        designId: wishlists.designId,
-        createdAt: wishlists.createdAt,
+        id: wishlist.id,
+        userId: wishlist.userId,
+        productId: wishlist.productId,
+        designId: wishlist.designId,
+        createdAt: wishlist.createdAt,
         product: products,
         design: wholesalerDesigns,
       })
-      .from(wishlists)
-      .leftJoin(products, eq(wishlists.productId, products.id))
-      .leftJoin(wholesalerDesigns, eq(wishlists.designId, wholesalerDesigns.id))
-      .where(eq(wishlists.userId, userId))
-      .orderBy(desc(wishlists.createdAt));
+      .from(wishlist)
+      .leftJoin(products, eq(wishlist.productId, products.id))
+      .leftJoin(wholesalerDesigns, eq(wishlist.designId, wholesalerDesigns.id))
+      .where(eq(wishlist.userId, userId))
+      .orderBy(desc(wishlist.createdAt));
 
     return wishlistItems as any;
   }
