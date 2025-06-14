@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Heart, Eye, Sparkles } from "lucide-react";
 import { Product } from "@shared/schema";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -90,7 +90,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
             {/* Badges */}
             <div className="absolute top-3 left-3 flex flex-col gap-2">
-              {product.featured && (
+              {product.isFeatured && (
                 <Badge className="bg-amber-500 text-white shadow-lg">
                   <Sparkles className="w-3 h-3 mr-1" />
                   Featured
@@ -136,16 +136,16 @@ export function ProductCard({ product, className }: ProductCardProps) {
             {/* Price and specifications */}
             <div className="space-y-2">
               <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                {formatPrice(product.price)}
+                {product.price ? formatPrice(product.price) : 'Price on request'}
               </div>
               
-              {(product.weight || product.dimensions) && (
+              {(product.weight || product.size) && (
                 <div className="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
                   {product.weight && (
                     <span>Weight: {product.weight}g</span>
                   )}
-                  {product.dimensions && (
-                    <span>Size: {product.dimensions}</span>
+                  {product.size && (
+                    <span>Size: {product.size}</span>
                   )}
                 </div>
               )}

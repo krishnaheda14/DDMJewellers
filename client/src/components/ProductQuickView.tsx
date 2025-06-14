@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingCart, Heart, RotateCw, ZoomIn, ZoomOut, Move3D } from "lucide-react";
 import { Product } from "@shared/schema";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -261,7 +261,7 @@ export function ProductQuickView({ product, isOpen, onClose }: ProductQuickViewP
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                  {product.featured ? 'Featured' : 'Standard'}
+                  {product.isFeatured ? 'Featured' : 'Standard'}
                 </Badge>
                 {product.material && (
                   <Badge variant="outline">
@@ -271,7 +271,7 @@ export function ProductQuickView({ product, isOpen, onClose }: ProductQuickViewP
               </div>
               
               <div className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-4">
-                {formatPrice(product.price)}
+                {product.price ? formatPrice(product.price) : 'Price on request'}
               </div>
 
               {product.description && (
