@@ -838,10 +838,7 @@ export default function Admin() {
 
     const createCategoryMutation = useMutation({
       mutationFn: async (categoryData: any) => {
-        return await apiRequest("/api/admin/categories", {
-          method: "POST",
-          body: JSON.stringify(categoryData),
-        });
+        return await apiRequest("POST", "/api/admin/categories", categoryData);
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
@@ -876,9 +873,7 @@ export default function Admin() {
 
     const deleteCategoryMutation = useMutation({
       mutationFn: async (categoryId: number) => {
-        return await apiRequest(`/api/admin/categories/${categoryId}`, {
-          method: "DELETE",
-        });
+        return await apiRequest("DELETE", `/api/admin/categories/${categoryId}`);
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
@@ -1255,6 +1250,8 @@ export default function Admin() {
         return <UsersView />;
       case "products":
         return <ProductsView />;
+      case "categories":
+        return <CategoriesView />;
       case "exchanges":
         return <ExchangesView />;
       case "corporate":
