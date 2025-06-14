@@ -299,6 +299,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Store locations endpoints
+  app.get("/api/store-locations", async (req, res) => {
+    try {
+      const { db } = await import("./db");
+      const { storeLocations } = await import("../shared/schema");
+      const { eq } = await import("drizzle-orm");
+      
+      const locations = await db.select().from(storeLocations)
+        .where(eq(storeLocations.isActive, true));
+      res.json(locations);
+    } catch (error) {
+      console.error("Error fetching store locations:", error);
+      res.status(500).json({ error: "Failed to fetch store locations" });
+    }
+  });
+
   // Static placeholder endpoints for development
   app.get("/api/placeholder/:width/:height", (req, res) => {
     const { width, height } = req.params;
