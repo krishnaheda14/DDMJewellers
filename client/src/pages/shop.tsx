@@ -70,13 +70,14 @@ interface Category {
 
 export default function Shop() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedMaterialCategory, setSelectedMaterialCategory] = useState<string>("all"); // Gold/Silver/Diamond
+  const [selectedBodyPartCategory, setSelectedBodyPartCategory] = useState<string>("all"); // Neck/Ear/Hand
+  const [selectedSpecificType, setSelectedSpecificType] = useState<string>("all"); // Chain/Choker/etc
   const [selectedProductType, setSelectedProductType] = useState<string>("all");
   const [sortBy, setSortBy] = useState("featured");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedParentCategory, setSelectedParentCategory] = useState<string>("all");
   
   const { toast } = useToast();
 
@@ -104,13 +105,13 @@ export default function Shop() {
   const materialCategories = categories.filter(cat => !cat.parentId).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
   
   // Get body part categories for selected material (e.g., Gold → Neck Jewelry, Earrings, etc.)
-  const bodyPartCategories = selectedParentCategory !== "all" 
-    ? categories.filter(cat => cat.parentId === parseInt(selectedParentCategory)).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+  const bodyPartCategories = selectedMaterialCategory !== "all" 
+    ? categories.filter(cat => cat.parentId === parseInt(selectedMaterialCategory)).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
     : [];
     
   // Get specific type categories for selected body part (e.g., Neck → Chain, Choker, etc.)
-  const specificTypeCategories = selectedCategory !== "all" && selectedCategory !== "all-bodyparts"
-    ? categories.filter(cat => cat.parentId === parseInt(selectedCategory)).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+  const specificTypeCategories = selectedBodyPartCategory !== "all"
+    ? categories.filter(cat => cat.parentId === parseInt(selectedBodyPartCategory)).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
     : [];
 
   // Filter products based on search, category, and product type
@@ -119,16 +120,22 @@ export default function Shop() {
                          (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
                          (product.material?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     
-    // Category filtering logic
+    // Three-level category filtering logic
     let matchesCategory = true;
-    if (selectedCategory !== "all") {
-      // If specific subcategory is selected, match that subcategory
-      matchesCategory = product.categoryId === parseInt(selectedCategory);
-    } else if (selectedParentCategory !== "all") {
-      // If main category is selected but subcategory is "all", match any subcategory of that main category
-      const mainCategorySubcategories = categories.filter(cat => cat.parentId === parseInt(selectedParentCategory));
-      const subcategoryIds = mainCategorySubcategories.map(cat => cat.id);
-      matchesCategory = subcategoryIds.includes(product.categoryId) || product.categoryId === parseInt(selectedParentCategory);
+    if (selectedSpecificType !== "all") {
+      // If specific type is selected (e.g., Chain), match exactly
+      matchesCategory = product.categoryId === parseInt(selectedSpecificType);
+    } else if (selectedBodyPartCategory !== "all") {
+      // If body part is selected (e.g., Neck), match any specific type under it
+      const specificTypes = categories.filter(cat => cat.parentId === parseInt(selectedBodyPartCategory));
+      const specificTypeIds = specificTypes.map(cat => cat.id);
+      matchesCategory = specificTypeIds.includes(product.categoryId) || product.categoryId === parseInt(selectedBodyPartCategory);
+    } else if (selectedMaterialCategory !== "all") {
+      // If material is selected (e.g., Gold), match any body part or specific type under it
+      const bodyParts = categories.filter(cat => cat.parentId === parseInt(selectedMaterialCategory));
+      const bodyPartIds = bodyParts.map(cat => cat.id);
+      const allSubcategoryIds = categories.filter(cat => bodyPartIds.includes(cat.parentId || 0)).map(cat => cat.id);
+      matchesCategory = bodyPartIds.includes(product.categoryId) || allSubcategoryIds.includes(product.categoryId) || product.categoryId === parseInt(selectedMaterialCategory);
     }
     
     const matchesProductType = selectedProductType === "all" || 
