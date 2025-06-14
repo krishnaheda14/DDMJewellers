@@ -26,33 +26,8 @@ import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import PageNavigation from "@/components/page-navigation";
-// ProductCard component will be defined inline
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: string;
-  originalPrice?: string;
-  categoryId: number;
-  imageUrl?: string;
-  images?: string[];
-  material?: string;
-  weight?: string;
-  dimensions?: string;
-  inStock: boolean;
-  featured: boolean;
-  customizable: boolean;
-  customizationOptions?: any;
-  productType: "real" | "imitation";
-  plating?: string;
-  baseMaterial?: string;
-  category?: {
-    name: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
+import { ProductCard } from "@/components/ProductCard";
+import { Product } from "@shared/schema";
 
 interface Category {
   id: number;
@@ -139,10 +114,10 @@ export default function Shop() {
                               product.productType === selectedProductType;
     
     const matchesPrice = priceRange === "all" || 
-                        (priceRange === "under-5000" && parseFloat(product.price) < 5000) ||
-                        (priceRange === "5000-15000" && parseFloat(product.price) >= 5000 && parseFloat(product.price) <= 15000) ||
-                        (priceRange === "15000-50000" && parseFloat(product.price) >= 15000 && parseFloat(product.price) <= 50000) ||
-                        (priceRange === "above-50000" && parseFloat(product.price) > 50000);
+                        (priceRange === "under-5000" && product.price && parseFloat(product.price) < 5000) ||
+                        (priceRange === "5000-15000" && product.price && parseFloat(product.price) >= 5000 && parseFloat(product.price) <= 15000) ||
+                        (priceRange === "15000-50000" && product.price && parseFloat(product.price) >= 15000 && parseFloat(product.price) <= 50000) ||
+                        (priceRange === "above-50000" && product.price && parseFloat(product.price) > 50000);
     
     return matchesSearch && matchesCategory && matchesProductType && matchesPrice;
   });
@@ -151,16 +126,16 @@ export default function Shop() {
   const sortedProducts = [...filteredProducts].sort((a: Product, b: Product) => {
     switch (sortBy) {
       case "price-low":
-        return parseFloat(a.price) - parseFloat(b.price);
+        return (a.price ? parseFloat(a.price) : 0) - (b.price ? parseFloat(b.price) : 0);
       case "price-high":
-        return parseFloat(b.price) - parseFloat(a.price);
+        return (b.price ? parseFloat(b.price) : 0) - (a.price ? parseFloat(a.price) : 0);
       case "name":
         return a.name.localeCompare(b.name);
       case "newest":
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0);
       case "featured":
       default:
-        return b.featured ? 1 : -1;
+        return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
     }
   });
 

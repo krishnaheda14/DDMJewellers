@@ -299,10 +299,10 @@ export function ProductQuickView({ product, isOpen, onClose }: ProductQuickViewP
                     <span className="ml-2 font-medium">{product.material}</span>
                   </div>
                 )}
-                {product.dimensions && (
+                {product.size && (
                   <div>
-                    <span className="text-gray-600 dark:text-gray-400">Dimensions:</span>
-                    <span className="ml-2 font-medium">{product.dimensions}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Size:</span>
+                    <span className="ml-2 font-medium">{product.size}</span>
                   </div>
                 )}
                 <div>
