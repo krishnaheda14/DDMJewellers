@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MapPin, Phone, Mail, Clock, Navigation } from 'lucide-react';
-import type { StoreLocation } from '@/../../shared/schema';
+import type { StoreLocation } from '@shared/schema';
 
 export default function StoreLocator() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -30,7 +30,7 @@ export default function StoreLocator() {
     }
   };
 
-  const formatOpeningHours = (hours: any): string => {
+  const formatOpeningHours = (hours: any): React.ReactNode => {
     if (!hours || typeof hours !== 'object') return 'Hours not available';
     
     const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -41,7 +41,13 @@ export default function StoreLocator() {
       return `${dayName}: ${dayHours}`;
     }).filter(Boolean);
     
-    return formattedHours.join(', ') || 'Hours not available';
+    return (
+      <div className="space-y-1">
+        {formattedHours.map((hour, index) => (
+          <div key={index} className="text-xs">{hour}</div>
+        ))}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -148,7 +154,7 @@ export default function StoreLocator() {
                       <span className="text-sm font-medium">Opening Hours</span>
                     </div>
                     <div className="text-xs text-gray-600 pl-6">
-                      <span>{formatOpeningHours(store.openingHours)}</span>
+                      {formatOpeningHours(store.openingHours)}
                     </div>
                   </div>
                 )}
