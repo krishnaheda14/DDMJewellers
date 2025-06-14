@@ -148,7 +148,7 @@ export default function StoreLocator() {
                       <span className="text-sm font-medium">Opening Hours</span>
                     </div>
                     <div className="text-xs text-gray-600 pl-6">
-                      {formatOpeningHours(store.openingHours)}
+                      <span>{formatOpeningHours(store.openingHours)}</span>
                     </div>
                   </div>
                 )}

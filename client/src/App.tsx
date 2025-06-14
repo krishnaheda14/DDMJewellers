@@ -79,6 +79,7 @@ function Router() {
         <Route path="/ai-tryon" component={AITryOn} />
         <Route path="/custom-jewelry" component={CustomJewelry} />
         <Route path="/shingaar-guru" component={ShingaarGuru} />
+        <Route path="/store-locator" component={StoreLocator} />
         
         {/* Authentication-based routes */}
         <Route path="/" component={isAuthenticated ? Home : Landing} />

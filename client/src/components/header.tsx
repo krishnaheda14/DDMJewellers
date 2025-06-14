@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -148,10 +148,10 @@ export default function Header() {
                   </PopoverContent>
                 </Popover>
                 
-                <a href="#" className="relative group hover:text-gold transition-all duration-300 transform hover:scale-105 hidden lg:block">
+                <Link href="/store-locator" className="relative group hover:text-gold transition-all duration-300 transform hover:scale-105 hidden lg:block">
                   <span className="relative z-10">Store Locator</span>
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gold group-hover:w-full transition-all duration-300"></div>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
