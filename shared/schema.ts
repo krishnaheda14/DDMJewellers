@@ -259,6 +259,25 @@ export const gullakTransactions = pgTable("gullak_transactions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Store locations table
+export const storeLocations = pgTable("store_locations", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  address: text("address").notNull(),
+  city: varchar("city", { length: 100 }).notNull(),
+  state: varchar("state", { length: 100 }).notNull(),
+  pincode: varchar("pincode", { length: 10 }).notNull(),
+  phone: varchar("phone", { length: 20 }),
+  email: varchar("email", { length: 255 }),
+  latitude: decimal("latitude", { precision: 10, scale: 8 }),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }),
+  googleMapsUrl: text("google_maps_url"),
+  openingHours: jsonb("opening_hours"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -325,6 +344,12 @@ export const insertGullakAccountSchema = createInsertSchema(gullakAccounts).omit
 export const insertGullakTransactionSchema = createInsertSchema(gullakTransactions).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertStoreLocationSchema = createInsertSchema(storeLocations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Authentication schemas
@@ -404,6 +429,9 @@ export type InsertGullakAccount = z.infer<typeof insertGullakAccountSchema>;
 
 export type GullakTransaction = typeof gullakTransactions.$inferSelect;
 export type InsertGullakTransaction = z.infer<typeof insertGullakTransactionSchema>;
+
+export type StoreLocation = typeof storeLocations.$inferSelect;
+export type InsertStoreLocation = z.infer<typeof insertStoreLocationSchema>;
 
 // Authentication types
 export type CustomerSignup = z.infer<typeof customerSignupSchema>;
