@@ -842,7 +842,6 @@ export default function Shop() {
           </TabsContent>
         </Tabs>
       </div>
-      </div>
     </div>
   );
 }
