@@ -127,17 +127,13 @@ export class DatabaseStorage implements IStorage {
         isEmailVerified: userData.isEmailVerified || false,
         emailVerificationToken: userData.emailVerificationToken || null,
         passwordResetToken: userData.passwordResetToken || null,
-        passwordResetTokenExpiresAt: userData.passwordResetTokenExpiresAt || null,
+        passwordResetExpiresAt: userData.passwordResetExpiresAt || null,
         isApproved: userData.isApproved || false,
-        approvedBy: userData.approvedBy || null,
-        approvedAt: userData.approvedAt || null,
         lastLoginAt: userData.lastLoginAt || null,
         isActive: userData.isActive || true,
-        phone: userData.phone || null,
-        address: userData.address || null,
         businessName: userData.businessName || null,
+        businessAddress: userData.businessAddress || null,
         gstNumber: userData.gstNumber || null,
-        updatedAt: new Date(),
       };
       
       const [newUser] = await db
@@ -555,14 +551,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getWholesalers(approved?: boolean): Promise<User[]> {
-    let query = db.select().from(users).where(eq(users.role, "wholesaler"));
+    const baseQuery = db.select().from(users);
     
     if (approved !== undefined) {
-      // Assuming approved wholesalers have a specific status or field
-      query = query.where(and(eq(users.role, "wholesaler"), eq(users.isActive, approved))) as any;
+      return await baseQuery.where(and(eq(users.role, "wholesaler"), eq(users.isApproved, approved)));
     }
     
-    return await query;
+    return await baseQuery.where(eq(users.role, "wholesaler"));
   }
 
   // Market rates operations
