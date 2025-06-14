@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ProductCardComponent } from "@/components/ProductCard";
+import { ProductCard } from "@/components/ProductCard";
 import { Search, Filter, Grid, List, ArrowUpDown, SlidersHorizontal, Crown, Gem, Sparkles, Home } from "lucide-react";
 
 type Category = {
@@ -316,7 +316,7 @@ export default function Shop() {
               : "space-y-4"
           }>
             {sortedProducts.map((product: Product) => (
-              <ProductCardComponent key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}

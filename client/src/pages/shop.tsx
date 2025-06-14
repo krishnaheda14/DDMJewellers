@@ -70,9 +70,8 @@ interface Category {
 
 export default function Shop() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedMaterialCategory, setSelectedMaterialCategory] = useState<string>("all"); // Gold/Silver/Diamond
-  const [selectedBodyPartCategory, setSelectedBodyPartCategory] = useState<string>("all"); // Neck/Ear/Hand
-  const [selectedSpecificType, setSelectedSpecificType] = useState<string>("all"); // Chain/Choker/etc
+  const [selectedParentCategory, setSelectedParentCategory] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedProductType, setSelectedProductType] = useState<string>("all");
   const [sortBy, setSortBy] = useState("featured");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -102,16 +101,11 @@ export default function Shop() {
   }, [] as Category[]).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
 
   // Three-level hierarchy: Material Type (Gold/Silver) → Body Part → Specific Type
-  const materialCategories = categories.filter(cat => !cat.parentId).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+  const mainCategories = categories.filter(cat => !cat.parentId).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
   
-  // Get body part categories for selected material (e.g., Gold → Neck Jewelry, Earrings, etc.)
-  const bodyPartCategories = selectedMaterialCategory !== "all" 
-    ? categories.filter(cat => cat.parentId === parseInt(selectedMaterialCategory)).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
-    : [];
-    
-  // Get specific type categories for selected body part (e.g., Neck → Chain, Choker, etc.)
-  const specificTypeCategories = selectedBodyPartCategory !== "all"
-    ? categories.filter(cat => cat.parentId === parseInt(selectedBodyPartCategory)).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+  // Get subcategories for selected parent (Body Parts for Gold, or specific types for Body Parts)
+  const subcategories = selectedParentCategory !== "all" 
+    ? categories.filter(cat => cat.parentId === parseInt(selectedParentCategory)).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
     : [];
 
   // Filter products based on search, category, and product type
@@ -120,22 +114,25 @@ export default function Shop() {
                          (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
                          (product.material?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     
-    // Three-level category filtering logic
+    // Three-level hierarchy filtering: Gold → Neck Jewelry → Chain/Choker
     let matchesCategory = true;
-    if (selectedSpecificType !== "all") {
-      // If specific type is selected (e.g., Chain), match exactly
-      matchesCategory = product.categoryId === parseInt(selectedSpecificType);
-    } else if (selectedBodyPartCategory !== "all") {
-      // If body part is selected (e.g., Neck), match any specific type under it
-      const specificTypes = categories.filter(cat => cat.parentId === parseInt(selectedBodyPartCategory));
-      const specificTypeIds = specificTypes.map(cat => cat.id);
-      matchesCategory = specificTypeIds.includes(product.categoryId) || product.categoryId === parseInt(selectedBodyPartCategory);
-    } else if (selectedMaterialCategory !== "all") {
-      // If material is selected (e.g., Gold), match any body part or specific type under it
-      const bodyParts = categories.filter(cat => cat.parentId === parseInt(selectedMaterialCategory));
-      const bodyPartIds = bodyParts.map(cat => cat.id);
-      const allSubcategoryIds = categories.filter(cat => bodyPartIds.includes(cat.parentId || 0)).map(cat => cat.id);
-      matchesCategory = bodyPartIds.includes(product.categoryId) || allSubcategoryIds.includes(product.categoryId) || product.categoryId === parseInt(selectedMaterialCategory);
+    if (selectedCategory !== "all") {
+      // Specific subcategory selected (e.g., Chain, Choker)
+      matchesCategory = product.categoryId === parseInt(selectedCategory);
+    } else if (selectedParentCategory !== "all") {
+      // Main category selected (e.g., Gold Jewellery) - show all products from its subcategories
+      const directSubcategories = categories.filter(cat => cat.parentId === parseInt(selectedParentCategory));
+      const directSubcategoryIds = directSubcategories.map(cat => cat.id);
+      
+      // Also get products from third-level categories (e.g., Chain under Neck Jewelry under Gold)
+      const thirdLevelIds = categories
+        .filter(cat => directSubcategoryIds.includes(cat.parentId || 0))
+        .map(cat => cat.id);
+        
+      matchesCategory = 
+        directSubcategoryIds.includes(product.categoryId) || 
+        thirdLevelIds.includes(product.categoryId) ||
+        product.categoryId === parseInt(selectedParentCategory);
     }
     
     const matchesProductType = selectedProductType === "all" || 
