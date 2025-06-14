@@ -114,8 +114,17 @@ export default function Shop() {
                          (product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
                          (product.material?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     
-    const matchesCategory = selectedCategory === "all" || 
-                           product.categoryId === parseInt(selectedCategory);
+    // Category filtering logic
+    let matchesCategory = true;
+    if (selectedCategory !== "all") {
+      // If specific subcategory is selected, match that subcategory
+      matchesCategory = product.categoryId === parseInt(selectedCategory);
+    } else if (selectedParentCategory !== "all") {
+      // If main category is selected but subcategory is "all", match any subcategory of that main category
+      const mainCategorySubcategories = categories.filter(cat => cat.parentId === parseInt(selectedParentCategory));
+      const subcategoryIds = mainCategorySubcategories.map(cat => cat.id);
+      matchesCategory = subcategoryIds.includes(product.categoryId) || product.categoryId === parseInt(selectedParentCategory);
+    }
     
     const matchesProductType = selectedProductType === "all" || 
                               product.productType === selectedProductType;
