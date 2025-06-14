@@ -418,8 +418,9 @@ export default function Shop() {
                   setSelectedParentCategory(value);
                   setSelectedCategory("all"); // Reset subcategory when parent changes
                 }}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Main Category" />
+                  <SelectTrigger className="w-48 border-amber-200 focus:border-amber-500">
+                    <Filter className="h-4 w-4 mr-2 text-amber-600" />
+                    <SelectValue placeholder="Select Main Category" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Main Categories</SelectItem>
@@ -433,8 +434,9 @@ export default function Shop() {
 
                 {subcategories.length > 0 && (
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue placeholder="Subcategory" />
+                    <SelectTrigger className="w-52 border-amber-200 focus:border-amber-500 bg-amber-50">
+                      <SlidersHorizontal className="h-4 w-4 mr-2 text-amber-600" />
+                      <SelectValue placeholder="Choose Subcategory" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Subcategories</SelectItem>
@@ -486,10 +488,27 @@ export default function Shop() {
               </Select>
             </div>
             
-            {/* Category Breadcrumb Navigation */}
-            {selectedParentCategory !== "all" && (
-              <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4 mb-4">
-                <div className="flex items-center gap-2 text-sm">
+            {/* Active Filters Display */}
+            {(selectedParentCategory !== "all" || selectedCategory !== "all") && (
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg p-4 border border-amber-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Filter className="h-4 w-4 text-amber-600" />
+                    <span className="font-medium text-amber-800 dark:text-amber-300">Active Filters:</span>
+                    
+                    {selectedParentCategory !== "all" && (
+                      <Badge variant="outline" className="bg-white border-amber-300 text-amber-700">
+                        {mainCategories.find(cat => cat.id.toString() === selectedParentCategory)?.name}
+                      </Badge>
+                    )}
+                    
+                    {selectedCategory !== "all" && (
+                      <Badge variant="default" className="bg-amber-600 text-white">
+                        {subcategories.find(cat => cat.id.toString() === selectedCategory)?.name}
+                      </Badge>
+                    )}
+                  </div>
+                  
                   <Button
                     variant="ghost"
                     size="sm"
