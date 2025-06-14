@@ -5,8 +5,6 @@ import {
   cartItems,
   orders,
   orderItems,
-  userMemory,
-  chatConversations,
   wholesalerDesigns,
   wishlists,
   marketRates,
@@ -22,10 +20,6 @@ import {
   type InsertOrder,
   type OrderItem,
   type InsertOrderItem,
-  type UserMemory,
-  type InsertUserMemory,
-  type ChatConversation,
-
   type WholesalerDesign,
   type InsertWholesalerDesign,
   type Wishlist,
@@ -73,11 +67,8 @@ export interface IStorage {
   createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order>;
   updateOrderStatus(id: number, status: string): Promise<Order>;
 
-  // Chatbot memory operations
-  getUserMemory(userId: string): Promise<UserMemory | undefined>;
-  upsertUserMemory(userId: string, memory: Partial<InsertUserMemory>): Promise<UserMemory>;
-  saveChatConversation(userId: string, sessionId: string, messages: any[]): Promise<ChatConversation>;
-  getChatHistory(userId: string, limit?: number): Promise<ChatConversation[]>;
+
+
 
   // Wholesaler design operations
   getWholesalerDesigns(filters?: {

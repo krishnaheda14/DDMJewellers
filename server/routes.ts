@@ -18,7 +18,6 @@ import {
   insertCartItemSchema,
   insertOrderSchema,
   insertOrderItemSchema,
-  insertUserMemorySchema,
   insertWholesalerDesignSchema,
   insertWishlistSchema,
 } from "@shared/schema";
@@ -244,148 +243,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User memory and chatbot
-  app.get("/api/user-memory", isAuthenticated, async (req, res) => {
-    try {
-      const userId = (req.user as any)?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
-      }
-      const memory = await storage.getUserMemory(userId);
-      res.json(memory || {});
-    } catch (error) {
-      console.error("Error fetching user memory:", error);
-      res.status(500).json({ error: "Failed to fetch user memory" });
-    }
-  });
 
-  app.post("/api/user-memory", isAuthenticated, async (req, res) => {
-    try {
-      const userId = (req.user as any)?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
-      }
-      const memoryData = insertUserMemorySchema.parse(req.body);
-      const memory = await storage.upsertUserMemory(userId, memoryData);
-      res.json(memory);
-    } catch (error) {
-      console.error("Error updating user memory:", error);
-      res.status(500).json({ error: "Failed to update user memory" });
-    }
-  });
 
-  // Chatbot endpoints
-  app.post("/api/chatbot/chat", isAuthenticated, async (req, res) => {
-    try {
-      const { message, userProfile } = req.body;
-      const userId = (req.user as any)?.id;
 
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
-      }
-
-      // Get user memory for context
-      const userMemory = await storage.getUserMemory(userId);
-      
-      // Enhanced response system with personality
-      let response = {
-        message: "Hey! I'm Arjun, your jewelry consultant. I'd love to help you find the perfect piece!",
-        suggestions: [
-          "Show me gold jewelry collections",
-          "What are today's gold rates?",
-          "Help me choose jewelry for an occasion",
-          "Tell me about diamond jewelry"
-        ]
-      };
-
-      // Context-aware responses based on message content
-      const lowerMessage = message.toLowerCase();
-      
-      if (lowerMessage.includes('gold') || lowerMessage.includes('rate')) {
-        response.message = "Great question about gold! As a young entrepreneur in the jewelry business, I keep track of all the latest rates. Let me help you with current gold prices and recommendations.";
-        response.suggestions = [
-          "Show current gold rates",
-          "Compare 22k vs 24k gold",
-          "Gold jewelry collections",
-          "Investment vs jewelry gold"
-        ];
-      } else if (lowerMessage.includes('ring') || lowerMessage.includes('engagement') || lowerMessage.includes('wedding')) {
-        response.message = "Rings are my specialty! Whether it's for engagement, wedding, or just a beautiful accessory, I can help you find the perfect ring that matches your style and budget.";
-        response.suggestions = [
-          "Engagement ring designs",
-          "Wedding ring collections",
-          "Fashion rings",
-          "Ring sizing guide"
-        ];
-      } else if (lowerMessage.includes('necklace') || lowerMessage.includes('chain')) {
-        response.message = "Necklaces and chains are timeless pieces! I can help you choose from traditional designs to modern styles that complement your personality.";
-        response.suggestions = [
-          "Gold chain collections",
-          "Traditional necklaces",
-          "Modern pendant designs",
-          "Layering necklace tips"
-        ];
-      } else if (lowerMessage.includes('earring')) {
-        response.message = "Earrings can completely transform your look! From studs to chandeliers, I'll help you find earrings that enhance your features and style.";
-        response.suggestions = [
-          "Stud earrings",
-          "Chandelier earrings",
-          "Hoops collection",
-          "Traditional earrings"
-        ];
-      }
-
-      // Save conversation
-      await storage.saveChatConversation(userId, Date.now().toString(), [
-        { role: "user", content: message },
-        { role: "assistant", content: response.message }
-      ]);
-
-      res.json(response);
-    } catch (error) {
-      console.error("Error in chat:", error);
-      res.status(500).json({ error: "Failed to process chat message" });
-    }
-  });
-
-  app.get("/api/chatbot/memory", isAuthenticated, async (req, res) => {
-    try {
-      const userId = (req.user as any)?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
-      }
-      const memory = await storage.getUserMemory(userId);
-      res.json(memory || {});
-    } catch (error) {
-      console.error("Error fetching chatbot memory:", error);
-      res.status(500).json({ error: "Failed to fetch chatbot memory" });
-    }
-  });
-
-  app.post("/api/chatbot/memory", isAuthenticated, async (req, res) => {
-    try {
-      const userId = (req.user as any)?.id;
-      if (!userId) {
-        return res.status(401).json({ error: "User not authenticated" });
-      }
-      const memoryData = req.body;
-      const memory = await storage.upsertUserMemory(userId, memoryData);
-      res.json(memory);
-    } catch (error) {
-      console.error("Error updating chatbot memory:", error);
-      res.status(500).json({ error: "Failed to update chatbot memory" });
-    }
-  });
-
-  app.post("/api/chatbot/speech-to-text", isAuthenticated, async (req, res) => {
-    try {
-      // Placeholder for speech-to-text functionality
-      res.json({ text: "Speech recognition not implemented yet" });
-    } catch (error) {
-      console.error("Error in speech-to-text:", error);
-      res.status(500).json({ error: "Failed to process speech" });
-    }
-  });
 
   // Admin routes
   app.get("/api/admin/stats", isAuthenticated, isAdmin, async (req, res) => {
