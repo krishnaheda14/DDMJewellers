@@ -90,6 +90,11 @@ export default function Admin() {
     enabled: (user as any)?.role === 'admin',
   });
 
+  const { data: adminCategories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/admin/categories"],
+    enabled: (user as any)?.role === 'admin',
+  });
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -117,6 +122,7 @@ export default function Admin() {
     { id: "orders", label: "Orders", icon: ShoppingCart },
     { id: "users", label: "Users", icon: Users },
     { id: "products", label: "Products", icon: Package },
+    { id: "categories", label: "Categories", icon: Package },
     { id: "exchanges", label: "Exchange Requests", icon: RefreshCw },
     { id: "corporate", label: "Corporate Tie-ups", icon: Building2 },
     { id: "chatbot", label: "Chatbot Analytics", icon: MessageSquare },
@@ -823,6 +829,293 @@ export default function Admin() {
       </Card>
     </div>
   );
+
+  const CategoriesView = () => {
+    const [newCategoryName, setNewCategoryName] = useState("");
+    const [newCategorySlug, setNewCategorySlug] = useState("");
+    const [selectedParentId, setSelectedParentId] = useState<string>("none");
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+    const createCategoryMutation = useMutation({
+      mutationFn: async (categoryData: any) => {
+        return await apiRequest("/api/admin/categories", {
+          method: "POST",
+          body: JSON.stringify(categoryData),
+        });
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
+        setIsCreateDialogOpen(false);
+        setNewCategoryName("");
+        setNewCategorySlug("");
+        setSelectedParentId("none");
+        toast({
+          title: "Success",
+          description: "Category created successfully",
+        });
+      },
+      onError: (error) => {
+        if (isUnauthorizedError(error)) {
+          toast({
+            title: "Unauthorized",
+            description: "You are logged out. Logging in again...",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = "/auth";
+          }, 500);
+          return;
+        }
+        toast({
+          title: "Error",
+          description: "Failed to create category",
+          variant: "destructive",
+        });
+      },
+    });
+
+    const deleteCategoryMutation = useMutation({
+      mutationFn: async (categoryId: number) => {
+        return await apiRequest(`/api/admin/categories/${categoryId}`, {
+          method: "DELETE",
+        });
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
+        toast({
+          title: "Success",
+          description: "Category deleted successfully",
+        });
+      },
+      onError: (error) => {
+        if (isUnauthorizedError(error)) {
+          toast({
+            title: "Unauthorized",
+            description: "You are logged out. Logging in again...",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = "/auth";
+          }, 500);
+          return;
+        }
+        toast({
+          title: "Error",
+          description: "Failed to delete category",
+          variant: "destructive",
+        });
+      },
+    });
+
+    const mainCategories = adminCategories.filter((cat: any) => !cat.parentId);
+    const subcategories = adminCategories.filter((cat: any) => cat.parentId);
+
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Category Management</h2>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Category
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Category</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Category Name</label>
+                  <Input
+                    value={newCategoryName}
+                    onChange={(e) => {
+                      setNewCategoryName(e.target.value);
+                      setNewCategorySlug(e.target.value.toLowerCase().replace(/\s+/g, '-'));
+                    }}
+                    placeholder="Enter category name"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Slug</label>
+                  <Input
+                    value={newCategorySlug}
+                    onChange={(e) => setNewCategorySlug(e.target.value)}
+                    placeholder="category-slug"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Parent Category</label>
+                  <Select value={selectedParentId} onValueChange={setSelectedParentId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select parent category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Parent (Main Category)</SelectItem>
+                      {mainCategories.map((cat: any) => (
+                        <SelectItem key={cat.id} value={cat.id.toString()}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={() => {
+                    const categoryData = {
+                      name: newCategoryName,
+                      slug: newCategorySlug,
+                      parentId: selectedParentId === "none" ? null : parseInt(selectedParentId),
+                    };
+                    createCategoryMutation.mutate(categoryData);
+                  }}
+                  disabled={!newCategoryName || !newCategorySlug || createCategoryMutation.isPending}
+                  className="w-full"
+                >
+                  {createCategoryMutation.isPending ? "Creating..." : "Create Category"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Total Categories
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{adminCategories.length}</div>
+              <p className="text-sm text-muted-foreground">All categories</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Main Categories
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{mainCategories.length}</div>
+              <p className="text-sm text-muted-foreground">Parent categories</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Subcategories
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{subcategories.length}</div>
+              <p className="text-sm text-muted-foreground">Child categories</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Categories List */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Main Categories */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Main Categories</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {mainCategories.map((category: any) => {
+                  const categorySubcategories = subcategories.filter((sub: any) => sub.parentId === category.id);
+                  return (
+                    <div key={category.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h3 className="font-semibold">{category.name}</h3>
+                          <p className="text-sm text-muted-foreground">{category.slug}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteCategoryMutation.mutate(category.id)}
+                          disabled={deleteCategoryMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                      {categorySubcategories.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-sm font-medium mb-1">Subcategories ({categorySubcategories.length}):</p>
+                          <div className="flex flex-wrap gap-1">
+                            {categorySubcategories.map((sub: any) => (
+                              <Badge key={sub.id} variant="outline" className="text-xs">
+                                {sub.name}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* All Categories Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>All Categories</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-2">Name</th>
+                      <th className="text-left p-2">Type</th>
+                      <th className="text-left p-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminCategories.map((category: any) => (
+                      <tr key={category.id} className="border-b">
+                        <td className="p-2">
+                          <div>
+                            <p className="font-medium">{category.name}</p>
+                            <p className="text-sm text-muted-foreground">{category.slug}</p>
+                          </div>
+                        </td>
+                        <td className="p-2">
+                          <Badge variant={category.parentId ? "outline" : "default"}>
+                            {category.parentId ? "Sub" : "Main"}
+                          </Badge>
+                        </td>
+                        <td className="p-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteCategoryMutation.mutate(category.id)}
+                            disabled={deleteCategoryMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  };
 
   const SettingsView = () => (
     <div className="space-y-6">
