@@ -902,6 +902,37 @@ export default function Admin() {
       },
     });
 
+    const seedCategoriesMutation = useMutation({
+      mutationFn: async () => {
+        return await apiRequest("POST", "/api/admin/seed-categories");
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
+        toast({
+          title: "Success",
+          description: "Comprehensive category structure created successfully",
+        });
+      },
+      onError: (error) => {
+        if (isUnauthorizedError(error)) {
+          toast({
+            title: "Unauthorized",
+            description: "You are logged out. Logging in again...",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = "/auth";
+          }, 500);
+          return;
+        }
+        toast({
+          title: "Error",
+          description: "Failed to seed categories",
+          variant: "destructive",
+        });
+      },
+    });
+
     const mainCategories = adminCategories.filter((cat: any) => !cat.parentId);
     const subcategories = adminCategories.filter((cat: any) => cat.parentId);
 
@@ -909,13 +940,35 @@ export default function Admin() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold">Category Management</h2>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Category
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (confirm("This will replace all existing categories with a comprehensive jewelry category structure. Continue?")) {
+                  seedCategoriesMutation.mutate();
+                }
+              }}
+              disabled={seedCategoriesMutation.isPending}
+            >
+              {seedCategoriesMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                  Seeding...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Seed Categories
+                </>
+              )}
+            </Button>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Category
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Create New Category</DialogTitle>

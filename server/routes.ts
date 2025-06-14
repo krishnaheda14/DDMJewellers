@@ -26,6 +26,7 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import { seedImitationJewelry } from "./seed-imitation-jewelry";
+import { seedComprehensiveCategories } from "./seed-comprehensive-categories";
 import { PricingCalculator } from "./pricing-calculator";
 
 const openai = new OpenAI({
@@ -751,6 +752,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching gold rates:", error);
       res.status(500).json({ error: "Failed to fetch gold rates" });
+    }
+  });
+
+  // Admin endpoint to seed comprehensive categories
+  app.post("/api/admin/seed-categories", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const result = await seedComprehensiveCategories();
+      res.json({
+        message: "Comprehensive category structure created successfully",
+        ...result
+      });
+    } catch (error) {
+      console.error("Error seeding comprehensive categories:", error);
+      res.status(500).json({ error: "Failed to seed categories" });
     }
   });
 
