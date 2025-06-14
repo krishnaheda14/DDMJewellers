@@ -11,7 +11,56 @@ function generateToken() {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
+// Create some test users on startup
+async function createTestUsers() {
+  const bcrypt = require("bcrypt");
+  
+  // Admin user
+  const adminHash = await bcrypt.hash("admin123", 10);
+  authUsers.set("admin@ddmjewellers.com", {
+    id: "admin_001",
+    email: "admin@ddmjewellers.com",
+    firstName: "Admin",
+    lastName: "User",
+    passwordHash: adminHash,
+    role: "admin",
+    createdAt: new Date(),
+  });
+
+  // Test customer
+  const customerHash = await bcrypt.hash("customer123", 10);
+  authUsers.set("customer@test.com", {
+    id: "customer_001", 
+    email: "customer@test.com",
+    firstName: "Test",
+    lastName: "Customer",
+    passwordHash: customerHash,
+    role: "customer",
+    createdAt: new Date(),
+  });
+
+  // Test wholesaler
+  const wholesalerHash = await bcrypt.hash("wholesaler123", 10);
+  authUsers.set("wholesaler@test.com", {
+    id: "wholesaler_001",
+    email: "wholesaler@test.com", 
+    firstName: "Test",
+    lastName: "Wholesaler",
+    passwordHash: wholesalerHash,
+    role: "wholesaler",
+    createdAt: new Date(),
+  });
+
+  console.log("Test users created:");
+  console.log("Admin: admin@ddmjewellers.com / admin123");
+  console.log("Customer: customer@test.com / customer123");
+  console.log("Wholesaler: wholesaler@test.com / wholesaler123");
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize test users
+  await createTestUsers();
+
   // Basic health check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
@@ -213,6 +262,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Signout error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
+  });
+
+  // Debug route to see all registered users (remove in production)
+  app.get("/api/debug/users", (req, res) => {
+    const userList = Array.from(authUsers.values()).map(user => {
+      const { passwordHash, ...safeUser } = user;
+      return {
+        ...safeUser,
+        hasPassword: !!passwordHash
+      };
+    });
+    res.json({
+      totalUsers: userList.length,
+      users: userList,
+      activeSessions: sessions.size
+    });
   });
 
   // Legacy user route for compatibility
