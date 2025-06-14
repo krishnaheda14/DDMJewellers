@@ -536,7 +536,7 @@ export default function EnhancedAdminDashboard() {
                 <div className="text-center">Loading users...</div>
               </CardContent>
             </Card>
-          ) : users && users.length > 0 ? (
+          ) : (users && users.length > 0) ? (
             <Card>
               <CardHeader>
                 <CardTitle>User Management</CardTitle>
@@ -918,7 +918,7 @@ export default function EnhancedAdminDashboard() {
                 <div className="text-center">Loading products...</div>
               </CardContent>
             </Card>
-          ) : products && products.length > 0 ? (
+          ) : (products && products.length > 0) ? (
             <Card>
               <CardHeader>
                 <CardTitle>Product Management</CardTitle>
@@ -993,6 +993,12 @@ export default function EnhancedAdminDashboard() {
                     ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center text-muted-foreground">No products found</div>
               </CardContent>
             </Card>
           )}
