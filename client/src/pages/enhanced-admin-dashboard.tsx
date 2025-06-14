@@ -29,8 +29,7 @@ interface AdminStats {
   totalGullakSavings: number;
   activeGullakAccounts: number;
   totalCorporatePartners: number;
-  chatbotInteractions: number;
-  voiceChatSessions: number;
+
   recentOrders: any[];
   pendingApprovals: any[];
   topSellingProducts: any[];
@@ -61,9 +60,7 @@ export default function EnhancedAdminDashboard() {
     queryKey: ["/api/admin/gullak"],
   });
 
-  const { data: chatbotData = { recentConversations: [], topQueries: [], analytics: { totalSessions: 0, avgResponseTime: 0, satisfactionRate: 0 } }, isLoading: chatbotLoading } = useQuery<any>({
-    queryKey: ["/api/admin/chatbot"],
-  });
+
 
   const { data: exchangeRequests = [] } = useQuery<any[]>({
     queryKey: ["/api/admin/exchange-requests"],
@@ -322,20 +319,20 @@ export default function EnhancedAdminDashboard() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Chat Interactions</span>
-                    <span className="font-medium">{stats?.chatbotInteractions || 0}</span>
+                    <span className="text-sm text-muted-foreground">Total Orders</span>
+                    <span className="font-medium">{stats?.totalOrders || 0}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Voice Sessions</span>
-                    <span className="font-medium">{stats?.voiceChatSessions || 0}</span>
+                    <span className="text-sm text-muted-foreground">Active Users</span>
+                    <span className="font-medium">{stats?.totalUsers || 0}</span>
                   </div>
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="w-full"
-                    onClick={() => setActiveTab("chatbot")}
+                    onClick={() => setActiveTab("orders")}
                   >
-                    Manage Chatbot
+                    View Orders
                   </Button>
                 </div>
               </CardContent>
@@ -1292,101 +1289,7 @@ export default function EnhancedAdminDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="chatbot" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Sunaarji Chatbot Analytics</h2>
-            <Button>Download Report</Button>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Sessions</p>
-                    <p className="text-2xl font-bold">{chatbotData?.analytics?.totalSessions || 0}</p>
-                  </div>
-                  <MessageCircle className="h-8 w-8 text-blue-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Avg Response Time</p>
-                    <p className="text-2xl font-bold">{chatbotData?.analytics?.avgResponseTime || 0}ms</p>
-                  </div>
-                  <Clock className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Satisfaction Rate</p>
-                    <p className="text-2xl font-bold">{chatbotData?.analytics?.satisfactionRate || 0}%</p>
-                  </div>
-                  <Heart className="h-8 w-8 text-red-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Voice Sessions</p>
-                    <p className="text-2xl font-bold">{stats?.voiceChatSessions || 0}</p>
-                  </div>
-                  <Mic className="h-8 w-8 text-purple-600" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Conversations</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {chatbotData?.recentConversations?.slice(0, 5).map((conv: any, idx: number) => (
-                    <div key={idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <MessageCircle className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{conv.userQuery?.slice(0, 50)}...</p>
-                        <p className="text-xs text-muted-foreground">{new Date(conv.createdAt).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Queries</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {chatbotData?.topQueries?.slice(0, 5).map((query: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between">
-                      <span className="text-sm">{query.query}</span>
-                      <Badge variant="outline">{query.count}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
 
         <TabsContent value="rates" className="space-y-6">
           <div className="flex items-center justify-between">

@@ -6,7 +6,7 @@ import {
   orders,
   orderItems,
   wholesalerDesigns,
-  wishlists,
+  wishlist,
   marketRates,
   type User,
   type UpsertUser,
@@ -342,54 +342,9 @@ export class DatabaseStorage implements IStorage {
     return updatedOrder;
   }
 
-  // Chatbot memory operations
-  async getUserMemory(userId: string): Promise<UserMemory | undefined> {
-    const [memory] = await db.select().from(userMemories).where(eq(userMemories.userId, userId));
-    return memory;
-  }
 
-  async upsertUserMemory(userId: string, memory: Partial<InsertUserMemory>): Promise<UserMemory> {
-    const memoryData: any = {
-      userId,
-      age: memory.age,
-      lifestyle: memory.lifestyle,
-      preferences: memory.preferences
-    };
 
-    const [existingMemory] = await db.select().from(userMemories).where(eq(userMemories.userId, userId));
-    
-    if (existingMemory) {
-      const [updatedMemory] = await db
-        .update(userMemories)
-        .set({ ...memoryData, updatedAt: new Date() })
-        .where(eq(userMemories.userId, userId))
-        .returning();
-      return updatedMemory;
-    } else {
-      const [newMemory] = await db.insert(userMemories).values(memoryData).returning();
-      return newMemory;
-    }
-  }
 
-  async saveChatConversation(userId: string, sessionId: string, messages: any[]): Promise<ChatConversation> {
-    const conversationData: any = {
-      userId,
-      sessionId,
-      messages: { conversation: messages }
-    };
-
-    const [conversation] = await db.insert(chatConversations).values(conversationData).returning();
-    return conversation;
-  }
-
-  async getChatHistory(userId: string, limit: number = 5): Promise<ChatConversation[]> {
-    return await db
-      .select()
-      .from(chatConversations)
-      .where(eq(chatConversations.userId, userId))
-      .orderBy(desc(chatConversations.createdAt))
-      .limit(limit);
-  }
 
   // Wholesaler design operations
   async getWholesalerDesigns(filters?: {
