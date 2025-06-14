@@ -13,7 +13,6 @@ function generateToken() {
 
 // Create some test users on startup
 async function createTestUsers() {
-  const bcrypt = require("bcrypt");
   
   // Admin user
   const adminHash = await bcrypt.hash("admin123", 10);
