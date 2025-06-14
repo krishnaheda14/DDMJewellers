@@ -530,11 +530,17 @@ export default function EnhancedAdminDashboard() {
             </Card>
           </div>
 
-          {!usersLoading && users && (
+          {usersLoading ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">Loading users...</div>
+              </CardContent>
+            </Card>
+          ) : users && users.length > 0 ? (
             <Card>
               <CardHeader>
                 <CardTitle>User Management</CardTitle>
-                <CardDescription>View and manage all user accounts</CardDescription>
+                <CardDescription>View and manage all user accounts ({users.length} total)</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -548,7 +554,7 @@ export default function EnhancedAdminDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users?.slice(0, 10).map((user: any) => (
+                    {users.slice(0, 10).map((user: any) => (
                       <TableRow key={user.id}>
                         <TableCell>
                           <div>
@@ -609,6 +615,12 @@ export default function EnhancedAdminDashboard() {
                     ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center text-muted-foreground">No users found</div>
               </CardContent>
             </Card>
           )}
@@ -900,11 +912,17 @@ export default function EnhancedAdminDashboard() {
             </Card>
           </div>
 
-          {!productsLoading && (
+          {productsLoading ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">Loading products...</div>
+              </CardContent>
+            </Card>
+          ) : products && products.length > 0 ? (
             <Card>
               <CardHeader>
                 <CardTitle>Product Management</CardTitle>
-                <CardDescription>View and manage all jewelry products</CardDescription>
+                <CardDescription>View and manage all jewelry products ({products.length} total)</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -919,7 +937,7 @@ export default function EnhancedAdminDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {products?.slice(0, 10).map((product: any) => (
+                    {products.slice(0, 10).map((product: any) => (
                       <TableRow key={product.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3">
