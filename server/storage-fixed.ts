@@ -103,23 +103,49 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const userToInsert = {
-      ...userData,
-      updatedAt: new Date(),
-    };
+    const [existingUser] = await db.select().from(users).where(eq(users.id, userData.id));
     
-    const [user] = await db
-      .insert(users)
-      .values(userToInsert)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
+    if (existingUser) {
+      const [updatedUser] = await db
+        .update(users)
+        .set({
           ...userData,
           updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
+        })
+        .where(eq(users.id, userData.id))
+        .returning();
+      return updatedUser;
+    } else {
+      const userInsertData = {
+        id: userData.id,
+        email: userData.email,
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        role: userData.role || 'customer',
+        passwordHash: userData.passwordHash || null,
+        profileImageUrl: userData.profileImageUrl || null,
+        isEmailVerified: userData.isEmailVerified || false,
+        emailVerificationToken: userData.emailVerificationToken || null,
+        passwordResetToken: userData.passwordResetToken || null,
+        passwordResetTokenExpiresAt: userData.passwordResetTokenExpiresAt || null,
+        isApproved: userData.isApproved || false,
+        approvedBy: userData.approvedBy || null,
+        approvedAt: userData.approvedAt || null,
+        lastLoginAt: userData.lastLoginAt || null,
+        isActive: userData.isActive || true,
+        phone: userData.phone || null,
+        address: userData.address || null,
+        businessName: userData.businessName || null,
+        gstNumber: userData.gstNumber || null,
+        updatedAt: new Date(),
+      };
+      
+      const [newUser] = await db
+        .insert(users)
+        .values(userInsertData)
+        .returning();
+      return newUser;
+    }
   }
 
   // Category operations
@@ -245,7 +271,7 @@ export class DatabaseStorage implements IStorage {
     const [existingItem] = await db
       .select()
       .from(cartItems)
-      .where(and(eq(cartItems.userId, item.userId), eq(cartItems.productId, item.productId)));
+      .where(and(eq(cartItems.userId, item.userId), eq(cartItems.productId, item.productId!)));
 
     if (existingItem) {
       // Update quantity
@@ -341,7 +367,7 @@ export class DatabaseStorage implements IStorage {
   async updateOrderStatus(id: number, status: string): Promise<Order> {
     const [updatedOrder] = await db
       .update(orders)
-      .set({ status, updatedAt: new Date() })
+      .set({ status: status as any, updatedAt: new Date() })
       .where(eq(orders.id, id))
       .returning();
     return updatedOrder;
@@ -494,14 +520,14 @@ export class DatabaseStorage implements IStorage {
         id: wishlist.id,
         userId: wishlist.userId,
         productId: wishlist.productId,
-        designId: wishlist.designId,
+        designId: wishlist.wholesalerDesignId,
         createdAt: wishlist.createdAt,
         product: products,
         design: wholesalerDesigns,
       })
       .from(wishlist)
       .leftJoin(products, eq(wishlist.productId, products.id))
-      .leftJoin(wholesalerDesigns, eq(wishlist.designId, wholesalerDesigns.id))
+      .leftJoin(wholesalerDesigns, eq(wishlist.wholesalerDesignId, wholesalerDesigns.id))
       .where(eq(wishlist.userId, userId))
       .orderBy(desc(wishlist.createdAt));
 
@@ -509,12 +535,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addToWishlist(item: InsertWishlist): Promise<Wishlist> {
-    const [newWishlistItem] = await db.insert(wishlists).values(item).returning();
+    const [newWishlistItem] = await db.insert(wishlist).values(item).returning();
     return newWishlistItem;
   }
 
   async removeFromWishlist(id: number): Promise<boolean> {
-    const result = await db.delete(wishlists).where(eq(wishlists.id, id));
+    const result = await db.delete(wishlist).where(eq(wishlist.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 
