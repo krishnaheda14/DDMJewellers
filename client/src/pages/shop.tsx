@@ -418,33 +418,142 @@ export default function Shop() {
             </div>
           </div>
 
-          {/* Search and Filters */}
-          <div className="space-y-6">
-            <div className="flex flex-col lg:flex-row gap-4 items-center">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search jewelry..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+          {/* Main Content with Sidebar */}
+          <div className="flex gap-6">
+            {/* Category Filter Sidebar */}
+            <div className="w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-amber-100 dark:border-gray-700 p-6 h-fit">
+              <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-300 mb-4 flex items-center gap-2">
+                <Filter className="h-5 w-5" />
+                Browse Categories
+              </h3>
               
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setSelectedParentCategory("all");
+                    setSelectedCategory("all");
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                    selectedParentCategory === "all" 
+                      ? "bg-amber-600 text-white" 
+                      : "hover:bg-amber-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  }`}
+                >
+                  All Categories
+                </button>
+                
+                {mainCategories.map((mainCat: Category) => (
+                  <div key={mainCat.id} className="border-l-2 border-amber-200 dark:border-amber-600 pl-2">
+                    <button
+                      onClick={() => {
+                        setSelectedParentCategory(mainCat.id.toString());
+                        setSelectedCategory("all");
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                        selectedParentCategory === mainCat.id.toString()
+                          ? "bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 font-medium" 
+                          : "hover:bg-amber-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                      }`}
+                    >
+                      {mainCat.name === "Gold Jewellery" && <Gem className="h-4 w-4 text-yellow-500" />}
+                      {mainCat.name === "Silver Jewellery" && <Sparkles className="h-4 w-4 text-gray-400" />}
+                      {mainCat.name === "Diamond Jewellery" && <Crown className="h-4 w-4 text-blue-400" />}
+                      {mainCat.name}
+                    </button>
+                    
+                    {selectedParentCategory === mainCat.id.toString() && subcategories.length > 0 && (
+                      <div className="ml-4 mt-2 space-y-1 border-l border-amber-200 dark:border-amber-600 pl-3">
+                        {subcategories.map((subCat: Category) => (
+                          <button
+                            key={subCat.id}
+                            onClick={() => setSelectedCategory(subCat.id.toString())}
+                            className={`w-full text-left px-2 py-1 text-sm rounded transition-colors ${
+                              selectedCategory === subCat.id.toString()
+                                ? "bg-amber-600 text-white" 
+                                : "hover:bg-amber-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+                            }`}
+                          >
+                            {subCat.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Main Shopping Area */}
+            <div className="flex-1 space-y-6">
+              {/* Search and Filters */}
+              <div className="flex flex-col lg:flex-row gap-4 items-center">
+                <div className="relative flex-1 max-w-md">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search jewelry..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              
+              {/* Category Breadcrumb Navigation */}
+              <div className="flex items-center gap-2 mb-4 p-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border border-amber-200">
+                <Crown className="h-5 w-5 text-amber-600" />
+                <div className="flex items-center gap-2 text-sm">
+                  <button
+                    onClick={() => {
+                      setSelectedParentCategory("all");
+                      setSelectedCategory("all");
+                    }}
+                    className={`px-3 py-1 rounded-full transition-colors ${
+                      selectedParentCategory === "all" 
+                        ? "bg-amber-600 text-white" 
+                        : "bg-white text-amber-700 hover:bg-amber-100"
+                    }`}
+                  >
+                    All Categories
+                  </button>
+                  
+                  {selectedParentCategory !== "all" && (
+                    <>
+                      <span className="text-amber-400">→</span>
+                      <span className="px-3 py-1 bg-amber-600 text-white rounded-full">
+                        {mainCategories.find(cat => cat.id.toString() === selectedParentCategory)?.name}
+                      </span>
+                    </>
+                  )}
+                  
+                  {selectedCategory !== "all" && subcategories.length > 0 && (
+                    <>
+                      <span className="text-amber-400">→</span>
+                      <span className="px-3 py-1 bg-amber-700 text-white rounded-full">
+                        {subcategories.find(cat => cat.id.toString() === selectedCategory)?.name}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
               <div className="flex gap-2 flex-wrap">
                 <Select value={selectedParentCategory} onValueChange={(value) => {
                   setSelectedParentCategory(value);
-                  setSelectedCategory("all"); // Reset subcategory when parent changes
+                  setSelectedCategory("all");
                 }}>
                   <SelectTrigger className="w-48 border-amber-200 focus:border-amber-500">
                     <Filter className="h-4 w-4 mr-2 text-amber-600" />
-                    <SelectValue placeholder="Select Main Category" />
+                    <SelectValue placeholder="Material Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Main Categories</SelectItem>
+                    <SelectItem value="all">All Materials</SelectItem>
                     {mainCategories.map((category: Category) => (
                       <SelectItem key={category.id} value={category.id.toString()}>
-                        {category.name}
+                        <div className="flex items-center gap-2">
+                          {category.name === "Gold Jewellery" && <Gem className="h-4 w-4 text-yellow-500" />}
+                          {category.name === "Silver Jewellery" && <Sparkles className="h-4 w-4 text-gray-400" />}
+                          {category.name === "Diamond Jewellery" && <Crown className="h-4 w-4 text-blue-400" />}
+                          {category.name}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -452,12 +561,12 @@ export default function Shop() {
 
                 {subcategories.length > 0 && (
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-52 border-amber-200 focus:border-amber-500 bg-amber-50">
+                    <SelectTrigger className="w-52 border-amber-200 focus:border-amber-500 bg-gradient-to-r from-amber-50 to-yellow-50">
                       <SlidersHorizontal className="h-4 w-4 mr-2 text-amber-600" />
-                      <SelectValue placeholder="Choose Subcategory" />
+                      <SelectValue placeholder="Body Part / Specific Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Subcategories</SelectItem>
+                      <SelectItem value="all">All Types</SelectItem>
                       {subcategories.map((category: Category) => (
                         <SelectItem key={category.id} value={category.id.toString()}>
                           {category.name}
