@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'wouter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Phone, Mail, Clock, Navigation } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Navigation, Home, ArrowLeft } from 'lucide-react';
 import type { StoreLocation } from '@shared/schema';
 
 export default function StoreLocator() {
@@ -68,9 +69,26 @@ export default function StoreLocator() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-6xl mx-auto px-4 py-6">
+          {/* Navigation */}
+          <div className="flex items-center justify-between mb-6">
+            <Link href="/">
+              <Button variant="outline" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Home
+              </Button>
+            </Link>
+            
+            <Link href="/">
+              <Button className="flex items-center gap-2 bg-amber-600 hover:bg-amber-700">
+                <Home className="h-4 w-4" />
+                Return Home
+              </Button>
+            </Link>
+          </div>
+          
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Our Stores</h1>
-            <p className="text-gray-600">Discover DDM Jewellers locations near you</p>
+            <p className="text-gray-600">Discover DEVICHAND D MIRANDE locations near you</p>
           </div>
         </div>
       </div>
@@ -192,6 +210,39 @@ export default function StoreLocator() {
             <p className="text-gray-600">We're working on adding store locations. Check back later!</p>
           </div>
         )}
+      </div>
+
+      {/* Footer Navigation */}
+      <div className="bg-white border-t mt-12">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-gray-600">
+              Need help? Contact us at{" "}
+              <a href="mailto:akashmirande2@gmail.com" className="text-amber-600 hover:underline">
+                akashmirande2@gmail.com
+              </a>
+            </div>
+            
+            <div className="flex gap-2">
+              <Link href="/">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Home className="h-4 w-4" />
+                  Home
+                </Button>
+              </Link>
+              <Link href="/products">
+                <Button variant="outline" size="sm">
+                  Browse Products
+                </Button>
+              </Link>
+              <Link href="/contact">
+                <Button variant="outline" size="sm">
+                  Contact Us
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
