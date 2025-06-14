@@ -13,7 +13,6 @@ import Home from "@/pages/home";
 import AuthPage from "@/pages/auth-page";
 
 // Lazy load non-critical components
-const EnhancedChatbot = lazy(() => import("@/components/enhanced-chatbot"));
 const Products = lazy(() => import("@/pages/products"));
 const ProductDetail = lazy(() => import("@/pages/product-detail"));
 const Cart = lazy(() => import("@/pages/cart"));
@@ -109,9 +108,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
-        <Suspense fallback={null}>
-          <EnhancedChatbot />
-        </Suspense>
+
       </TooltipProvider>
     </QueryClientProvider>
   );

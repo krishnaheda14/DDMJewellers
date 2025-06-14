@@ -188,25 +188,7 @@ export const wishlist = pgTable("wishlist", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// User memory for chatbot
-export const userMemory = pgTable("user_memories", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  age: varchar("age"),
-  lifestyle: varchar("lifestyle"),
-  preferences: jsonb("preferences"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
 
-// Chat conversations
-export const chatConversations = pgTable("chat_conversations", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  sessionId: varchar("session_id").notNull(),
-  messages: jsonb("messages").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
 
 // Market rates storage
 export const marketRates = pgTable("market_rates", {
@@ -323,11 +305,7 @@ export const insertWishlistSchema = createInsertSchema(wishlist).omit({
   createdAt: true,
 });
 
-export const insertUserMemorySchema = createInsertSchema(userMemory).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+
 
 export const insertCorporateRegistrationSchema = createInsertSchema(corporateRegistrations).omit({
   id: true,
@@ -415,11 +393,6 @@ export type InsertWholesalerDesign = z.infer<typeof insertWholesalerDesignSchema
 
 export type Wishlist = typeof wishlist.$inferSelect;
 export type InsertWishlist = z.infer<typeof insertWishlistSchema>;
-
-export type UserMemory = typeof userMemory.$inferSelect;
-export type InsertUserMemory = z.infer<typeof insertUserMemorySchema>;
-
-export type ChatConversation = typeof chatConversations.$inferSelect;
 
 export type MarketRate = typeof marketRates.$inferSelect;
 
