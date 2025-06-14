@@ -31,7 +31,7 @@ const CurrencyConverter = lazy(() => import("@/pages/currency-converter"));
 const CorporateRegistration = lazy(() => import("@/pages/corporate-registration"));
 const CorporateBenefits = lazy(() => import("@/pages/corporate-benefits"));
 const CorporateAdmin = lazy(() => import("@/pages/corporate-admin"));
-const Shop = lazy(() => import("@/pages/shop"));
+const Shop = lazy(() => import("@/pages/shop-enhanced"));
 const LiveMarketRates = lazy(() => import("@/pages/live-market-rates"));
 const AdminDashboard = lazy(() => import("@/pages/admin-dashboard"));
 const AdminCategories = lazy(() => import("@/pages/admin-categories"));

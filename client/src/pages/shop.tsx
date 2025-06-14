@@ -802,7 +802,7 @@ export default function Shop() {
               }>
                 {sortedProducts.map((product: Product) => 
                   viewMode === "grid" ? (
-                    <ProductCardComponent key={product.id} product={product} />
+                    <ProductCard key={product.id} product={product} />
                   ) : (
                     <ProductListItem key={product.id} product={product} />
                   )
@@ -987,8 +987,9 @@ export default function Shop() {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
-      </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
