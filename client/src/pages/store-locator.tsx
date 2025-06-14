@@ -30,16 +30,18 @@ export default function StoreLocator() {
     }
   };
 
-  const formatOpeningHours = (hours: any) => {
+  const formatOpeningHours = (hours: any): string => {
     if (!hours || typeof hours !== 'object') return 'Hours not available';
     
     const daysOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    return daysOrder.map(day => {
+    const formattedHours = daysOrder.map(day => {
       const dayHours = hours[day];
       if (!dayHours) return null;
       const dayName = day.charAt(0).toUpperCase() + day.slice(1);
       return `${dayName}: ${dayHours}`;
-    }).filter(Boolean).join(', ');
+    }).filter(Boolean);
+    
+    return formattedHours.join(', ') || 'Hours not available';
   };
 
   if (isLoading) {

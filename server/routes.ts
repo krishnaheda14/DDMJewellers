@@ -615,6 +615,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Store locations endpoints
+  app.get("/api/store-locations", async (req, res) => {
+    try {
+      const locations = await db.select().from(schema.storeLocations)
+        .where(eq(schema.storeLocations.isActive, true));
+      res.json(locations);
+    } catch (error) {
+      console.error("Error fetching store locations:", error);
+      res.status(500).json({ error: "Failed to fetch store locations" });
+    }
+  });
+
+  app.get("/api/store-locations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const location = await db.select().from(schema.storeLocations)
+        .where(eq(schema.storeLocations.id, id));
+      
+      if (location.length === 0) {
+        return res.status(404).json({ error: "Store location not found" });
+      }
+      
+      res.json(location[0]);
+    } catch (error) {
+      console.error("Error fetching store location:", error);
+      res.status(500).json({ error: "Failed to fetch store location" });
+    }
+  });
+
+  // Admin endpoints for store locations
+  app.post("/api/admin/store-locations", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const validatedData = schema.insertStoreLocationSchema.parse(req.body);
+      const [location] = await db.insert(schema.storeLocations)
+        .values(validatedData)
+        .returning();
+      res.json(location);
+    } catch (error) {
+      console.error("Error creating store location:", error);
+      res.status(500).json({ error: "Failed to create store location" });
+    }
+  });
+
+  app.put("/api/admin/store-locations/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = schema.insertStoreLocationSchema.partial().parse(req.body);
+      
+      const [location] = await db.update(schema.storeLocations)
+        .set(validatedData)
+        .where(eq(schema.storeLocations.id, id))
+        .returning();
+      
+      if (!location) {
+        return res.status(404).json({ error: "Store location not found" });
+      }
+      
+      res.json(location);
+    } catch (error) {
+      console.error("Error updating store location:", error);
+      res.status(500).json({ error: "Failed to update store location" });
+    }
+  });
+
+  app.delete("/api/admin/store-locations/:id", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await db.delete(schema.storeLocations)
+        .where(eq(schema.storeLocations.id, id));
+      res.json({ message: "Store location deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting store location:", error);
+      res.status(500).json({ error: "Failed to delete store location" });
+    }
+  });
+
   // Admin endpoint to seed comprehensive categories
   app.post("/api/admin/seed-categories", isAuthenticated, isAdmin, async (req, res) => {
     try {

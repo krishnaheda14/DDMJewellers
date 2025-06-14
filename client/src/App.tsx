@@ -40,6 +40,7 @@ const WholesalerDashboard = lazy(() => import("@/pages/wholesaler-dashboard"));
 const OfflineSalesManagement = lazy(() => import("@/pages/offline-sales-management"));
 const StockManagement = lazy(() => import("@/pages/stock-management"));
 const DayBook = lazy(() => import("@/pages/day-book"));
+const StoreLocator = lazy(() => import("@/pages/store-locator"));
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
