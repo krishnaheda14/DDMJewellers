@@ -107,7 +107,11 @@ export default function AdminDashboard() {
 
           <Card 
             className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => navigate('/admin/wholesaler-approvals')}
+            onClick={(e) => {
+              e.preventDefault();
+              console.log('Card clicked, navigating to wholesaler approvals');
+              navigate('/admin/wholesaler-approvals');
+            }}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
@@ -119,8 +123,17 @@ export default function AdminDashboard() {
                 <span>Wholesalers: {adminStats?.pendingWholesalerApprovals || 0}</span>
                 <span>Exchanges: {adminStats?.pendingExchangeRequests || 0}</span>
               </div>
-              <div className="text-xs text-yellow-600 mt-2 font-medium">
-                Click to manage approvals →
+              <div className="text-xs text-yellow-600 mt-2 font-medium flex justify-between items-center">
+                <span>Click to manage approvals →</span>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/admin/wholesaler-approvals');
+                  }}
+                  className="bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-2 py-1 rounded text-xs font-semibold"
+                >
+                  Manage
+                </button>
               </div>
             </CardContent>
           </Card>
