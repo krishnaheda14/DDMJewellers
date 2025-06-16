@@ -450,7 +450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get the full user data to check role
-      const user = authUsers.get(sessionData.userId);
+      const user = authUsers.get(sessionData.email);
       if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "Admin access required" });
       }
@@ -487,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get the full user data to check role
-      const user = authUsers.get(sessionData.userId);
+      const user = authUsers.get(sessionData.email);
       if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "Admin access required" });
       }
@@ -533,7 +533,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get the full user data to check role
-      const user = authUsers.get(sessionData.userId);
+      const user = authUsers.get(sessionData.email);
       if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "Admin access required" });
       }
@@ -583,9 +583,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Admin access required" });
       }
 
-      // Get the full user data to check role
-      const user = authUsers.get(sessionData.userId);
-      console.log("User lookup:", { userId: sessionData.userId, user: user ? { id: user.id, email: user.email, role: user.role } : null });
+      // Get the full user data to check role - using email as key since that's how authUsers is structured
+      const user = authUsers.get(sessionData.email);
+      console.log("User lookup:", { email: sessionData.email, user: user ? { id: user.id, email: user.email, role: user.role } : null });
       
       if (!user || user.role !== 'admin') {
         console.log("Auth failed - user role check:", { userExists: !!user, userRole: user?.role });
