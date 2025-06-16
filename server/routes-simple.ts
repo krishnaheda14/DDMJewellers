@@ -318,9 +318,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin wholesaler approval endpoints
   app.get("/api/admin/wholesalers/pending", async (req, res) => {
     try {
-      // Check if user is authenticated and is admin
-      const sessionUser = (req as any).session?.user;
-      if (!sessionUser || sessionUser.role !== 'admin') {
+      // Check authentication via token in Authorization header
+      const authHeader = req.headers.authorization;
+      const sessionToken = authHeader?.replace("Bearer ", "");
+      
+      if (!sessionToken || !sessions.has(sessionToken)) {
+        return res.status(401).json({ message: "Admin access required" });
+      }
+
+      const user = sessions.get(sessionToken);
+      if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "Admin access required" });
       }
 
@@ -342,15 +349,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/wholesalers/:id/approve", async (req, res) => {
     try {
-      // Check if user is authenticated and is admin
-      const sessionUser = (req as any).session?.user;
-      if (!sessionUser || sessionUser.role !== 'admin') {
+      // Check authentication via token in Authorization header
+      const authHeader = req.headers.authorization;
+      const sessionToken = authHeader?.replace("Bearer ", "");
+      
+      if (!sessionToken || !sessions.has(sessionToken)) {
+        return res.status(401).json({ message: "Admin access required" });
+      }
+
+      const user = sessions.get(sessionToken);
+      if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "Admin access required" });
       }
 
       const { db } = await import("./db");
       const userId = req.params.id;
-      const adminId = sessionUser.id;
+      const adminId = user.id;
 
       const result = await db.$client.query(`
         UPDATE users 
@@ -375,15 +389,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/wholesalers/:id/reject", async (req, res) => {
     try {
-      // Check if user is authenticated and is admin
-      const sessionUser = (req as any).session?.user;
-      if (!sessionUser || sessionUser.role !== 'admin') {
+      // Check authentication via token in Authorization header
+      const authHeader = req.headers.authorization;
+      const sessionToken = authHeader?.replace("Bearer ", "");
+      
+      if (!sessionToken || !sessions.has(sessionToken)) {
+        return res.status(401).json({ message: "Admin access required" });
+      }
+
+      const user = sessions.get(sessionToken);
+      if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "Admin access required" });
       }
 
       const { db } = await import("./db");
       const userId = req.params.id;
-      const adminId = sessionUser.id;
+      const adminId = user.id;
 
       const result = await db.$client.query(`
         UPDATE users 
@@ -409,9 +430,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin stats endpoint
   app.get("/api/admin/stats", async (req, res) => {
     try {
-      // Check if user is authenticated and is admin
-      const sessionUser = (req as any).session?.user;
-      if (!sessionUser || sessionUser.role !== 'admin') {
+      // Check authentication via token in Authorization header
+      const authHeader = req.headers.authorization;
+      const sessionToken = authHeader?.replace("Bearer ", "");
+      
+      if (!sessionToken || !sessions.has(sessionToken)) {
+        return res.status(401).json({ message: "Admin access required" });
+      }
+
+      const user = sessions.get(sessionToken);
+      if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "Admin access required" });
       }
 
