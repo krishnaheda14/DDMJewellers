@@ -14,6 +14,15 @@ import { Link } from 'wouter';
 import PageNavigation from '@/components/page-navigation';
 import { JewelryImageProcessor } from '@/components/jewelry-image-processor';
 
+interface ProcessedImage {
+  id: string;
+  original: File;
+  processed: string;
+  angle: 'front' | 'side' | 'detail';
+  status: 'processing' | 'completed' | 'error';
+  quality: number;
+}
+
 interface ProductUpload {
   name: string;
   description: string;
@@ -23,6 +32,7 @@ interface ProductUpload {
   weight: number;
   purity: string;
   images: File[];
+  processedImages: ProcessedImage[];
   price?: number;
   makingCharges?: number;
   gemstonesCost?: number;
@@ -45,8 +55,11 @@ export default function WholesalerUpload() {
     weight: 0,
     purity: '',
     images: [],
+    processedImages: [],
     tags: []
   });
+
+  const [showImageProcessor, setShowImageProcessor] = useState(false);
 
   const uploadMutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -326,49 +339,54 @@ export default function WholesalerUpload() {
                 </div>
               )}
 
-              {/* Image Upload */}
+              {/* Professional Image Upload */}
               <div className="space-y-4">
-                <Label>Product Images * (Max 5)</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label htmlFor="image-upload" className="cursor-pointer">
-                    <ImagePlus className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-sm text-gray-600">
-                      Click to upload images or drag and drop
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      PNG, JPG up to 10MB each
-                    </p>
-                  </label>
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2">
+                    <Camera className="w-4 h-4" />
+                    Professional Product Photography *
+                  </Label>
+                  {formData.processedImages.length > 0 && (
+                    <Badge variant="default" className="bg-green-100 text-green-800">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      {formData.processedImages.length} images ready
+                    </Badge>
+                  )}
                 </div>
                 
-                {previewImages.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    {previewImages.map((preview, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={preview}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg border"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                          onClick={() => removeImage(index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
+                <JewelryImageProcessor
+                  onImagesProcessed={(processedImages) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      processedImages,
+                      images: processedImages.map(img => img.original)
+                    }));
+                    setPreviewImages(processedImages.map(img => img.processed));
+                  }}
+                  maxImages={6}
+                  requiredAngles={['front', 'side', 'detail']}
+                />
+                
+                {formData.processedImages.length > 0 && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 className="font-medium text-green-900 mb-2">Studio-Quality Images Ready</h4>
+                    <p className="text-sm text-green-700">
+                      Your jewelry images have been processed with automatic background removal and optimized for professional display.
+                    </p>
+                    <div className="grid grid-cols-3 gap-4 mt-3">
+                      {formData.processedImages.map((img, index) => (
+                        <div key={img.id} className="text-center">
+                          <img
+                            src={img.processed}
+                            alt={`${img.angle} view`}
+                            className="w-full h-20 object-cover rounded-lg border bg-white"
+                          />
+                          <Badge variant="outline" className="mt-1 text-xs">
+                            {img.angle}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
