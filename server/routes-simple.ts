@@ -59,6 +59,27 @@ async function createTestUsers() {
     createdAt: new Date(),
   });
 
+  // Approved wholesaler for testing
+  const krishHash = await bcrypt.hash("krish123", 10);
+  authUsers.set("krish@gmail.com", {
+    id: "wholesaler_1750065826827",
+    email: "krish@gmail.com", 
+    firstName: "Krish",
+    lastName: "Jeweler",
+    passwordHash: krishHash,
+    role: "wholesaler",
+    businessName: "Krish Gold & Diamonds",
+    businessAddress: "123 Gold Street, Mumbai",
+    businessPhone: "+91 9876543221",
+    gstNumber: "27ABCDE1234F3Z8",
+    isActive: true,
+    isApproved: true, // Already approved
+    isEmailVerified: true,
+    approvedBy: "admin_001",
+    approvedAt: new Date("2025-06-16T09:30:00.000Z"),
+    createdAt: new Date("2025-06-16T09:29:00.000Z"),
+  });
+
   // Create 10 additional pending wholesaler applications
   const wholesalerApplications = [
     {
