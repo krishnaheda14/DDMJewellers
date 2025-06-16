@@ -665,16 +665,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate default password for the wholesaler
       const defaultPassword = wholesalerToApprove.firstName.toLowerCase() + "123";
       
-      console.log(`Debug: About to reset password for ${wholesalerToApprove.email} to ${defaultPassword}`);
-      console.log(`Debug: Current password hash exists: ${!!wholesalerToApprove.passwordHash}`);
-      
       // Always reset to default password for approved wholesalers to ensure they can login
       wholesalerToApprove.passwordHash = await bcrypt.hash(defaultPassword, 10);
-      console.log(`Password reset successfully for ${wholesalerToApprove.email}: ${defaultPassword}`);
-      
-      // Verify the password was set correctly
-      const testVerify = await bcrypt.compare(defaultPassword, wholesalerToApprove.passwordHash);
-      console.log(`Password verification test passed: ${testVerify}`);
+      console.log(`Generated login credentials for approved wholesaler ${wholesalerToApprove.email}: ${defaultPassword}`);
 
       console.log('Wholesaler approved successfully:', {
         id: wholesalerToApprove.id,
