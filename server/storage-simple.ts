@@ -8,8 +8,6 @@ import {
   orderItems,
   wholesalerDesigns,
   wishlist,
-  userMemory,
-  chatConversations,
   marketRates
 } from "../shared/schema";
 import { eq, and, desc, asc, like, sql, count } from "drizzle-orm";
@@ -30,9 +28,6 @@ import type {
   InsertWholesalerDesign,
   Wishlist,
   InsertWishlist,
-  UserMemory,
-  InsertUserMemory,
-  ChatConversation,
   MarketRate
 } from "../shared/schema";
 
