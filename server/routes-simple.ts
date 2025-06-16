@@ -298,6 +298,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Wholesaler signup endpoint
+  app.post("/api/auth/signup/wholesaler", async (req, res) => {
+    try {
+      const { 
+        email, 
+        password, 
+        firstName, 
+        lastName, 
+        businessName, 
+        businessAddress, 
+        businessPhone, 
+        gstNumber, 
+        yearsInBusiness, 
+        averageOrderValue, 
+        references 
+      } = req.body;
+
+      // Validate required fields
+      if (!email || !password || !firstName || !lastName || !businessName) {
+        return res.status(400).json({ 
+          message: "Email, password, name, and business name are required" 
+        });
+      }
+
+      if (authUsers.has(email)) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+
+      const passwordHash = await bcrypt.hash(password, 10);
+      const userId = `wholesaler_${Date.now()}`;
+      
+      const user = {
+        id: userId,
+        email,
+        firstName,
+        lastName,
+        businessName,
+        businessAddress: businessAddress || null,
+        businessPhone: businessPhone || null,
+        gstNumber: gstNumber || null,
+        yearsInBusiness: yearsInBusiness || null,
+        averageOrderValue: averageOrderValue || null,
+        references: references || null,
+        passwordHash,
+        role: "wholesaler",
+        isApproved: false, // Requires admin approval
+        isEmailVerified: false,
+        createdAt: new Date(),
+      };
+
+      authUsers.set(email, user);
+
+      // Add to pending wholesaler applications
+      const applicationId = `app_${Date.now()}`;
+      const application = {
+        id: applicationId,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        businessName: user.businessName,
+        businessAddress: user.businessAddress,
+        businessPhone: user.businessPhone,
+        gstNumber: user.gstNumber,
+        yearsInBusiness: user.yearsInBusiness,
+        averageOrderValue: user.averageOrderValue,
+        references: user.references,
+        appliedAt: new Date(),
+        status: 'pending'
+      };
+
+      pendingWholesalerApplications.set(applicationId, application);
+
+      console.log('Wholesaler application created:', {
+        email: user.email,
+        businessName: user.businessName,
+        applicationId
+      });
+
+      const { passwordHash: _, ...userResponse } = user;
+      res.status(201).json({
+        message: "Wholesaler application submitted successfully. Please wait for admin approval.",
+        user: userResponse
+      });
+    } catch (error) {
+      console.error("Wholesaler signup error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.post("/api/auth/signin", async (req, res) => {
     try {
       const { email, password } = req.body;
