@@ -318,13 +318,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin wholesaler approval endpoints
   app.get("/api/admin/wholesalers/pending", async (req, res) => {
     try {
-      const { isAuthenticated, isAdmin } = await import("./auth");
-      await new Promise((resolve, reject) => {
-        isAuthenticated(req, res, (err: any) => err ? reject(err) : resolve(true));
-      });
-      await new Promise((resolve, reject) => {
-        isAdmin(req, res, (err: any) => err ? reject(err) : resolve(true));
-      });
+      // Check if user is authenticated and is admin
+      const sessionUser = (req as any).session?.user;
+      if (!sessionUser || sessionUser.role !== 'admin') {
+        return res.status(401).json({ message: "Admin access required" });
+      }
 
       const { db } = await import("./db");
       const result = await db.$client.query(`
@@ -344,17 +342,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/wholesalers/:id/approve", async (req, res) => {
     try {
-      const { isAuthenticated, isAdmin } = await import("./auth");
-      await new Promise((resolve, reject) => {
-        isAuthenticated(req, res, (err: any) => err ? reject(err) : resolve(true));
-      });
-      await new Promise((resolve, reject) => {
-        isAdmin(req, res, (err: any) => err ? reject(err) : resolve(true));
-      });
+      // Check if user is authenticated and is admin
+      const sessionUser = (req as any).session?.user;
+      if (!sessionUser || sessionUser.role !== 'admin') {
+        return res.status(401).json({ message: "Admin access required" });
+      }
 
       const { db } = await import("./db");
       const userId = req.params.id;
-      const adminId = (req as any).user?.id;
+      const adminId = sessionUser.id;
 
       const result = await db.$client.query(`
         UPDATE users 
@@ -379,17 +375,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/wholesalers/:id/reject", async (req, res) => {
     try {
-      const { isAuthenticated, isAdmin } = await import("./auth");
-      await new Promise((resolve, reject) => {
-        isAuthenticated(req, res, (err: any) => err ? reject(err) : resolve(true));
-      });
-      await new Promise((resolve, reject) => {
-        isAdmin(req, res, (err: any) => err ? reject(err) : resolve(true));
-      });
+      // Check if user is authenticated and is admin
+      const sessionUser = (req as any).session?.user;
+      if (!sessionUser || sessionUser.role !== 'admin') {
+        return res.status(401).json({ message: "Admin access required" });
+      }
 
       const { db } = await import("./db");
       const userId = req.params.id;
-      const adminId = (req as any).user?.id;
+      const adminId = sessionUser.id;
 
       const result = await db.$client.query(`
         UPDATE users 
