@@ -86,9 +86,10 @@ export default function WholesalerDashboard() {
           <CardContent>
             <Button 
               className="w-full" 
-              onClick={() => setLocation("/auth")}
+              onClick={() => signOutMutation.mutate()}
+              disabled={signOutMutation.isPending}
             >
-              Return to Login
+              {signOutMutation.isPending ? "Signing out..." : "Return to Login"}
             </Button>
           </CardContent>
         </Card>
