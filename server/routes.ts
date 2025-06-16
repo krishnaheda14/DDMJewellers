@@ -1,7 +1,7 @@
 import { Express } from "express";
 import { Server } from "http";
 import { isAuthenticated, isAdmin, isWholesaler, setupAuth, hashPassword } from "./auth";
-import { storage } from "./storage-simple";
+// import { storage } from "./storage-simple"; // Disabled due to schema import errors
 import { optimizedStorage } from "./optimized-storage";
 import { fastStorage } from "./fast-storage";
 import { marketRatesService } from "./market-rates";
@@ -78,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/categories", isAdmin, async (req, res) => {
     try {
       const categoryData = insertCategorySchema.parse(req.body);
-      const category = await storage.createCategory(categoryData);
+      const [category] = await db.insert(schema.categories).values(categoryData).returning();
       res.json(category);
     } catch (error) {
       console.error("Error creating category:", error);
@@ -123,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/products", isAdmin, async (req, res) => {
     try {
       const productData = insertProductSchema.parse(req.body);
-      const product = await storage.createProduct(productData);
+      const [product] = await db.insert(schema.products).values(productData).returning();
       res.json(product);
     } catch (error) {
       console.error("Error creating product:", error);

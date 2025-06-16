@@ -60,10 +60,7 @@ export interface IStorage {
   getOrder(id: number): Promise<(Order & { orderItems: (OrderItem & { product: Product })[] }) | undefined>;
   createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order>;
   updateOrderStatus(id: number, status: string): Promise<Order>;
-  getUserMemory(userId: string): Promise<UserMemory | undefined>;
-  upsertUserMemory(userId: string, memory: Partial<InsertUserMemory>): Promise<UserMemory>;
-  saveChatConversation(userId: string, sessionId: string, messages: any[]): Promise<ChatConversation>;
-  getChatHistory(userId: string, limit?: number): Promise<ChatConversation[]>;
+  // User memory and chat features removed for now due to schema issues
   getWholesalerDesigns(filters?: {
     wholesalerId?: string;
     status?: string;
@@ -315,47 +312,7 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
-  async getUserMemory(userId: string): Promise<UserMemory | undefined> {
-    const result = await db.select().from(userMemory).where(eq(userMemory.userId, userId)).limit(1);
-    return result[0];
-  }
-
-  async upsertUserMemory(userId: string, memory: Partial<InsertUserMemory>): Promise<UserMemory> {
-    const existing = await this.getUserMemory(userId);
-    
-    if (existing) {
-      const [updated] = await db
-        .update(userMemory)
-        .set({ ...memory, updatedAt: new Date() })
-        .where(eq(userMemory.userId, userId))
-        .returning();
-      return updated;
-    } else {
-      const [created] = await db.insert(userMemory).values({
-        userId,
-        ...memory,
-      }).returning();
-      return created;
-    }
-  }
-
-  async saveChatConversation(userId: string, sessionId: string, messages: any[]): Promise<ChatConversation> {
-    const [created] = await db.insert(chatConversations).values({
-      userId,
-      sessionId,
-      messages,
-    }).returning();
-    return created;
-  }
-
-  async getChatHistory(userId: string, limit: number = 5): Promise<ChatConversation[]> {
-    return await db
-      .select()
-      .from(chatConversations)
-      .where(eq(chatConversations.userId, userId))
-      .orderBy(desc(chatConversations.createdAt))
-      .limit(limit);
-  }
+  // User memory and chat functionality removed due to schema import errors
 
   async getWholesalerDesigns(filters?: {
     wholesalerId?: string;
