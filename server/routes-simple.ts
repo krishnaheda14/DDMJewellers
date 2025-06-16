@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 // Simple in-memory user storage for authentication
 const authUsers = new Map<string, any>();
 const sessions = new Map<string, any>();
+const pendingWholesalerApplications = new Map<string, any>();
 
 function generateToken() {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
