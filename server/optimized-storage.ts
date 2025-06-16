@@ -1,13 +1,12 @@
 import { db } from "./db";
 import { 
   users, categories, products, cartItems, orders, orderItems, 
-  wholesalerDesigns, wishlist, userMemory, chatConversations, marketRates,
+  wholesalerDesigns, wishlist, marketRates,
   type User, type UpsertUser, type Category, type InsertCategory,
   type Product, type InsertProduct, type CartItem, type InsertCartItem,
   type Order, type InsertOrder, type OrderItem, type InsertOrderItem,
   type WholesalerDesign, type InsertWholesalerDesign,
-  type Wishlist, type InsertWishlist, type UserMemory, type InsertUserMemory,
-  type ChatConversation, type MarketRate
+  type Wishlist, type InsertWishlist, type MarketRate
 } from "@shared/schema";
 import { eq, and, ilike, desc, sql } from "drizzle-orm";
 

@@ -315,6 +315,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin wholesaler approval endpoints
+  app.get("/api/admin/wholesalers/pending", async (req, res) => {
+    try {
+      const { isAuthenticated, isAdmin } = await import("./auth");
+      await new Promise((resolve, reject) => {
+        isAuthenticated(req, res, (err: any) => err ? reject(err) : resolve(true));
+      });
+      await new Promise((resolve, reject) => {
+        isAdmin(req, res, (err: any) => err ? reject(err) : resolve(true));
+      });
+
+      const { db } = await import("./db");
+      const result = await db.$client.query(`
+        SELECT id, email, first_name, last_name, business_name, business_address, 
+               business_phone, gst_number, years_in_business, average_order_value, 
+               business_references, created_at
+        FROM users 
+        WHERE role = 'wholesaler' AND is_approved = false AND is_active = true
+        ORDER BY created_at ASC
+      `);
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error fetching pending wholesalers:", error);
+      res.status(500).json({ error: "Failed to fetch pending wholesalers" });
+    }
+  });
+
+  app.post("/api/admin/wholesalers/:id/approve", async (req, res) => {
+    try {
+      const { isAuthenticated, isAdmin } = await import("./auth");
+      await new Promise((resolve, reject) => {
+        isAuthenticated(req, res, (err: any) => err ? reject(err) : resolve(true));
+      });
+      await new Promise((resolve, reject) => {
+        isAdmin(req, res, (err: any) => err ? reject(err) : resolve(true));
+      });
+
+      const { db } = await import("./db");
+      const userId = req.params.id;
+      const adminId = (req as any).user?.id;
+
+      const result = await db.$client.query(`
+        UPDATE users 
+        SET is_approved = true, approved_by = $1, approved_at = NOW()
+        WHERE id = $2 AND role = 'wholesaler'
+        RETURNING id, email, first_name, last_name, business_name
+      `, [adminId, userId]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Wholesaler not found" });
+      }
+
+      res.json({ 
+        message: "Wholesaler approved successfully", 
+        wholesaler: result.rows[0] 
+      });
+    } catch (error) {
+      console.error("Error approving wholesaler:", error);
+      res.status(500).json({ error: "Failed to approve wholesaler" });
+    }
+  });
+
+  app.post("/api/admin/wholesalers/:id/reject", async (req, res) => {
+    try {
+      const { isAuthenticated, isAdmin } = await import("./auth");
+      await new Promise((resolve, reject) => {
+        isAuthenticated(req, res, (err: any) => err ? reject(err) : resolve(true));
+      });
+      await new Promise((resolve, reject) => {
+        isAdmin(req, res, (err: any) => err ? reject(err) : resolve(true));
+      });
+
+      const { db } = await import("./db");
+      const userId = req.params.id;
+      const adminId = (req as any).user?.id;
+
+      const result = await db.$client.query(`
+        UPDATE users 
+        SET is_active = false, approved_by = $1, approved_at = NOW()
+        WHERE id = $2 AND role = 'wholesaler'
+        RETURNING id, email, first_name, last_name, business_name
+      `, [adminId, userId]);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Wholesaler not found" });
+      }
+
+      res.json({ 
+        message: "Wholesaler rejected successfully", 
+        wholesaler: result.rows[0] 
+      });
+    } catch (error) {
+      console.error("Error rejecting wholesaler:", error);
+      res.status(500).json({ error: "Failed to reject wholesaler" });
+    }
+  });
+
   // Static placeholder endpoints for development
   app.get("/api/placeholder/:width/:height", (req, res) => {
     const { width, height } = req.params;
