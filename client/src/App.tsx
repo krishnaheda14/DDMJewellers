@@ -31,6 +31,7 @@ const CorporateRegistration = lazy(() => import("@/pages/corporate-registration"
 const CorporateBenefits = lazy(() => import("@/pages/corporate-benefits"));
 const CorporateAdmin = lazy(() => import("@/pages/corporate-admin"));
 const Shop = lazy(() => import("@/pages/shop-enhanced"));
+const PremiumShop = lazy(() => import("@/pages/premium-shop"));
 const LiveMarketRates = lazy(() => import("@/pages/live-market-rates"));
 const AdminDashboard = lazy(() => import("@/pages/admin-dashboard"));
 const AdminCategories = lazy(() => import("@/pages/admin-categories"));
@@ -69,7 +70,8 @@ function Router() {
         {/* Always accessible routes */}
         <Route path="/auth" component={AuthPage} />
         <Route path="/signup" component={AuthPage} />
-        <Route path="/shop" component={Shop} />
+        <Route path="/shop" component={PremiumShop} />
+        <Route path="/shop-old" component={Shop} />
         <Route path="/products" component={Products} />
         <Route path="/products/:id" component={ProductDetail} />
         <Route path="/product/:id" component={ProductDetail} />
