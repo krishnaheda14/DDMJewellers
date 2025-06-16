@@ -113,8 +113,11 @@ export default function PremiumShop() {
         (product.material && selectedMaterial.includes(product.material));
 
       // Purity filter
+      const productPurity = product.material?.includes('18K') ? '18K' : 
+                           product.material?.includes('22K') ? '22K' : 
+                           product.material?.includes('24K') ? '24K' : null;
       const matchesPurity = selectedPurity.length === 0 || 
-        (product.purity && selectedPurity.includes(product.purity));
+        (productPurity && selectedPurity.includes(productPurity));
 
       // Price filter
       const price = parseFloat(product.price) || 0;
