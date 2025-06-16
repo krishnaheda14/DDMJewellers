@@ -33,9 +33,13 @@ export default function WholesalerApprovals() {
   // Approve wholesaler mutation
   const approveMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest(`/api/admin/wholesalers/${userId}/approve`, {
+      return await fetch(`/api/admin/wholesalers/${userId}/approve`, {
         method: 'POST',
-      });
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('session_token')}`,
+          'Content-Type': 'application/json',
+        },
+      }).then(res => res.json());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/wholesalers/pending'] });
@@ -59,9 +63,13 @@ export default function WholesalerApprovals() {
   // Reject wholesaler mutation
   const rejectMutation = useMutation({
     mutationFn: async (userId: string) => {
-      return apiRequest(`/api/admin/wholesalers/${userId}/reject`, {
+      return await fetch(`/api/admin/wholesalers/${userId}/reject`, {
         method: 'POST',
-      });
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('session_token')}`,
+          'Content-Type': 'application/json',
+        },
+      }).then(res => res.json());
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/wholesalers/pending'] });
