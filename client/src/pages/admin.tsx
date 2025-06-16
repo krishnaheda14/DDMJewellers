@@ -1173,35 +1173,35 @@ export default function Admin() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>System Configuration</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Site Name</label>
-              <Input defaultValue="DDM Jewellers" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Admin Email</label>
-              <Input defaultValue="admin@ddmjewellers.com" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Currency</label>
-              <Select defaultValue="INR">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="INR">Indian Rupee (₹)</SelectItem>
-                  <SelectItem value="USD">US Dollar ($)</SelectItem>
-                  <SelectItem value="EUR">Euro (€)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button>Save Configuration</Button>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>System Configuration</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Site Name</label>
+                <Input defaultValue="DDM Jewellers" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Admin Email</label>
+                <Input defaultValue="admin@ddmjewellers.com" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Currency</label>
+                <Select defaultValue="INR">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="INR">Indian Rupee (₹)</SelectItem>
+                    <SelectItem value="USD">US Dollar ($)</SelectItem>
+                    <SelectItem value="EUR">Euro (€)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button>Save Configuration</Button>
+            </CardContent>
+          </Card>
 
         <Card>
           <CardHeader>
