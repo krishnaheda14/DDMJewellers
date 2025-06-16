@@ -767,7 +767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Count users by role from authUsers Map (where test data is stored)
       let customerCount = 0;
-      let wholesalerCount = 0;
+      let approvedWholesalerCount = 0;
       let adminCount = 0;
       let pendingWholesalerCount = 0;
       let totalInMemoryUsers = 0;
@@ -777,8 +777,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (user.role === 'customer') {
           customerCount++;
         } else if (user.role === 'wholesaler') {
-          wholesalerCount++;
-          if (user.isApproved === false) {
+          if (user.isApproved === true) {
+            approvedWholesalerCount++;
+          } else if (user.isApproved === false) {
             pendingWholesalerCount++;
           }
         } else if (user.role === 'admin') {
@@ -789,7 +790,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stats = {
         totalUsers: Math.max(parseInt(totalUsersResult.rows[0]?.total || '0'), totalInMemoryUsers),
         totalCustomers: customerCount,
-        totalWholesalers: wholesalerCount,
+        totalWholesalers: approvedWholesalerCount,
         totalCorporateUsers: 0, // Not implemented yet
         totalProducts: parseInt(totalProductsResult.rows[0]?.total || '0'),
         totalOrders: parseInt(totalOrdersResult.rows[0]?.total || '0'),
