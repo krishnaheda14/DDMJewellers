@@ -255,7 +255,7 @@ export default function WholesalerDesigns() {
             <Tabs value={selectedTab} onValueChange={setSelectedTab}>
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="all">All ({statusCounts.all})</TabsTrigger>
-                <TabsTrigger value="pending">Pending ({statusCounts.pending})</TabsTrigger>
+                <TabsTrigger value="pending_approval">Pending ({statusCounts.pending})</TabsTrigger>
                 <TabsTrigger value="approved">Approved ({statusCounts.approved})</TabsTrigger>
                 <TabsTrigger value="rejected">Rejected ({statusCounts.rejected})</TabsTrigger>
               </TabsList>
@@ -270,7 +270,7 @@ export default function WholesalerDesigns() {
                     <p className="text-gray-600 mb-6">
                       {selectedTab === "all" 
                         ? "You haven't uploaded any designs yet." 
-                        : `No ${selectedTab} designs to display.`}
+                        : `No ${selectedTab === "pending_approval" ? "pending" : selectedTab} designs to display.`}
                     </p>
                     <Button
                       onClick={() => setLocation("/wholesaler/upload")}
@@ -330,10 +330,10 @@ export default function WholesalerDesigns() {
                                     {design.category}
                                   </div>
                                 )}
-                                {design.estimatedPrice && (
+                                {design.price && (
                                   <div className="flex items-center gap-1">
                                     <DollarSign className="h-3 w-3" />
-                                    ₹{design.estimatedPrice}
+                                    ₹{design.price}
                                   </div>
                                 )}
                               </div>
