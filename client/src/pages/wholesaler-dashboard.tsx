@@ -140,7 +140,7 @@ export default function WholesalerDashboard() {
               <Upload className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{wholesalerStats?.totalDesigns || 0}</div>
+              <div className="text-2xl font-bold">{wholesalerStats?.totalProducts || 0}</div>
               <p className="text-xs text-muted-foreground">Total designs submitted</p>
             </CardContent>
           </Card>
@@ -151,7 +151,7 @@ export default function WholesalerDashboard() {
               <Eye className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{wholesalerStats?.approvedDesigns || 0}</div>
+              <div className="text-2xl font-bold">{wholesalerStats?.approvedProducts || 0}</div>
               <p className="text-xs text-muted-foreground">Live on marketplace</p>
             </CardContent>
           </Card>
@@ -162,7 +162,7 @@ export default function WholesalerDashboard() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₹{wholesalerStats?.totalSales?.toLocaleString() || '0'}</div>
+              <div className="text-2xl font-bold">₹{wholesalerStats?.totalRevenue?.toLocaleString() || '0'}</div>
               <p className="text-xs text-muted-foreground">This month</p>
             </CardContent>
           </Card>
@@ -173,7 +173,7 @@ export default function WholesalerDashboard() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{wholesalerStats?.pendingDesigns || 0}</div>
+              <div className="text-2xl font-bold">{wholesalerStats?.pendingProducts || 0}</div>
               <p className="text-xs text-muted-foreground">Awaiting approval</p>
             </CardContent>
           </Card>

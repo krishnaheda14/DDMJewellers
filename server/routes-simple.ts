@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 const authUsers = new Map<string, any>();
 const sessions = new Map<string, any>();
 const pendingWholesalerApplications = new Map<string, any>();
+const wholesalerProducts = new Map<string, any[]>(); // Store products by wholesaler ID
 
 function generateToken() {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -863,10 +864,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         images: [] // Would handle file uploads in production
       };
 
+      // Store the product in memory
+      if (!wholesalerProducts.has(user.id)) {
+        wholesalerProducts.set(user.id, []);
+      }
+      const userProducts = wholesalerProducts.get(user.id);
+      userProducts.push(productData);
+
       console.log('Product upload:', {
         wholesaler: user.email,
         product: productData.name,
-        category: productData.category
+        category: productData.category,
+        totalProducts: userProducts.length
       });
 
       res.json({
@@ -912,20 +921,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Wholesaler access required" });
       }
 
-      // Return placeholder stats for now
+      // Get wholesaler's products from memory
+      const userProducts = wholesalerProducts.get(user.id) || [];
+      const pendingProducts = userProducts.filter(p => p.status === 'pending_approval').length;
+      const approvedProducts = userProducts.filter(p => p.status === 'approved').length;
+      const rejectedProducts = userProducts.filter(p => p.status === 'rejected').length;
+      
       res.json({
-        totalProducts: 0,
-        pendingProducts: 0,
-        approvedProducts: 0,
-        rejectedProducts: 0,
+        totalProducts: userProducts.length,
+        pendingProducts,
+        approvedProducts,
+        rejectedProducts,
         totalOrders: 0,
         totalRevenue: 0,
-        recentUploads: []
+        recentUploads: userProducts.slice(-5) // Last 5 uploads
       });
 
     } catch (error) {
       console.error("Error fetching wholesaler stats:", error);
       res.status(500).json({ error: "Failed to fetch stats" });
+    }
+  });
+
+  // Get wholesaler's products
+  app.get("/api/wholesaler/products", async (req, res) => {
+    try {
+      // Check authentication
+      const authHeader = req.headers.authorization;
+      const sessionToken = authHeader?.replace("Bearer ", "");
+      
+      if (!sessionToken || !sessions.has(sessionToken)) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const sessionData = sessions.get(sessionToken);
+      if (!sessionData || !sessionData.userId) {
+        return res.status(401).json({ message: "Invalid session" });
+      }
+
+      // Get user and verify wholesaler role
+      let user = authUsers.get(sessionData.email);
+      if (!user && sessionData.userId) {
+        for (const [email, userData] of authUsers) {
+          if (userData.id === sessionData.userId) {
+            user = userData;
+            break;
+          }
+        }
+      }
+
+      if (!user || user.role !== 'wholesaler') {
+        return res.status(403).json({ message: "Wholesaler access required" });
+      }
+
+      // Get wholesaler's products from memory
+      const userProducts = wholesalerProducts.get(user.id) || [];
+      
+      res.json(userProducts);
+
+    } catch (error) {
+      console.error("Error fetching wholesaler products:", error);
+      res.status(500).json({ error: "Failed to fetch products" });
     }
   });
 
