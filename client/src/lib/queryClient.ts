@@ -13,9 +13,15 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   const headers: Record<string, string> = {};
+  let body: string | FormData | undefined;
   
-  if (data) {
+  // Handle FormData differently from regular JSON data
+  if (data instanceof FormData) {
+    // Don't set Content-Type for FormData - browser will set it with boundary
+    body = data;
+  } else if (data) {
     headers["Content-Type"] = "application/json";
+    body = JSON.stringify(data);
   }
   
   // Add Authorization header if session token exists
@@ -27,7 +33,7 @@ export async function apiRequest(
   const res = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
+    body,
     credentials: "include",
   });
 
