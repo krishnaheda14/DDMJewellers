@@ -455,16 +455,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Admin access required" });
       }
 
-      const { db } = await import("./db");
-      const result = await db.$client.query(`
-        SELECT id, email, first_name, last_name, business_name, business_address, 
-               business_phone, gst_number, years_in_business, average_order_value, 
-               business_references, created_at
-        FROM users 
-        WHERE role = 'wholesaler' AND is_approved = false AND is_active = true
-        ORDER BY created_at ASC
-      `);
-      res.json(result.rows);
+      // Get pending wholesalers from authUsers Map (where test data is stored)
+      const pendingWholesalers = [];
+      authUsers.forEach((user, email) => {
+        if (user.role === 'wholesaler' && user.isApproved === false) {
+          pendingWholesalers.push({
+            id: user.id,
+            email: user.email,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            business_name: user.businessName,
+            business_address: user.businessAddress,
+            business_phone: user.businessPhone,
+            gst_number: user.gstNumber,
+            created_at: user.createdAt
+          });
+        }
+      });
+
+      res.json(pendingWholesalers);
     } catch (error) {
       console.error("Error fetching pending wholesalers:", error);
       res.status(500).json({ error: "Failed to fetch pending wholesalers" });
@@ -599,14 +608,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalProductsResult = await db.$client.query('SELECT COUNT(*) as total FROM products');
       const totalOrdersResult = await db.$client.query('SELECT COUNT(*) as total FROM orders');
       const totalRevenueResult = await db.$client.query('SELECT COALESCE(SUM(CAST(total AS DECIMAL)), 0) as revenue FROM orders');
-      const pendingWholesalersResult = await db.$client.query('SELECT COUNT(*) as count FROM users WHERE role = \'wholesaler\' AND is_approved = false AND is_active = true');
+      // Count pending wholesalers from authUsers Map (where test data is stored)
+      let pendingWholesalerCount = 0;
+      authUsers.forEach((user, email) => {
+        if (user.role === 'wholesaler' && user.isApproved === false) {
+          pendingWholesalerCount++;
+        }
+      });
       
       const stats = {
         totalUsers: parseInt(totalUsersResult.rows[0]?.total || '0'),
         totalProducts: parseInt(totalProductsResult.rows[0]?.total || '0'),
         totalOrders: parseInt(totalOrdersResult.rows[0]?.total || '0'),
         totalRevenue: parseFloat(totalRevenueResult.rows[0]?.revenue || '0'),
-        pendingWholesalerApprovals: parseInt(pendingWholesalersResult.rows[0]?.count || '0'),
+        pendingWholesalerApprovals: pendingWholesalerCount,
         pendingExchangeRequests: 0 // Placeholder for now
       };
       
