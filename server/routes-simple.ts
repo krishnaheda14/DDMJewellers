@@ -486,39 +486,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authHeader = req.headers.authorization;
       const sessionToken = authHeader?.replace("Bearer ", "");
       
+      console.log('Approve auth check:', { 
+        authHeader: authHeader?.substring(0, 20) + '...', 
+        sessionToken: sessionToken?.substring(0, 20) + '...',
+        hasSession: sessions.has(sessionToken || '')
+      });
+      
       if (!sessionToken || !sessions.has(sessionToken)) {
-        return res.status(401).json({ message: "Admin access required" });
+        return res.status(401).json({ message: "Admin access required - invalid session" });
       }
 
       const sessionData = sessions.get(sessionToken);
       if (!sessionData || !sessionData.userId) {
-        return res.status(401).json({ message: "Admin access required" });
+        return res.status(401).json({ message: "Admin access required - no session data" });
       }
 
-      // Get the full user data to check role
-      const user = authUsers.get(sessionData.email);
+      console.log('Session data:', { userId: sessionData.userId, email: sessionData.email });
+
+      // Get the full user data to check role - try both email and userId
+      let user = authUsers.get(sessionData.email);
+      if (!user && sessionData.userId) {
+        // Try to find user by userId if email lookup fails
+        for (const [email, userData] of authUsers) {
+          if (userData.id === sessionData.userId) {
+            user = userData;
+            break;
+          }
+        }
+      }
+      
+      console.log('User lookup:', { email: sessionData.email, user: user ? { id: user.id, email: user.email, role: user.role } : null });
+      
       if (!user || user.role !== 'admin') {
-        return res.status(401).json({ message: "Admin access required" });
+        return res.status(401).json({ message: "Admin access required - not admin user" });
       }
 
-      const { db } = await import("./db");
       const userId = req.params.id;
-      const adminId = user.id;
+      console.log('Attempting to approve user:', userId);
 
-      const result = await db.$client.query(`
-        UPDATE users 
-        SET is_approved = true, approved_by = $1, approved_at = NOW()
-        WHERE id = $2 AND role = 'wholesaler'
-        RETURNING id, email, first_name, last_name, business_name
-      `, [adminId, userId]);
+      // Debug: List all available users
+      console.log('Available users:');
+      for (const [email, userData] of authUsers) {
+        console.log(`- ID: ${userData.id}, Email: ${email}, Role: ${userData.role}, Approved: ${userData.isApproved}`);
+      }
 
-      if (result.rows.length === 0) {
+      // Since we're using in-memory storage, let's update the authUsers map directly
+      let wholesalerToApprove = null;
+      for (const [email, userData] of authUsers) {
+        if (userData.id === userId && userData.role === 'wholesaler') {
+          wholesalerToApprove = userData;
+          break;
+        }
+      }
+
+      if (!wholesalerToApprove) {
+        console.log('Wholesaler not found:', userId);
+        console.log('Searching for wholesaler with ID:', userId);
         return res.status(404).json({ error: "Wholesaler not found" });
       }
 
+      // Update the user's approval status
+      wholesalerToApprove.isApproved = true;
+      wholesalerToApprove.approvedBy = user.id;
+      wholesalerToApprove.approvedAt = new Date();
+
+      console.log('Wholesaler approved successfully:', {
+        id: wholesalerToApprove.id,
+        email: wholesalerToApprove.email,
+        businessName: wholesalerToApprove.businessName
+      });
+
       res.json({ 
         message: "Wholesaler approved successfully", 
-        wholesaler: result.rows[0] 
+        wholesaler: {
+          id: wholesalerToApprove.id,
+          email: wholesalerToApprove.email,
+          firstName: wholesalerToApprove.firstName,
+          lastName: wholesalerToApprove.lastName,
+          businessName: wholesalerToApprove.businessName
+        }
       });
     } catch (error) {
       console.error("Error approving wholesaler:", error);
@@ -541,30 +587,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Admin access required" });
       }
 
-      // Get the full user data to check role
-      const user = authUsers.get(sessionData.email);
+      // Get the full user data to check role - try both email and userId
+      let user = authUsers.get(sessionData.email);
+      if (!user && sessionData.userId) {
+        for (const [email, userData] of authUsers) {
+          if (userData.id === sessionData.userId) {
+            user = userData;
+            break;
+          }
+        }
+      }
+      
       if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "Admin access required" });
       }
 
-      const { db } = await import("./db");
       const userId = req.params.id;
-      const adminId = user.id;
 
-      const result = await db.$client.query(`
-        UPDATE users 
-        SET is_active = false, approved_by = $1, approved_at = NOW()
-        WHERE id = $2 AND role = 'wholesaler'
-        RETURNING id, email, first_name, last_name, business_name
-      `, [adminId, userId]);
+      // Since we're using in-memory storage, let's update the authUsers map directly
+      let wholesalerToReject = null;
+      for (const [email, userData] of authUsers) {
+        if (userData.id === userId && userData.role === 'wholesaler') {
+          wholesalerToReject = userData;
+          break;
+        }
+      }
 
-      if (result.rows.length === 0) {
+      if (!wholesalerToReject) {
         return res.status(404).json({ error: "Wholesaler not found" });
       }
 
+      // Update the user's rejection status
+      wholesalerToReject.isActive = false;
+      wholesalerToReject.approvedBy = user.id;
+      wholesalerToReject.approvedAt = new Date();
+
       res.json({ 
         message: "Wholesaler rejected successfully", 
-        wholesaler: result.rows[0] 
+        wholesaler: {
+          id: wholesalerToReject.id,
+          email: wholesalerToReject.email,
+          firstName: wholesalerToReject.firstName,
+          lastName: wholesalerToReject.lastName,
+          businessName: wholesalerToReject.businessName
+        }
       });
     } catch (error) {
       console.error("Error rejecting wholesaler:", error);
