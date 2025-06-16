@@ -26,20 +26,21 @@ import { format } from "date-fns";
 interface WholesalerDesign {
   id: number;
   wholesalerId: string;
-  title: string;
+  name: string;
   description?: string;
-  imageUrl?: string;
-  additionalImages?: string[];
   category?: string;
-  materials?: any;
-  dimensions?: string;
-  estimatedPrice?: string;
-  status: "pending" | "approved" | "rejected";
-  approvedBy?: string;
-  approvedAt?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  productType: "real" | "imitation";
+  material?: string;
+  weight?: number;
+  purity?: string;
+  price?: number;
+  makingCharges?: number;
+  gemstonesCost?: number;
+  diamondsCost?: number;
+  tags?: string[];
+  status: "pending_approval" | "approved" | "rejected";
+  uploadedAt: string;
+  images?: string[];
 }
 
 const statusConfig = {
