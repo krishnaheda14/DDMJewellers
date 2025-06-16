@@ -44,7 +44,7 @@ interface WholesalerDesign {
 }
 
 const statusConfig = {
-  pending: { 
+  pending_approval: { 
     label: "Pending Review", 
     icon: Clock, 
     variant: "secondary" as const,
@@ -53,7 +53,7 @@ const statusConfig = {
   approved: { 
     label: "Approved", 
     icon: CheckCircle, 
-    variant: "success" as const,
+    variant: "default" as const,
     color: "text-green-600" 
   },
   rejected: { 
@@ -122,7 +122,7 @@ export default function WholesalerDesigns() {
   const getStatusCounts = () => {
     return {
       all: designs.length,
-      pending: designs.filter(d => d.status === "pending").length,
+      pending: designs.filter(d => d.status === "pending_approval").length,
       approved: designs.filter(d => d.status === "approved").length,
       rejected: designs.filter(d => d.status === "rejected").length,
     };
@@ -287,10 +287,10 @@ export default function WholesalerDesigns() {
                       return (
                         <Card key={design.id} className="hover:shadow-lg transition-shadow">
                           <div className="aspect-square relative overflow-hidden rounded-t-lg bg-gray-100">
-                            {design.imageUrl ? (
+                            {design.images && design.images.length > 0 ? (
                               <img
-                                src={design.imageUrl}
-                                alt={design.title}
+                                src={design.images[0]}
+                                alt={design.name}
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -313,7 +313,7 @@ export default function WholesalerDesigns() {
                             <div className="space-y-2">
                               <div className="flex items-start justify-between">
                                 <h3 className="font-semibold text-lg text-gray-900 line-clamp-1">
-                                  {design.title}
+                                  {design.name}
                                 </h3>
                               </div>
                               
@@ -340,7 +340,7 @@ export default function WholesalerDesigns() {
 
                               <div className="flex items-center gap-1 text-xs text-gray-500">
                                 <Calendar className="h-3 w-3" />
-                                {format(new Date(design.createdAt), "MMM dd, yyyy")}
+                                {design.uploadedAt ? format(new Date(design.uploadedAt), "MMM dd, yyyy") : "No date"}
                               </div>
 
                               <div className="flex items-center gap-2 pt-2">
