@@ -222,9 +222,6 @@ async function createTestUsers() {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Serve uploaded files statically
-  app.use('/uploads', express.static('uploads'));
-  
   // Initialize test users
   await createTestUsers();
 
