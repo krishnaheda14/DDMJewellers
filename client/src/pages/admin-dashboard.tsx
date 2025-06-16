@@ -10,11 +10,11 @@ import { useLocation } from "wouter";
 export default function AdminDashboard() {
   const { user, isLoading, isAdmin } = useAuth();
 
-  const [, setLocation] = useLocation();
+  const [, navigate] = useLocation();
   
   // Redirect if not admin
   if (!isLoading && (!user || !isAdmin)) {
-    setLocation("/auth");
+    navigate("/auth");
     return null;
   }
 
@@ -105,7 +105,10 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800">
+          <Card 
+            className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => navigate('/admin/wholesaler-approvals')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
               <UserCheck className="h-4 w-4 text-yellow-600" />
@@ -115,6 +118,9 @@ export default function AdminDashboard() {
               <div className="text-xs text-yellow-600 flex flex-col">
                 <span>Wholesalers: {adminStats?.pendingWholesalerApprovals || 0}</span>
                 <span>Exchanges: {adminStats?.pendingExchangeRequests || 0}</span>
+              </div>
+              <div className="text-xs text-yellow-600 mt-2 font-medium">
+                Click to manage approvals →
               </div>
             </CardContent>
           </Card>
