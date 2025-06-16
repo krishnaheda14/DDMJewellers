@@ -3,6 +3,7 @@ import { Server } from "http";
 import { storage } from "./storage-mock";
 import bcrypt from "bcrypt";
 import multer from "multer";
+import path from "path";
 
 // Simple in-memory user storage for authentication
 const authUsers = new Map<string, any>();
@@ -1063,6 +1064,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch products" });
     }
   });
+
+  // Jewelry Image Processing Endpoints
+  app.post("/api/jewelry/process-images", upload.array('images', 6), async (req, res) => {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: "No images provided" });
+      }
+
+      const { JewelryImageProcessor } = await import('./image-processor');
+      const processor = new JewelryImageProcessor();
+      
+      const processedImages = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const angle = ['front', 'side', 'detail'][i % 3] as 'front' | 'side' | 'detail';
+        
+        // Validate image
+        const validation = await processor.validateJewelryImage(file.buffer);
+        if (!validation.isValid) {
+          return res.status(400).json({ 
+            error: `Invalid image ${file.originalname}`,
+            details: validation.errors 
+          });
+        }
+        
+        // Process image
+        const result = await processor.processJewelryImage(file.buffer, angle);
+        result.originalUrl = `/uploads/${file.filename}`;
+        
+        processedImages.push(result);
+      }
+      
+      res.json({
+        success: true,
+        processedImages,
+        message: `Successfully processed ${processedImages.length} images`
+      });
+      
+    } catch (error) {
+      console.error("Error processing jewelry images:", error);
+      res.status(500).json({ error: "Failed to process images" });
+    }
+  });
+
+  app.post("/api/jewelry/validate-image", upload.single('image'), async (req, res) => {
+    try {
+      const file = req.file;
+      if (!file) {
+        return res.status(400).json({ error: "No image provided" });
+      }
+
+      const { JewelryImageProcessor } = await import('./image-processor');
+      const processor = new JewelryImageProcessor();
+      
+      const validation = await processor.validateJewelryImage(file.buffer);
+      
+      res.json({
+        isValid: validation.isValid,
+        errors: validation.errors,
+        suggestions: validation.suggestions,
+        metadata: {
+          filename: file.originalname,
+          size: file.size,
+          mimetype: file.mimetype
+        }
+      });
+      
+    } catch (error) {
+      console.error("Error validating jewelry image:", error);
+      res.status(500).json({ error: "Failed to validate image" });
+    }
+  });
+
+  // Serve processed images
+  app.use('/uploads/processed', express.static(path.join(process.cwd(), 'uploads', 'processed')));
 
   // Static placeholder endpoints for development
   app.get("/api/placeholder/:width/:height", (req, res) => {

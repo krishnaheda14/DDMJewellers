@@ -9,9 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Upload, ImagePlus, X, ArrowLeft, Package, Gem, Weight, DollarSign } from 'lucide-react';
+import { Upload, ImagePlus, X, ArrowLeft, Package, Gem, Weight, DollarSign, Camera, CheckCircle } from 'lucide-react';
 import { Link } from 'wouter';
 import PageNavigation from '@/components/page-navigation';
+import { JewelryImageProcessor } from '@/components/jewelry-image-processor';
 
 interface ProductUpload {
   name: string;
