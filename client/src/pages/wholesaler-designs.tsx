@@ -345,7 +345,15 @@ export default function WholesalerDesigns() {
 
                               <div className="flex items-center gap-1 text-xs text-gray-500">
                                 <Calendar className="h-3 w-3" />
-                                {design.uploadedAt ? format(new Date(design.uploadedAt), "MMM dd, yyyy") : "No date"}
+                                {(() => {
+                                  try {
+                                    return design.uploadedAt && design.uploadedAt !== 'Invalid Date' 
+                                      ? format(new Date(design.uploadedAt), "MMM dd, yyyy") 
+                                      : "No date";
+                                  } catch (error) {
+                                    return "Invalid date";
+                                  }
+                                })()}
                               </div>
 
                               <div className="flex items-center gap-2 pt-2">
@@ -483,7 +491,15 @@ export default function WholesalerDesigns() {
                                         <div className="text-sm text-gray-600">
                                           <div className="flex items-center gap-2">
                                             <Calendar className="h-4 w-4" />
-                                            Uploaded on {design.uploadedAt ? format(new Date(design.uploadedAt), "MMMM dd, yyyy 'at' hh:mm a") : "Unknown date"}
+                                            Uploaded on {(() => {
+                                              try {
+                                                return design.uploadedAt && design.uploadedAt !== 'Invalid Date' 
+                                                  ? format(new Date(design.uploadedAt), "MMMM dd, yyyy 'at' hh:mm a") 
+                                                  : "Unknown date";
+                                              } catch (error) {
+                                                return "Invalid date";
+                                              }
+                                            })()}
                                           </div>
                                         </div>
                                       </div>
