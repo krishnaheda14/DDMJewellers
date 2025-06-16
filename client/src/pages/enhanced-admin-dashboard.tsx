@@ -273,6 +273,17 @@ export default function EnhancedAdminDashboard() {
                   <span>Wholesalers: {stats?.pendingWholesalerApprovals || 0}</span>
                   <span>Exchanges: {stats?.pendingExchangeRequests || 0}</span>
                 </div>
+                <div className="mt-3">
+                  <Button 
+                    onClick={() => {
+                      console.log('Button clicked, navigating to wholesaler approvals');
+                      window.location.href = '/admin/wholesaler-approvals';
+                    }}
+                    className="w-full bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-semibold py-2"
+                  >
+                    Manage Wholesaler Approvals
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
