@@ -570,18 +570,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authHeader = req.headers.authorization;
       const sessionToken = authHeader?.replace("Bearer ", "");
       
+      console.log("Admin stats auth check:", { authHeader, sessionToken, hasSession: !!sessionToken && sessions.has(sessionToken) });
+      
       if (!sessionToken || !sessions.has(sessionToken)) {
         return res.status(401).json({ message: "Admin access required" });
       }
 
       const sessionData = sessions.get(sessionToken);
+      console.log("Session data:", sessionData);
+      
       if (!sessionData || !sessionData.userId) {
         return res.status(401).json({ message: "Admin access required" });
       }
 
       // Get the full user data to check role
       const user = authUsers.get(sessionData.userId);
+      console.log("User lookup:", { userId: sessionData.userId, user: user ? { id: user.id, email: user.email, role: user.role } : null });
+      
       if (!user || user.role !== 'admin') {
+        console.log("Auth failed - user role check:", { userExists: !!user, userRole: user?.role });
         return res.status(401).json({ message: "Admin access required" });
       }
 
