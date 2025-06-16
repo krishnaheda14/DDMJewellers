@@ -346,7 +346,7 @@ export default function WholesalerUpload() {
                     <Camera className="w-4 h-4" />
                     Professional Product Photography *
                   </Label>
-                  {formData.processedImages.length > 0 && (
+                  {formData.processedImages && formData.processedImages.length > 0 && (
                     <Badge variant="default" className="bg-green-100 text-green-800">
                       <CheckCircle className="w-3 h-3 mr-1" />
                       {formData.processedImages.length} images ready
@@ -406,7 +406,7 @@ export default function WholesalerUpload() {
                   </Button>
                 </div>
                 
-                {formData.tags.length > 0 && (
+                {formData.tags && formData.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {formData.tags.map((tag, index) => (
                       <Badge key={index} variant="secondary" className="px-3 py-1">
