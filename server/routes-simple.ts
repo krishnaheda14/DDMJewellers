@@ -326,7 +326,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Admin access required" });
       }
 
-      const user = sessions.get(sessionToken);
+      const sessionData = sessions.get(sessionToken);
+      if (!sessionData || !sessionData.userId) {
+        return res.status(401).json({ message: "Admin access required" });
+      }
+
+      // Get the full user data to check role
+      const user = authUsers.get(sessionData.userId);
       if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "Admin access required" });
       }
@@ -438,7 +444,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Admin access required" });
       }
 
-      const user = sessions.get(sessionToken);
+      const sessionData = sessions.get(sessionToken);
+      if (!sessionData || !sessionData.userId) {
+        return res.status(401).json({ message: "Admin access required" });
+      }
+
+      // Get the full user data to check role
+      const user = authUsers.get(sessionData.userId);
       if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "Admin access required" });
       }
