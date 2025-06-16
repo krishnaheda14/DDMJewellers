@@ -84,7 +84,9 @@ export default function PremiumShop() {
 
   const uniquePurities = useMemo(() => {
     const purities = products
-      .map(p => p.purity)
+      .map(p => p.material?.includes('18K') ? '18K' : 
+                 p.material?.includes('22K') ? '22K' : 
+                 p.material?.includes('24K') ? '24K' : null)
       .filter(Boolean)
       .filter((purity, index, arr) => arr.indexOf(purity) === index);
     return purities;
