@@ -5,12 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Package, ShoppingCart, TrendingUp, Settings, UserCheck, FileText, Crown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import PageNavigation from "@/components/page-navigation";
-import { useLocation } from "wouter";
+import { useLocation, useNavigate } from "wouter";
 
 export default function AdminDashboard() {
   const { user, isLoading, isAdmin } = useAuth();
 
-  const [, navigate] = useLocation();
+  const navigate = useNavigate();
   
   // Redirect if not admin
   if (!isLoading && (!user || !isAdmin)) {
@@ -105,14 +105,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card 
-            className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800 hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault();
-              console.log('Card clicked, navigating to wholesaler approvals');
-              navigate('/admin/wholesaler-approvals');
-            }}
-          >
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
               <UserCheck className="h-4 w-4 text-yellow-600" />
@@ -123,17 +116,16 @@ export default function AdminDashboard() {
                 <span>Wholesalers: {adminStats?.pendingWholesalerApprovals || 0}</span>
                 <span>Exchanges: {adminStats?.pendingExchangeRequests || 0}</span>
               </div>
-              <div className="text-xs text-yellow-600 mt-2 font-medium flex justify-between items-center">
-                <span>Click to manage approvals →</span>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
+              <div className="mt-3">
+                <Button 
+                  onClick={() => {
+                    console.log('Button clicked, navigating to wholesaler approvals');
                     navigate('/admin/wholesaler-approvals');
                   }}
-                  className="bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-2 py-1 rounded text-xs font-semibold"
+                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-semibold py-2"
                 >
-                  Manage
-                </button>
+                  Manage Wholesaler Approvals
+                </Button>
               </div>
             </CardContent>
           </Card>
