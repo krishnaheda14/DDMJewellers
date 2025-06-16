@@ -764,16 +764,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalProductsResult = await db.$client.query('SELECT COUNT(*) as total FROM products');
       const totalOrdersResult = await db.$client.query('SELECT COUNT(*) as total FROM orders');
       const totalRevenueResult = await db.$client.query('SELECT COALESCE(SUM(CAST(total AS DECIMAL)), 0) as revenue FROM orders');
-      // Count pending wholesalers from authUsers Map (where test data is stored)
+      
+      // Count users by role from authUsers Map (where test data is stored)
+      let customerCount = 0;
+      let wholesalerCount = 0;
+      let adminCount = 0;
       let pendingWholesalerCount = 0;
+      let totalInMemoryUsers = 0;
+      
       authUsers.forEach((user, email) => {
-        if (user.role === 'wholesaler' && user.isApproved === false) {
-          pendingWholesalerCount++;
+        totalInMemoryUsers++;
+        if (user.role === 'customer') {
+          customerCount++;
+        } else if (user.role === 'wholesaler') {
+          wholesalerCount++;
+          if (user.isApproved === false) {
+            pendingWholesalerCount++;
+          }
+        } else if (user.role === 'admin') {
+          adminCount++;
         }
       });
       
       const stats = {
-        totalUsers: parseInt(totalUsersResult.rows[0]?.total || '0'),
+        totalUsers: Math.max(parseInt(totalUsersResult.rows[0]?.total || '0'), totalInMemoryUsers),
+        totalCustomers: customerCount,
+        totalWholesalers: wholesalerCount,
+        totalCorporateUsers: 0, // Not implemented yet
         totalProducts: parseInt(totalProductsResult.rows[0]?.total || '0'),
         totalOrders: parseInt(totalOrdersResult.rows[0]?.total || '0'),
         totalRevenue: parseFloat(totalRevenueResult.rows[0]?.revenue || '0'),
