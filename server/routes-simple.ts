@@ -661,13 +661,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       wholesalerToApprove.isApproved = true;
       wholesalerToApprove.approvedBy = user.id;
       wholesalerToApprove.approvedAt = new Date();
-
-      // Generate default password for the wholesaler
-      const defaultPassword = wholesalerToApprove.firstName.toLowerCase() + "123";
       
-      // Always reset to default password for approved wholesalers to ensure they can login
-      wholesalerToApprove.passwordHash = await bcrypt.hash(defaultPassword, 10);
-      console.log(`Generated login credentials for approved wholesaler ${wholesalerToApprove.email}: ${defaultPassword}`);
+      // Keep the original password that was set during signup - DO NOT generate new password
+      console.log(`Wholesaler approved: ${wholesalerToApprove.email} can now login with their original signup password`);
 
       console.log('Wholesaler approved successfully:', {
         id: wholesalerToApprove.id,
@@ -684,11 +680,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: wholesalerToApprove.firstName,
           lastName: wholesalerToApprove.lastName,
           businessName: wholesalerToApprove.businessName
-        },
-        loginCredentials: {
-          email: wholesalerToApprove.email,
-          password: defaultPassword,
-          note: "Default password generated. Wholesaler can sign in immediately."
         }
       });
     } catch (error) {

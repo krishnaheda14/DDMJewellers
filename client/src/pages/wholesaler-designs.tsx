@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -344,14 +345,161 @@ export default function WholesalerDesigns() {
                               </div>
 
                               <div className="flex items-center gap-2 pt-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex items-center gap-1"
-                                >
-                                  <Eye className="h-3 w-3" />
-                                  View
-                                </Button>
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="flex items-center gap-1"
+                                    >
+                                      <Eye className="h-3 w-3" />
+                                      View
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                                    <DialogHeader>
+                                      <DialogTitle className="flex items-center gap-2">
+                                        <Package className="h-5 w-5" />
+                                        {design.name}
+                                      </DialogTitle>
+                                      <DialogDescription>
+                                        Design details and specifications
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    
+                                    <div className="space-y-6">
+                                      {/* Status and Basic Info */}
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          {(() => {
+                                            const StatusIcon = statusConfig[design.status].icon;
+                                            return <StatusIcon className="h-4 w-4" />;
+                                          })()}
+                                          <Badge variant={statusConfig[design.status].variant}>
+                                            {statusConfig[design.status].label}
+                                          </Badge>
+                                        </div>
+                                        <div className="text-sm text-gray-500">
+                                          ID: {design.id}
+                                        </div>
+                                      </div>
+
+                                      {/* Description */}
+                                      {design.description && (
+                                        <div>
+                                          <h4 className="font-medium mb-2">Description</h4>
+                                          <p className="text-sm text-gray-600">{design.description}</p>
+                                        </div>
+                                      )}
+
+                                      {/* Product Details */}
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <h4 className="font-medium mb-2">Product Information</h4>
+                                          <div className="space-y-2 text-sm">
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-500">Type:</span>
+                                              <span className="capitalize">{design.productType}</span>
+                                            </div>
+                                            {design.category && (
+                                              <div className="flex justify-between">
+                                                <span className="text-gray-500">Category:</span>
+                                                <span>{design.category}</span>
+                                              </div>
+                                            )}
+                                            {design.material && (
+                                              <div className="flex justify-between">
+                                                <span className="text-gray-500">Material:</span>
+                                                <span>{design.material}</span>
+                                              </div>
+                                            )}
+                                            {design.purity && (
+                                              <div className="flex justify-between">
+                                                <span className="text-gray-500">Purity:</span>
+                                                <span>{design.purity}</span>
+                                              </div>
+                                            )}
+                                            {design.weight && (
+                                              <div className="flex justify-between">
+                                                <span className="text-gray-500">Weight:</span>
+                                                <span>{design.weight}g</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        <div>
+                                          <h4 className="font-medium mb-2">Pricing Details</h4>
+                                          <div className="space-y-2 text-sm">
+                                            {design.price && (
+                                              <div className="flex justify-between">
+                                                <span className="text-gray-500">Base Price:</span>
+                                                <span className="font-medium">₹{design.price}</span>
+                                              </div>
+                                            )}
+                                            {design.makingCharges && (
+                                              <div className="flex justify-between">
+                                                <span className="text-gray-500">Making Charges:</span>
+                                                <span>₹{design.makingCharges}</span>
+                                              </div>
+                                            )}
+                                            {design.gemstonesCost && (
+                                              <div className="flex justify-between">
+                                                <span className="text-gray-500">Gemstones Cost:</span>
+                                                <span>₹{design.gemstonesCost}</span>
+                                              </div>
+                                            )}
+                                            {design.diamondsCost && (
+                                              <div className="flex justify-between">
+                                                <span className="text-gray-500">Diamonds Cost:</span>
+                                                <span>₹{design.diamondsCost}</span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Tags */}
+                                      {design.tags && design.tags.length > 0 && (
+                                        <div>
+                                          <h4 className="font-medium mb-2">Tags</h4>
+                                          <div className="flex flex-wrap gap-1">
+                                            {design.tags.map((tag, index) => (
+                                              <Badge key={index} variant="outline" className="text-xs">
+                                                {tag}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Upload Information */}
+                                      <div className="border-t pt-4">
+                                        <h4 className="font-medium mb-2">Upload Information</h4>
+                                        <div className="text-sm text-gray-600">
+                                          <div className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4" />
+                                            Uploaded on {design.uploadedAt ? format(new Date(design.uploadedAt), "MMMM dd, yyyy 'at' hh:mm a") : "Unknown date"}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Images placeholder */}
+                                      {design.images && design.images.length > 0 && (
+                                        <div>
+                                          <h4 className="font-medium mb-2">Images</h4>
+                                          <div className="grid grid-cols-2 gap-2">
+                                            {design.images.map((image, index) => (
+                                              <div key={index} className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                                                <ImageIcon className="h-8 w-8 text-gray-400" />
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </DialogContent>
+                                </Dialog>
                                 {design.status === "pending" && (
                                   <>
                                     <Button

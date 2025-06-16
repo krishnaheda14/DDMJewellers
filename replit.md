@@ -121,7 +121,7 @@ DDM Jewellers is a full-stack jewelry e-commerce platform built with React, Expr
 - June 14, 2025: Added complete store locator feature with Google Maps integration. Users can now find physical store locations, view contact details, opening hours, and get directions directly through Google Maps.
 - June 16, 2025: Completed wholesaler approval system - admins can now successfully approve/reject pending wholesaler applications. Fixed authentication issues in approval endpoints and implemented proper in-memory data updates. System tested and verified working with 11 test applications.
 - June 16, 2025: Fixed wholesaler authentication and added approved test user krish@gmail.com/krish123. Wholesaler upload functionality now properly stores products in backend with correct dashboard statistics display. All wholesaler features fully operational.
-- June 16, 2025: Fixed critical wholesaler approval authentication bug. System now automatically generates secure passwords during approval process using format [firstName]123. Approved wholesalers can immediately sign in with generated credentials. Tested with rajesh.gems@example.com/rajesh123 and priya.diamonds@example.com/priya123.
+- June 16, 2025: Fixed critical security vulnerability in wholesaler approval system. Removed automatic password generation that was overriding original signup passwords. Wholesalers now use their actual signup credentials for authentication, eliminating the security risk of predictable system-generated passwords.
 
 ## User Preferences
 
