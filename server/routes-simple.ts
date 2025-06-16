@@ -2,12 +2,21 @@ import { Express } from "express";
 import { Server } from "http";
 import { storage } from "./storage-mock";
 import bcrypt from "bcrypt";
+import multer from "multer";
 
 // Simple in-memory user storage for authentication
 const authUsers = new Map<string, any>();
 const sessions = new Map<string, any>();
 const pendingWholesalerApplications = new Map<string, any>();
 const wholesalerProducts = new Map<string, any[]>(); // Store products by wholesaler ID
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+});
 
 function generateToken() {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -833,7 +842,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Wholesaler product upload endpoint
-  app.post("/api/wholesaler/products/upload", async (req, res) => {
+  app.post("/api/wholesaler/products/upload", upload.array('images', 10), async (req, res) => {
     try {
       // Check authentication
       const authHeader = req.headers.authorization;
@@ -867,27 +876,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Account not approved yet" });
       }
 
-      // Parse form data (note: this is a simple implementation)
-      // In production, you'd use multer for file handling
+      // Parse form data using multer
+      console.log('Received form data:', req.body);
+      console.log('Received files:', req.files);
+      
+      // Parse tags from JSON string
+      let parsedTags = [];
+      try {
+        parsedTags = req.body.tags ? JSON.parse(req.body.tags) : [];
+      } catch (e) {
+        console.log('Failed to parse tags:', e);
+        parsedTags = [];
+      }
+      
       const productData = {
         id: Date.now(), // Simple ID generation
         wholesalerId: user.id,
-        name: req.body.name,
-        description: req.body.description,
-        category: req.body.category,
+        name: req.body.name || 'Untitled Design',
+        description: req.body.description || '',
+        category: req.body.category || '',
         productType: req.body.productType || 'real',
-        material: req.body.material,
+        material: req.body.material || '',
         weight: parseFloat(req.body.weight) || 0,
-        purity: req.body.purity,
+        purity: req.body.purity || '',
         price: req.body.price ? parseFloat(req.body.price) : null,
         makingCharges: req.body.makingCharges ? parseFloat(req.body.makingCharges) : null,
         gemstonesCost: req.body.gemstonesCost ? parseFloat(req.body.gemstonesCost) : null,
         diamondsCost: req.body.diamondsCost ? parseFloat(req.body.diamondsCost) : null,
-        tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+        tags: parsedTags,
         status: 'pending_approval',
         uploadedAt: new Date(),
-        images: [] // Would handle file uploads in production
+        images: [] // File handling would be implemented in production
       };
+      
+      console.log('Created product data:', productData);
 
       // Store the product in memory
       if (!wholesalerProducts.has(user.id)) {
@@ -1001,6 +1023,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get wholesaler's products from memory
       const userProducts = wholesalerProducts.get(user.id) || [];
+      
+      console.log('Fetching products for wholesaler:', {
+        userId: user.id,
+        email: user.email,
+        productsFound: userProducts.length,
+        allWholesalerIds: Array.from(wholesalerProducts.keys()),
+        userProducts: userProducts
+      });
       
       res.json(userProducts);
 
