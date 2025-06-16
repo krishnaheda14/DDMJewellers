@@ -120,7 +120,7 @@ export default function AdminDashboard() {
                 <Button 
                   onClick={() => {
                     console.log('Button clicked, navigating to wholesaler approvals');
-                    navigate('/admin/wholesaler-approvals');
+                    window.location.href = '/admin/wholesaler-approvals';
                   }}
                   className="w-full bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-semibold py-2"
                 >
