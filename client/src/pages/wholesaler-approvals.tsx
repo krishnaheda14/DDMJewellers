@@ -36,13 +36,26 @@ export default function WholesalerApprovals() {
       const response = await apiRequest('POST', `/api/admin/wholesalers/${userId}/approve`);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/wholesalers/pending'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
-      toast({
-        title: 'Wholesaler Approved',
-        description: 'The wholesaler application has been approved successfully.',
-      });
+      
+      // Show login credentials if they were generated
+      if (data.loginCredentials) {
+        toast({
+          title: 'Wholesaler Approved Successfully',
+          description: `Login credentials created:
+Email: ${data.loginCredentials.email}
+Password: ${data.loginCredentials.password}
+${data.loginCredentials.note}`,
+          duration: 10000, // Show for 10 seconds
+        });
+      } else {
+        toast({
+          title: 'Wholesaler Approved',
+          description: 'The wholesaler application has been approved successfully.',
+        });
+      }
       setProcessingId(null);
     },
     onError: (error) => {

@@ -662,12 +662,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       wholesalerToApprove.approvedBy = user.id;
       wholesalerToApprove.approvedAt = new Date();
 
+      // Ensure the wholesaler has a password hash - create default password if missing
+      if (!wholesalerToApprove.passwordHash) {
+        // Create a default password: first name + "123" (e.g., "rajesh123")
+        const defaultPassword = wholesalerToApprove.firstName.toLowerCase() + "123";
+        wholesalerToApprove.passwordHash = await bcrypt.hash(defaultPassword, 10);
+        console.log(`Generated default password for ${wholesalerToApprove.email}: ${defaultPassword}`);
+      }
+
       console.log('Wholesaler approved successfully:', {
         id: wholesalerToApprove.id,
         email: wholesalerToApprove.email,
-        businessName: wholesalerToApprove.businessName
+        businessName: wholesalerToApprove.businessName,
+        hasPassword: !!wholesalerToApprove.passwordHash
       });
 
+      // Prepare response with authentication info
+      const defaultPassword = wholesalerToApprove.firstName.toLowerCase() + "123";
+      
       res.json({ 
         message: "Wholesaler approved successfully", 
         wholesaler: {
@@ -676,6 +688,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: wholesalerToApprove.firstName,
           lastName: wholesalerToApprove.lastName,
           businessName: wholesalerToApprove.businessName
+        },
+        loginCredentials: {
+          email: wholesalerToApprove.email,
+          password: defaultPassword,
+          note: "Default password generated. Wholesaler can sign in immediately."
         }
       });
     } catch (error) {
