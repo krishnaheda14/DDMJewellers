@@ -42,6 +42,7 @@ const OfflineSalesManagement = lazy(() => import("@/pages/offline-sales-manageme
 const StockManagement = lazy(() => import("@/pages/stock-management"));
 const DayBook = lazy(() => import("@/pages/day-book"));
 const StoreLocator = lazy(() => import("@/pages/store-locator"));
+const WholesalerUpload = lazy(() => import("@/pages/wholesaler-upload"));
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -91,6 +92,7 @@ function Router() {
         <Route path="/admin/wholesaler-approvals" component={isAuthenticated ? WholesalerApprovals : AuthPage} />
         <Route path="/customer/dashboard" component={isAuthenticated ? CustomerDashboard : AuthPage} />
         <Route path="/wholesaler/dashboard" component={isAuthenticated ? WholesalerDashboard : AuthPage} />
+        <Route path="/wholesaler/upload" component={isAuthenticated ? WholesalerUpload : AuthPage} />
         <Route path="/gullak" component={isAuthenticated ? Gullak : AuthPage} />
         <Route path="/gullak/create" component={isAuthenticated ? CreateGullakEnhanced : AuthPage} />
         <Route path="/loyalty" component={isAuthenticated ? Loyalty : AuthPage} />
