@@ -89,6 +89,8 @@ export interface IStorage {
   removeFromWishlist(id: number): Promise<boolean>;
   updateUserRole(userId: string, role: string): Promise<User>;
   getWholesalers(approved?: boolean): Promise<User[]>;
+  approveWholesaler(userId: string, approvedBy: string): Promise<User>;
+  rejectWholesaler(userId: string, approvedBy: string): Promise<User>;
   getCurrentRates(): Promise<MarketRate[]>;
 }
 
@@ -562,7 +564,46 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getWholesalers(approved?: boolean): Promise<User[]> {
-    return [];
+    try {
+      let query = db.select().from(users).where(eq(users.role, "wholesaler"));
+      
+      if (approved !== undefined) {
+        query = query.where(eq(users.isApproved, approved));
+      }
+      
+      return await query;
+    } catch (error) {
+      console.error("Error getting wholesalers:", error);
+      return [];
+    }
+  }
+
+  async approveWholesaler(userId: string, approvedBy: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        isApproved: true, 
+        approvedBy,
+        approvedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
+  }
+
+  async rejectWholesaler(userId: string, approvedBy: string): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        isApproved: false,
+        isActive: false,
+        approvedBy,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
   }
 
   async getCurrentRates(): Promise<MarketRate[]> {
