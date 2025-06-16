@@ -293,6 +293,10 @@ export default function WholesalerDesigns() {
                                 src={design.images[0]}
                                 alt={design.name}
                                 className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  console.log('Image load error:', design.images[0]);
+                                  e.currentTarget.style.display = 'none';
+                                }}
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">

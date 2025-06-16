@@ -1,4 +1,4 @@
-import { Express } from "express";
+import express, { Express } from "express";
 import { Server } from "http";
 import { storage } from "./storage-mock";
 import bcrypt from "bcrypt";
@@ -12,10 +12,25 @@ const wholesalerProducts = new Map<string, any[]>(); // Store products by wholes
 
 // Configure multer for file uploads
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+      cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop())
+    }
+  }),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
+  fileFilter: function (req, file, cb) {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
+    }
+  }
 });
 
 function generateToken() {
@@ -207,6 +222,9 @@ async function createTestUsers() {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve uploaded files statically
+  app.use('/uploads', express.static('uploads'));
+  
   // Initialize test users
   await createTestUsers();
 
@@ -889,6 +907,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         parsedTags = [];
       }
       
+      // Process uploaded image files
+      const imageUrls = [];
+      if (req.files && Array.isArray(req.files)) {
+        for (const file of req.files) {
+          imageUrls.push(`/uploads/${file.filename}`);
+        }
+      }
+
       const productData = {
         id: Date.now(), // Simple ID generation
         wholesalerId: user.id,
@@ -906,7 +932,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tags: parsedTags,
         status: 'pending_approval',
         uploadedAt: new Date(),
-        images: [] // File handling would be implemented in production
+        images: imageUrls,
+        imageUrl: imageUrls[0] || null // Primary image for display
       };
       
       console.log('Created product data:', productData);
