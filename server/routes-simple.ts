@@ -662,13 +662,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       wholesalerToApprove.approvedBy = user.id;
       wholesalerToApprove.approvedAt = new Date();
 
-      // Ensure the wholesaler has a password hash - create default password if missing
-      if (!wholesalerToApprove.passwordHash) {
-        // Create a default password: first name + "123" (e.g., "rajesh123")
-        const defaultPassword = wholesalerToApprove.firstName.toLowerCase() + "123";
-        wholesalerToApprove.passwordHash = await bcrypt.hash(defaultPassword, 10);
-        console.log(`Generated default password for ${wholesalerToApprove.email}: ${defaultPassword}`);
-      }
+      // Generate default password for the wholesaler
+      const defaultPassword = wholesalerToApprove.firstName.toLowerCase() + "123";
+      
+      console.log(`Debug: About to reset password for ${wholesalerToApprove.email} to ${defaultPassword}`);
+      console.log(`Debug: Current password hash exists: ${!!wholesalerToApprove.passwordHash}`);
+      
+      // Always reset to default password for approved wholesalers to ensure they can login
+      wholesalerToApprove.passwordHash = await bcrypt.hash(defaultPassword, 10);
+      console.log(`Password reset successfully for ${wholesalerToApprove.email}: ${defaultPassword}`);
+      
+      // Verify the password was set correctly
+      const testVerify = await bcrypt.compare(defaultPassword, wholesalerToApprove.passwordHash);
+      console.log(`Password verification test passed: ${testVerify}`);
 
       console.log('Wholesaler approved successfully:', {
         id: wholesalerToApprove.id,
@@ -676,9 +682,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         businessName: wholesalerToApprove.businessName,
         hasPassword: !!wholesalerToApprove.passwordHash
       });
-
-      // Prepare response with authentication info
-      const defaultPassword = wholesalerToApprove.firstName.toLowerCase() + "123";
       
       res.json({ 
         message: "Wholesaler approved successfully", 
