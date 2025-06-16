@@ -698,6 +698,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Wholesaler product upload endpoint
+  app.post("/api/wholesaler/products/upload", async (req, res) => {
+    try {
+      // Check authentication
+      const authHeader = req.headers.authorization;
+      const sessionToken = authHeader?.replace("Bearer ", "");
+      
+      if (!sessionToken || !sessions.has(sessionToken)) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const sessionData = sessions.get(sessionToken);
+      if (!sessionData || !sessionData.userId) {
+        return res.status(401).json({ message: "Invalid session" });
+      }
+
+      // Get user and verify wholesaler role
+      let user = authUsers.get(sessionData.email);
+      if (!user && sessionData.userId) {
+        for (const [email, userData] of authUsers) {
+          if (userData.id === sessionData.userId) {
+            user = userData;
+            break;
+          }
+        }
+      }
+
+      if (!user || user.role !== 'wholesaler') {
+        return res.status(403).json({ message: "Wholesaler access required" });
+      }
+
+      if (!user.isApproved) {
+        return res.status(403).json({ message: "Account not approved yet" });
+      }
+
+      // Parse form data (note: this is a simple implementation)
+      // In production, you'd use multer for file handling
+      const productData = {
+        id: Date.now(), // Simple ID generation
+        wholesalerId: user.id,
+        name: req.body.name,
+        description: req.body.description,
+        category: req.body.category,
+        productType: req.body.productType || 'real',
+        material: req.body.material,
+        weight: parseFloat(req.body.weight) || 0,
+        purity: req.body.purity,
+        price: req.body.price ? parseFloat(req.body.price) : null,
+        makingCharges: req.body.makingCharges ? parseFloat(req.body.makingCharges) : null,
+        gemstonesCost: req.body.gemstonesCost ? parseFloat(req.body.gemstonesCost) : null,
+        diamondsCost: req.body.diamondsCost ? parseFloat(req.body.diamondsCost) : null,
+        tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+        status: 'pending_approval',
+        uploadedAt: new Date(),
+        images: [] // Would handle file uploads in production
+      };
+
+      console.log('Product upload:', {
+        wholesaler: user.email,
+        product: productData.name,
+        category: productData.category
+      });
+
+      res.json({
+        message: "Product uploaded successfully",
+        productId: productData.id,
+        status: "pending_approval"
+      });
+
+    } catch (error) {
+      console.error("Error uploading product:", error);
+      res.status(500).json({ error: "Failed to upload product" });
+    }
+  });
+
+  // Wholesaler stats endpoint
+  app.get("/api/wholesaler/stats", async (req, res) => {
+    try {
+      // Check authentication
+      const authHeader = req.headers.authorization;
+      const sessionToken = authHeader?.replace("Bearer ", "");
+      
+      if (!sessionToken || !sessions.has(sessionToken)) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const sessionData = sessions.get(sessionToken);
+      if (!sessionData || !sessionData.userId) {
+        return res.status(401).json({ message: "Invalid session" });
+      }
+
+      // Get user and verify wholesaler role
+      let user = authUsers.get(sessionData.email);
+      if (!user && sessionData.userId) {
+        for (const [email, userData] of authUsers) {
+          if (userData.id === sessionData.userId) {
+            user = userData;
+            break;
+          }
+        }
+      }
+
+      if (!user || user.role !== 'wholesaler') {
+        return res.status(403).json({ message: "Wholesaler access required" });
+      }
+
+      // Return placeholder stats for now
+      res.json({
+        totalProducts: 0,
+        pendingProducts: 0,
+        approvedProducts: 0,
+        rejectedProducts: 0,
+        totalOrders: 0,
+        totalRevenue: 0,
+        recentUploads: []
+      });
+
+    } catch (error) {
+      console.error("Error fetching wholesaler stats:", error);
+      res.status(500).json({ error: "Failed to fetch stats" });
+    }
+  });
+
   // Static placeholder endpoints for development
   app.get("/api/placeholder/:width/:height", (req, res) => {
     const { width, height } = req.params;
