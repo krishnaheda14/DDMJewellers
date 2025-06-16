@@ -60,7 +60,7 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -102,6 +102,20 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">₹{adminStats?.totalRevenue?.toLocaleString() || '0'}</div>
               <p className="text-xs text-muted-foreground">+15% from last month</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900 dark:to-yellow-800">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
+              <UserCheck className="h-4 w-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-700">{(adminStats?.pendingWholesalerApprovals || 0) + (adminStats?.pendingExchangeRequests || 0)}</div>
+              <div className="text-xs text-yellow-600 flex flex-col">
+                <span>Wholesalers: {adminStats?.pendingWholesalerApprovals || 0}</span>
+                <span>Exchanges: {adminStats?.pendingExchangeRequests || 0}</span>
+              </div>
             </CardContent>
           </Card>
         </div>

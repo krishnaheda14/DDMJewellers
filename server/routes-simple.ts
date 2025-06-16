@@ -406,6 +406,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin stats endpoint
+  app.get("/api/admin/stats", async (req, res) => {
+    try {
+      // Check if user is authenticated and is admin
+      const sessionUser = (req as any).session?.user;
+      if (!sessionUser || sessionUser.role !== 'admin') {
+        return res.status(401).json({ message: "Admin access required" });
+      }
+
+      const { db } = await import("./db");
+      
+      // Get various counts from database
+      const totalUsersResult = await db.$client.query('SELECT COUNT(*) as total FROM users');
+      const totalProductsResult = await db.$client.query('SELECT COUNT(*) as total FROM products');
+      const totalOrdersResult = await db.$client.query('SELECT COUNT(*) as total FROM orders');
+      const totalRevenueResult = await db.$client.query('SELECT COALESCE(SUM(CAST(total AS DECIMAL)), 0) as revenue FROM orders');
+      const pendingWholesalersResult = await db.$client.query('SELECT COUNT(*) as count FROM users WHERE role = \'wholesaler\' AND is_approved = false AND is_active = true');
+      
+      const stats = {
+        totalUsers: parseInt(totalUsersResult.rows[0]?.total || '0'),
+        totalProducts: parseInt(totalProductsResult.rows[0]?.total || '0'),
+        totalOrders: parseInt(totalOrdersResult.rows[0]?.total || '0'),
+        totalRevenue: parseFloat(totalRevenueResult.rows[0]?.revenue || '0'),
+        pendingWholesalerApprovals: parseInt(pendingWholesalersResult.rows[0]?.count || '0'),
+        pendingExchangeRequests: 0 // Placeholder for now
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ error: "Failed to fetch admin stats" });
+    }
+  });
+
   // Static placeholder endpoints for development
   app.get("/api/placeholder/:width/:height", (req, res) => {
     const { width, height } = req.params;
