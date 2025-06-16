@@ -1167,12 +1167,12 @@ export default function Admin() {
 
   const SettingsView = () => {
     return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Settings</h2>
-      </div>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Settings</h2>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>System Configuration</CardTitle>
@@ -1290,9 +1290,10 @@ export default function Admin() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderContent = () => {
     switch (activeTab) {
