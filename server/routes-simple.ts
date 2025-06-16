@@ -38,7 +38,7 @@ async function createTestUsers() {
     createdAt: new Date(),
   });
 
-  // Test wholesaler
+  // Test wholesaler (pending approval)
   const wholesalerHash = await bcrypt.hash("wholesaler123", 10);
   authUsers.set("wholesaler@test.com", {
     id: "wholesaler_001",
@@ -47,13 +47,131 @@ async function createTestUsers() {
     lastName: "Wholesaler",
     passwordHash: wholesalerHash,
     role: "wholesaler",
+    businessName: "Test Jewelry Wholesale",
+    businessAddress: "123 Business St, Mumbai",
+    businessPhone: "+91 9876543210",
+    gstNumber: "27ABCDE1234F1Z5",
+    isActive: true,
+    isApproved: false, // Pending approval
+    isEmailVerified: true,
     createdAt: new Date(),
   });
+
+  // Create 10 additional pending wholesaler applications
+  const wholesalerApplications = [
+    {
+      email: "rajesh.gems@example.com",
+      firstName: "Rajesh",
+      lastName: "Kumar",
+      businessName: "Kumar Gems & Jewels",
+      businessAddress: "45 Zaveri Bazaar, Mumbai, Maharashtra 400003",
+      businessPhone: "+91 9876543211",
+      gstNumber: "27ABCDE1234F2Z6"
+    },
+    {
+      email: "priya.diamonds@example.com",
+      firstName: "Priya",
+      lastName: "Sharma",
+      businessName: "Sharma Diamond House",
+      businessAddress: "12 Karol Bagh, New Delhi, Delhi 110005",
+      businessPhone: "+91 9876543212",
+      gstNumber: "07BCDEF2345G3Z7"
+    },
+    {
+      email: "amit.jewelers@example.com",
+      firstName: "Amit",
+      lastName: "Patel",
+      businessName: "Patel Gold & Silver",
+      businessAddress: "78 Commercial Street, Bangalore, Karnataka 560001",
+      businessPhone: "+91 9876543213",
+      gstNumber: "29CDEFG3456H4Z8"
+    },
+    {
+      email: "sunita.ornaments@example.com",
+      firstName: "Sunita",
+      lastName: "Agarwal",
+      businessName: "Agarwal Ornaments Pvt Ltd",
+      businessAddress: "23 Johari Bazaar, Jaipur, Rajasthan 302003",
+      businessPhone: "+91 9876543214",
+      gstNumber: "08DEFGH4567I5Z9"
+    },
+    {
+      email: "vikram.jewelry@example.com",
+      firstName: "Vikram",
+      lastName: "Singh",
+      businessName: "Singh Jewelry Mart",
+      businessAddress: "56 Park Street, Kolkata, West Bengal 700016",
+      businessPhone: "+91 9876543215",
+      gstNumber: "19EFGHI5678J6Z0"
+    },
+    {
+      email: "meera.pearls@example.com",
+      firstName: "Meera",
+      lastName: "Reddy",
+      businessName: "Reddy Pearls & Gems",
+      businessAddress: "34 Abids Road, Hyderabad, Telangana 500001",
+      businessPhone: "+91 9876543216",
+      gstNumber: "36FGHIJ6789K7Z1"
+    },
+    {
+      email: "karan.exports@example.com",
+      firstName: "Karan",
+      lastName: "Gupta",
+      businessName: "Gupta Jewelry Exports",
+      businessAddress: "67 Sarafa Bazaar, Indore, Madhya Pradesh 452001",
+      businessPhone: "+91 9876543217",
+      gstNumber: "23GHIJK7890L8Z2"
+    },
+    {
+      email: "pooja.crafts@example.com",
+      firstName: "Pooja",
+      lastName: "Jain",
+      businessName: "Jain Handicrafts & Jewelry",
+      businessAddress: "89 Lal Bazaar, Lucknow, Uttar Pradesh 226001",
+      businessPhone: "+91 9876543218",
+      gstNumber: "09HIJKL8901M9Z3"
+    },
+    {
+      email: "rohit.metals@example.com",
+      firstName: "Rohit",
+      lastName: "Mehta",
+      businessName: "Mehta Precious Metals",
+      businessAddress: "12 Opera House, Mumbai, Maharashtra 400004",
+      businessPhone: "+91 9876543219",
+      gstNumber: "27IJKLM9012N0Z4"
+    },
+    {
+      email: "anjali.designs@example.com",
+      firstName: "Anjali",
+      lastName: "Chopra",
+      businessName: "Chopra Designer Jewelry",
+      businessAddress: "45 Connaught Place, New Delhi, Delhi 110001",
+      businessPhone: "+91 9876543220",
+      gstNumber: "07JKLMN0123O1Z5"
+    }
+  ];
+
+  // Add all pending wholesaler applications
+  for (let i = 0; i < wholesalerApplications.length; i++) {
+    const app = wholesalerApplications[i];
+    const hash = await bcrypt.hash("wholesaler123", 10);
+    authUsers.set(app.email, {
+      id: `wholesaler_${String(i + 2).padStart(3, '0')}`,
+      ...app,
+      passwordHash: hash,
+      role: "wholesaler",
+      isActive: true,
+      isApproved: false, // Pending approval
+      isEmailVerified: true,
+      createdAt: new Date(),
+    });
+  }
 
   console.log("Test users created:");
   console.log("Admin: admin@ddmjewellers.com / admin123");
   console.log("Customer: customer@test.com / customer123");
   console.log("Wholesaler: wholesaler@test.com / wholesaler123");
+  console.log(`Created ${wholesalerApplications.length + 1} pending wholesaler applications`);
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
